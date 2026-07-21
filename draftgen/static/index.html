@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>草稿生成器 DraftGen</title>
+<style>
+:root {
+  --bg: #FAFAF8;
+  --card: #F5F0E8;
+  --accent: #C4A882;
+  --accent-dark: #A88B62;
+  --text: #3D3D3D;
+  --text-light: #8A8A8A;
+  --border: #E8E0D4;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --radius: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
+
+/* Header */
+.header { height: 48px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; z-index: 100; }
+.header h1 { font-size: 16px; font-weight: 600; color: var(--accent-dark); }
+.header .orient-btn { padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; font-size: 12px; color: var(--text); transition: all .2s; }
+.header .orient-btn:hover, .header .orient-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.header .spacer { flex:1; }
+.header .shortcut-hint { font-size: 11px; color: var(--text-light); }
+
+/* Main Layout */
+.main { display: flex; height: calc(100vh - 48px); }
+
+/* Canvas Area */
+.canvas-area { flex:1; display:flex; align-items:center; justify-content:center; background: #EDEAE3; position: relative; overflow: hidden; }
+.canvas-wrapper { position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.1); background: #fff; }
+.canvas-wrapper canvas { display: block; position: absolute; top:0; left:0; }
+.canvas-wrapper .guide-canvas { z-index: 5; pointer-events: none; }
+.canvas-wrapper .draw-canvas { z-index: 10; cursor: crosshair; }
+
+/* Floating Toolbar */
+.float-toolbar {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  background: #fff; border-radius: 10px; padding: 8px 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 50;
+  display: flex; flex-direction: column; gap: 4px; align-items: center;
+  border: 1px solid var(--border); user-select: none;
+}
+.float-toolbar .tool-btn {
+  width: 36px; height: 36px; border: none; border-radius: 8px;
+  background: transparent; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; transition: all .15s; color: var(--text);
+}
+.float-toolbar .tool-btn:hover { background: var(--card); }
+.float-toolbar .tool-btn.active { background: var(--accent); color: #fff; }
+.float-toolbar .divider { width: 28px; height: 1px; background: var(--border); margin: 2px 0; }
+.float-toolbar .slider-group { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; }
+.float-toolbar .slider-group label { font-size: 9px; color: var(--text-light); }
+.float-toolbar .slider-group input[type="range"] { width: 32px; writing-mode: vertical-lr; direction: rtl; height: 60px; accent-color: var(--accent); }
+.float-toolbar .color-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; }
+.float-toolbar .color-preview:hover { border-color: var(--accent); }
+.float-toolbar input[type="color"] { width:0; height:0; opacity:0; position:absolute; }
+
+/* Right Panel */
+.right-panel {
+  width: 300px; background: #fff; border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.panel-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); background: var(--card); }
+.panel-tabs .tab {
+  padding: 8px 10px; font-size: 11px; cursor: pointer; color: var(--text-light);
+  border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap;
+}
+.panel-tabs .tab:hover { color: var(--text); }
+.panel-tabs .tab.active { color: var(--accent-dark); border-bottom-color: var(--accent); }
+.panel-content { flex:1; overflow-y: auto; padding: 12px; }
+.panel-section { margin-bottom: 16px; }
+.panel-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--accent-dark); }
+.panel-section p { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+
+/* Guide Buttons */
+.guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.guide-btn { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; font-size: 11px; text-align: center; transition: all .15s; }
+.guide-btn:hover { border-color: var(--accent); background: var(--card); }
+.guide-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.guide-hint { font-size: 10px; color: var(--text-light); margin-top: 4px; line-height: 1.4; }
+
+/* Color Palette */
+.palette-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.palette-card { padding: 8px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all .15s; }
+.palette-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.palette-card .colors { display: flex; gap: 3px; margin-bottom: 4px; }
+.palette-card .swatch { width: 16px; height: 16px; border-radius: 3px; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
+.palette-card .name { font-size: 10px; color: var(--text-light); }
+.palette-actions { display: flex; gap: 4px; margin-top: 4px; }
+.palette-actions button { font-size: 9px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; }
+.palette-actions button:hover { background: var(--card); }
+
+/* Style Ref */
+.style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.style-card { padding: 8px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 11px; text-align: center; transition: all .15s; }
+.style-card:hover { border-color: var(--accent); }
+.style-card.active { border-color: var(--accent); background: var(--card); }
+.style-opacity { margin-top: 6px; }
+
+/* Layer Panel */
+.layer-item {
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+  border: 1px solid var(--border); border-radius: 6px; margin-bottom: 4px;
+  background: #fff; transition: all .15s; font-size: 11px;
+}
+.layer-item.active { border-color: var(--accent); background: #FFF9F0; }
+.layer-item button { background: none; border: none; cursor: pointer; font-size: 14px; padding: 0 2px; opacity: 0.6; }
+.layer-item button:hover { opacity: 1; }
+.layer-item .layer-name { flex:1; font-size: 11px; cursor: pointer; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.layer-actions { display: flex; gap: 4px; margin-top: 6px; }
+.layer-actions button { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; }
+.layer-actions button:hover { background: var(--card); }
+
+/* Random Draft */
+.draft-options { display: flex; flex-direction: column; gap: 8px; }
+.draft-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.draft-type-btn { padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; font-size: 11px; text-align: center; }
+.draft-type-btn:hover { border-color: var(--accent); }
+.draft-type-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.slider-row { display: flex; align-items: center; gap: 8px; }
+.slider-row label { font-size: 11px; min-width: 50px; }
+.slider-row input[type="range"] { flex:1; accent-color: var(--accent); }
+.slider-row .val { font-size: 11px; min-width: 24px; text-align: right; }
+.action-btn {
+  width: 100%; padding: 8px; border: none; border-radius: 6px;
+  background: var(--accent); color: #fff; cursor: pointer; font-size: 12px;
+  font-weight: 500; transition: all .15s;
+}
+.action-btn:hover { background: var(--accent-dark); }
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.action-btn.secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+.action-btn.secondary:hover { background: var(--card); }
+
+/* Image to Sketch */
+.upload-area {
+  border: 2px dashed var(--border); border-radius: 8px; padding: 20px;
+  text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 8px;
+}
+.upload-area:hover { border-color: var(--accent); background: var(--card); }
+.upload-area input { display: none; }
+
+/* AI Panel */
+.ai-input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; resize: vertical; min-height: 60px; margin-bottom: 6px; }
+.ai-key-input { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; margin-bottom: 6px; }
+.ai-result { padding: 8px; background: var(--card); border-radius: 6px; font-size: 12px; line-height: 1.6; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+.ai-status { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+/* Batch */
+.batch-options { display: flex; gap: 4px; margin-bottom: 8px; }
+.batch-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; }
+.batch-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Draft Gallery */
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.gallery-item { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-item .gallery-time { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 8px; padding: 1px 3px; }
+
+/* Mood Board */
+.mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.mood-cell { aspect-ratio: 1; border: 1px dashed var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; font-size: 20px; color: var(--text-light); transition: all .15s; }
+.mood-cell:hover { border-color: var(--accent); background: var(--card); }
+.mood-cell img { width: 100%; height: 100%; object-fit: cover; }
+.mood-cell input { display: none; }
+
+/* Version */
+.version-list { max-height: 200px; overflow-y: auto; }
+.version-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; font-size: 11px; }
+.version-item button { padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; background: #fff; cursor: pointer; font-size: 10px; }
+.version-item button:hover { background: var(--card); }
+
+/* Export */
+.export-btns { display: flex; flex-direction: column; gap: 6px; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 400px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+.modal h3 { font-size: 14px; margin-bottom: 12px; }
+.modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.modal .modal-actions button { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-size: 12px; }
+.modal .modal-actions .primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 12px; z-index: 300; opacity: 0; transition: opacity .3s; }
+.toast.show { opacity: 1; }
+
+/* Scrollbar */
+.panel-content::-webkit-scrollbar { width: 4px; }
+.panel-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.ai-result::-webkit-scrollbar { width: 4px; }
+.ai-result::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Composition Analysis */
+.analysis-result { padding: 8px; background: var(--card); border-radius: 6px; font-size: 12px; line-height: 1.6; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>🎨 DraftGen 草稿生成器</h1>
+  <button class="orient-btn active" id="btnPortrait" onclick="setOrientation('portrait')">竖版 2480×3508</button>
+  <button class="orient-btn" id="btnLandscape" onclick="setOrientation('landscape')">横版 3508×2480</button>
+  <div class="spacer"></div>
+  <span class="shortcut-hint">B:画笔 E:橡皮 R:随机 [:]:笔刷 Ctrl+Z:撤销</span>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <!-- Canvas Area -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="bgCanvas"></canvas>
+      <canvas id="guideCanvas" class="guide-canvas"></canvas>
+      <canvas id="drawCanvas" class="draw-canvas"></canvas>
+    </div>
+
+    <!-- Floating Toolbar -->
+    <div class="float-toolbar" id="floatToolbar">
+      <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')" title="画笔 (B)">✏️</button>
+      <button class="tool-btn" id="btnEraser" onclick="setTool('eraser')" title="橡皮 (E)">🧹</button>
+      <div class="divider"></div>
+      <div class="slider-group">
+        <label>大小</label>
+        <input type="range" id="brushSize" min="1" max="80" value="4" oninput="updateBrushSize(this.value)">
+      </div>
+      <div class="slider-group">
+        <label>透明</label>
+        <input type="range" id="brushOpacity" min="5" max="100" value="100" oninput="updateBrushOpacity(this.value)">
+      </div>
+      <div class="divider"></div>
+      <div class="color-preview" id="colorPreview" style="background:#000" onclick="document.getElementById('colorPicker').click()" title="画笔颜色"></div>
+      <input type="color" id="colorPicker" value="#000000" onchange="setBrushColor(this.value)">
+      <div class="divider"></div>
+      <button class="tool-btn" onclick="importBrushTip()" title="导入笔尖PNG">🖌️</button>
+      <div class="divider"></div>
+      <button class="tool-btn" onclick="confirmReset()" title="重置画布">🗑️</button>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <div class="panel-tabs">
+      <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图</div>
+      <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
+      <div class="tab" data-tab="style" onclick="switchTab('style')">风格</div>
+      <div class="tab" data-tab="layer" onclick="switchTab('layer')">图层</div>
+      <div class="tab" data-tab="random" onclick="switchTab('random')">随机</div>
+      <div class="tab" data-tab="sketch" onclick="switchTab('sketch')">转草稿</div>
+      <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
+      <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
+      <div class="tab" data-tab="mood" onclick="switchTab('mood')">情绪板</div>
+      <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
+      <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
+    </div>
+
+    <div class="panel-content">
+      <!-- Compose Tab -->
+      <div class="tab-content" id="tab-compose">
+        <div class="panel-section">
+          <h3>构图参考线</h3>
+          <div class="guide-grid">
+            <button class="guide-btn" onclick="toggleGuide('thirds')">三分法</button>
+            <button class="guide-btn" onclick="toggleGuide('perspective')">透视网格</button>
+            <button class="guide-btn" onclick="toggleGuide('golden')">黄金螺旋</button>
+            <button class="guide-btn" onclick="toggleGuide('symmetry')">对称线</button>
+            <button class="guide-btn" onclick="toggleGuide('random')">随机参考点</button>
+            <button class="guide-btn" onclick="clearGuide()">清除参考线</button>
+          </div>
+          <div class="guide-hint" id="guideHint">选择一种构图参考线，辅助画面布局。</div>
+        </div>
+        <div class="panel-section">
+          <h3>构图分析</h3>
+          <button class="action-btn secondary" onclick="analyzeComposition()">分析画面平衡度</button>
+          <div class="analysis-result" id="analysisResult" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Color Tab -->
+      <div class="tab-content" id="tab-color" style="display:none">
+        <div class="panel-section">
+          <h3>情绪调色板</h3>
+          <div class="palette-grid" id="paletteGrid"></div>
+        </div>
+      </div>
+
+      <!-- Style Tab -->
+      <div class="tab-content" id="tab-style" style="display:none">
+        <div class="panel-section">
+          <h3>艺术风格参考</h3>
+          <div class="style-grid" id="styleGrid"></div>
+          <div class="style-opacity" id="styleOpacity" style="display:none">
+            <div class="slider-row">
+              <label>透明度</label>
+              <input type="range" id="styleAlpha" min="5" max="80" value="30" oninput="applyStyleRef()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer Tab -->
+      <div class="tab-content" id="tab-layer" style="display:none">
+        <div class="panel-section">
+          <h3>图层管理</h3>
+          <div id="layerList"></div>
+          <div class="layer-actions">
+            <button onclick="addLayer()">+ 新建</button>
+            <button onclick="moveLayerUp()">↑ 上移</button>
+            <button onclick="moveLayerDown()">↓ 下移</button>
+            <button onclick="deleteLayer()">删除</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Random Tab -->
+      <div class="tab-content" id="tab-random" style="display:none">
+        <div class="panel-section">
+          <h3>随机草稿生成</h3>
+          <div class="draft-options">
+            <div class="draft-type-grid">
+              <button class="draft-type-btn active" data-draft="sunflower" onclick="setDraftType('sunflower')">🌻 向日葵速写</button>
+              <button class="draft-type-btn" data-draft="figure" onclick="setDraftType('figure')">🧍 人物姿态</button>
+              <button class="draft-type-btn" data-draft="layout" onclick="setDraftType('layout')">📐 构图布局</button>
+              <button class="draft-type-btn" data-draft="doodle" onclick="setDraftType('doodle')">✏️ 速写涂鸦</button>
+            </div>
+            <div class="slider-row">
+              <label>线条密度</label>
+              <input type="range" id="lineDensity" min="1" max="3" value="2" step="1">
+              <span class="val" id="densityVal">中</span>
+            </div>
+            <div class="slider-row">
+              <label>混乱度</label>
+              <input type="range" id="chaosLevel" min="0" max="100" value="50">
+              <span class="val" id="chaosVal">50</span>
+            </div>
+            <button class="action-btn" onclick="generateRandomDraft()">🎲 生成随机草稿</button>
+            <p style="font-size:10px;color:var(--text-light);text-align:center">按 R 键快捷重新生成</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sketch Tab -->
+      <div class="tab-content" id="tab-sketch" style="display:none">
+        <div class="panel-section">
+          <h3>图像转草稿</h3>
+          <div class="upload-area" id="uploadArea" onclick="document.getElementById('imgUpload').click()">
+            <input type="file" id="imgUpload" accept="image/*" onchange="handleImageUpload(event)">
+            📷 点击上传图片
+          </div>
+          <input type="text" placeholder="或输入图片URL..." class="ai-key-input" id="imgUrl" style="margin-bottom:6px">
+          <button class="action-btn secondary" onclick="loadImageFromUrl()" style="margin-bottom:8px">加载URL图片</button>
+          <div class="slider-row">
+            <label>线条密度</label>
+            <input type="range" id="sketchDensity" min="1" max="5" value="3">
+            <span class="val" id="sketchDensityVal">3</span>
+          </div>
+          <div class="slider-row">
+            <label>线条粗细</label>
+            <input type="range" id="sketchThickness" min="1" max="5" value="2">
+            <span class="val" id="sketchThickVal">2</span>
+          </div>
+          <div class="slider-row">
+            <label>抖动程度</label>
+            <input type="range" id="sketchJitter" min="0" max="10" value="3">
+            <span class="val" id="sketchJitterVal">3</span>
+          </div>
+          <div class="slider-row">
+            <label>细节程度</label>
+            <input type="range" id="sketchDetail" min="1" max="5" value="3">
+            <span class="val" id="sketchDetailVal">3</span>
+          </div>
+          <div style="margin-top:6px;display:flex;gap:4px">
+            <button class="action-btn" style="flex:1" onclick="convertToSketch('sobel')">Sobel边缘</button>
+            <button class="action-btn" style="flex:1" onclick="convertToSketch('canny')">Canny边缘</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Tab -->
+      <div class="tab-content" id="tab-ai" style="display:none">
+        <div class="panel-section">
+          <h3>AI 草稿助手</h3>
+          <input type="password" class="ai-key-input" id="deepseekKey" placeholder="DeepSeek API Key">
+          <input type="text" class="ai-key-input" id="deepseekEndpoint" placeholder="API端点 (默认: https://api.deepseek.com)" value="https://api.deepseek.com">
+          <input type="text" class="ai-key-input" id="deepseekModel" placeholder="模型名 (默认: deepseek-chat)" value="deepseek-chat">
+          <div class="draft-type-grid" style="margin-bottom:8px">
+            <button class="draft-type-btn active" data-mode="composition" onclick="setAIMode('composition')">构图建议</button>
+            <button class="draft-type-btn" data-mode="prompt" onclick="setAIMode('prompt')">提示词</button>
+            <button class="draft-type-btn" data-mode="comprehensive" onclick="setAIMode('comprehensive')">综合指导</button>
+          </div>
+          <textarea class="ai-input" id="aiInput" placeholder="描述你想要的画面..."></textarea>
+          <button class="action-btn" id="aiGenBtn" onclick="generateAIDraft()">🤖 AI生成</button>
+          <div class="ai-status" id="aiStatus"></div>
+          <div class="ai-result" id="aiResult" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Batch Tab -->
+      <div class="tab-content" id="tab-batch" style="display:none">
+        <div class="panel-section">
+          <h3>批量生成</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">设置数量后一键生成多张随机草稿</p>
+          <div class="batch-options">
+            <button class="batch-btn" data-count="5" onclick="setBatchCount(5)">5张</button>
+            <button class="batch-btn active" data-count="10" onclick="setBatchCount(10)">10张</button>
+            <button class="batch-btn" data-count="20" onclick="setBatchCount(20)">20张</button>
+          </div>
+          <button class="action-btn" onclick="batchGenerate()">🎲 批量生成</button>
+        </div>
+        <div class="panel-section">
+          <h3>草稿库</h3>
+          <div class="gallery-grid" id="galleryGrid"></div>
+          <button class="action-btn secondary" style="margin-top:8px" onclick="batchExportPNG()">📦 批量导出PNG</button>
+        </div>
+      </div>
+
+      <!-- Mood Board Tab -->
+      <div class="tab-content" id="tab-mood" style="display:none">
+        <div class="panel-section">
+          <h3>情绪板 3×3</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">点击格子添加灵感图片</p>
+          <div class="mood-grid" id="moodGrid"></div>
+        </div>
+      </div>
+
+      <!-- Version Tab -->
+      <div class="tab-content" id="tab-version" style="display:none">
+        <div class="panel-section">
+          <h3>版本管理</h3>
+          <button class="action-btn" onclick="saveVersion()">💾 保存当前版本</button>
+          <div class="version-list" id="versionList" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- Export Tab -->
+      <div class="tab-content" id="tab-export" style="display:none">
+        <div class="panel-section">
+          <h3>导出</h3>
+          <div class="export-btns">
+            <button class="action-btn" onclick="exportPNG()">📥 导出 A4 300dpi PNG</button>
+            <button class="action-btn secondary" onclick="copyToClipboard()">📋 复制图片到剪贴板</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<!-- Modal Container -->
+<div id="modalContainer"></div>
+
+<script>
+// ============ STATE ============
+const PORTRAIT = {w:2480, h:3508};
+const LANDSCAPE = {w:3508, h:2480};
+let orientation = 'portrait';
+let canvasW = PORTRAIT.w, canvasH = PORTRAIT.h;
+let scale = 1;
+let currentTool = 'brush';
+let brushColor = '#000000';
+let brushSize = 4;
+let brushOpacity = 1;
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+let pressure = 0.5;
+let activeGuide = null;
+let draftType = 'sunflower';
+let aiMode = 'composition';
+let batchCount = 10;
+let customBrushImg = null;
+
+// Layer system
+let layers = [];
+let activeLayerIdx = 0;
+const MAX_LAYERS = 8;
+
+// Undo
+let undoStack = [];
+const MAX_UNDO = 30;
+
+// Canvases
+let bgCanvas, bgCtx, guideCanvas, guideCtx, drawCanvas, drawCtx;
+
+// ============ INIT ============
+window.addEventListener('DOMContentLoaded', () => {
+  bgCanvas = document.getElementById('bgCanvas');
+  guideCanvas = document.getElementById('guideCanvas');
+  drawCanvas = document.getElementById('drawCanvas');
+  bgCtx = bgCanvas.getContext('2d');
+  guideCtx = guideCanvas.getContext('2d');
+  drawCtx = drawCanvas.getContext('2d');
+  
+  initCanvas();
+  initLayers();
+  initPalettes();
+  initStyles();
+  initMoodBoard();
+  initSliders();
+  initDrawing();
+  initKeyboard();
+  initDragToolbar();
+  loadGallery();
+  loadVersions();
+  showToast('草稿生成器已就绪 ✨');
+});
+
+function initCanvas() {
+  const area = document.getElementById('canvasArea');
+  const maxW = area.clientWidth - 80;
+  const maxH = area.clientHeight - 40;
+  scale = Math.min(maxW / canvasW, maxH / canvasH, 0.5);
+  
+  const dispW = Math.round(canvasW * scale);
+  const dispH = Math.round(canvasH * scale);
+  
+  const wrapper = document.getElementById('canvasWrapper');
+  wrapper.style.width = dispW + 'px';
+  wrapper.style.height = dispH + 'px';
+  
+  [bgCanvas, guideCanvas, drawCanvas].forEach(c => {
+    c.width = canvasW;
+    c.height = canvasH;
+    c.style.width = dispW + 'px';
+    c.style.height = dispH + 'px';
+  });
+  
+  // White background
+  bgCtx.fillStyle = '#FFFFFF';
+  bgCtx.fillRect(0, 0, canvasW, canvasH);
+}
+
+// ============ ORIENTATION ============
+function setOrientation(o) {
+  if (orientation === o) return;
+  // Save current content
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvasW;
+  tempCanvas.height = canvasH;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.drawImage(bgCanvas, 0, 0);
+  
+  orientation = o;
+  if (o === 'portrait') { canvasW = PORTRAIT.w; canvasH = PORTRAIT.h; }
+  else { canvasW = LANDSCAPE.w; canvasH = LANDSCAPE.h; }
+  
+  document.getElementById('btnPortrait').classList.toggle('active', o==='portrait');
+  document.getElementById('btnLandscape').classList.toggle('active', o==='landscape');
+  
+  // Resize and restore
+  const oldW = tempCanvas.width, oldH = tempCanvas.height;
+  initCanvas();
+  
+  // Restore content - keep it, may need to center
+  const offX = Math.round((canvasW - oldW) / 2);
+  const offY = Math.round((canvasH - oldH) / 2);
+  bgCtx.fillStyle = '#FFFFFF';
+  bgCtx.fillRect(0, 0, canvasW, canvasH);
+  bgCtx.drawImage(tempCanvas, offX, offY);
+  
+  // Redraw all layers
+  redrawAllLayers();
+  if (activeGuide) drawGuide(activeGuide);
+  showToast(o === 'portrait' ? '切换为竖版' : '切换为横版');
+}
+
+// ============ TOOLS ============
+function setTool(tool) {
+  currentTool = tool;
+  document.getElementById('btnBrush').classList.toggle('active', tool==='brush');
+  document.getElementById('btnEraser').classList.toggle('active', tool==='eraser');
+  drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+function updateBrushSize(val) {
+  brushSize = parseInt(val);
+}
+
+function updateBrushOpacity(val) {
+  brushOpacity = parseInt(val) / 100;
+}
+
+function setBrushColor(color) {
+  brushColor = color;
+  document.getElementById('colorPreview').style.background = color;
+}
+
+function importBrushTip() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/png';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => { customBrushImg = img; showToast('笔尖已导入 ✓'); };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+// ============ DRAWING ============
+function initDrawing() {
+  drawCanvas.addEventListener('pointerdown', onPointerDown);
+  drawCanvas.addEventListener('pointermove', onPointerMove);
+  drawCanvas.addEventListener('pointerup', onPointerUp);
+  drawCanvas.addEventListener('pointerleave', onPointerUp);
+}
+
+function getCanvasPos(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) / scale,
+    y: (e.clientY - rect.top) / scale
+  };
+}
+
+function onPointerDown(e) {
+  isDrawing = true;
+  pressure = e.pressure || 0.5;
+  const pos = getCanvasPos(e);
+  lastX = pos.x;
+  lastY = pos.y;
+  saveUndoState();
+  drawDot(pos.x, pos.y);
+}
+
+function onPointerMove(e) {
+  if (!isDrawing) return;
+  pressure = e.pressure || 0.5;
+  const pos = getCanvasPos(e);
+  drawLine(lastX, lastY, pos.x, pos.y);
+  lastX = pos.x;
+  lastY = pos.y;
+}
+
+function onPointerUp(e) {
+  if (isDrawing) {
+    isDrawing = false;
+    // Commit layer
+    commitLayerToStack();
+  }
+}
+
+function drawDot(x, y) {
+  const ctx = getActiveLayerCtx();
+  if (!ctx) return;
+  ctx.save();
+  if (currentTool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  ctx.globalAlpha = brushOpacity * (0.3 + pressure * 0.7);
+  
+  const sz = brushSize * (0.5 + pressure * 0.5) * 2;
+  
+  if (customBrushImg && currentTool === 'brush') {
+    ctx.drawImage(customBrushImg, x - sz/2, y - sz/2, sz, sz);
+  } else {
+    ctx.fillStyle = brushColor;
+    ctx.beginPath();
+    ctx.arc(x, y, sz / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  compositeToMain();
+}
+
+function drawLine(x1, y1, x2, y2) {
+  const ctx = getActiveLayerCtx();
+  if (!ctx) return;
+  ctx.save();
+  if (currentTool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  ctx.globalAlpha = brushOpacity * (0.3 + pressure * 0.7);
+  
+  const sz = brushSize * (0.5 + pressure * 0.5);
+  
+  if (customBrushImg && currentTool === 'brush') {
+    // Stamp brush along path
+    const dist = Math.hypot(x2 - x1, y2 - y1);
+    const steps = Math.max(1, Math.floor(dist / (sz * 0.5)));
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const px = x1 + (x2 - x1) * t;
+      const py = y1 + (y2 - y1) * t;
+      ctx.drawImage(customBrushImg, px - sz, py - sz, sz * 2, sz * 2);
+    }
+  } else {
+    ctx.strokeStyle = brushColor;
+    ctx.lineWidth = sz * 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  ctx.restore();
+  compositeToMain();
+}
+
+function getActiveLayerCtx() {
+  if (layers.length === 0) return bgCtx;
+  const layer = layers[activeLayerIdx];
+  if (!layer || layer.locked) return null;
+  return layer.ctx;
+}
+
+function compositeToMain() {
+  bgCtx.clearRect(0, 0, canvasW, canvasH);
+  bgCtx.fillStyle = '#FFFFFF';
+  bgCtx.fillRect(0, 0, canvasW, canvasH);
+  layers.forEach(layer => {
+    if (layer.visible) {
+      bgCtx.globalAlpha = 1;
+      bgCtx.drawImage(layer.canvas, 0, 0);
+    }
+  });
+  bgCtx.globalAlpha = 1;
+}
+
+function redrawAllLayers() {
+  compositeToMain();
+}
+
+// ============ LAYER SYSTEM ============
+function initLayers() {
+  layers = [];
+  addLayer('背景层');
+  renderLayerList();
+}
+
+function addLayer(name) {
+  if (layers.length >= MAX_LAYERS) { showToast('最多8层'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  const ctx = canvas.getContext('2d');
+  const layer = { name: name || `图层 ${layers.length + 1}`, canvas, ctx, visible: true, locked: false };
+  layers.push(layer);
+  activeLayerIdx = layers.length - 1;
+  renderLayerList();
+}
+
+function deleteLayer() {
+  if (layers.length <= 1) { showToast('至少保留一层'); return; }
+  layers.splice(activeLayerIdx, 1);
+  activeLayerIdx = Math.min(activeLayerIdx, layers.length - 1);
+  renderLayerList();
+  compositeToMain();
+}
+
+function moveLayerUp() {
+  if (activeLayerIdx >= layers.length - 1) return;
+  [layers[activeLayerIdx], layers[activeLayerIdx + 1]] = [layers[activeLayerIdx + 1], layers[activeLayerIdx]];
+  activeLayerIdx++;
+  renderLayerList();
+  compositeToMain();
+}
+
+function moveLayerDown() {
+  if (activeLayerIdx <= 0) return;
+  [layers[activeLayerIdx], layers[activeLayerIdx - 1]] = [layers[activeLayerIdx - 1], layers[activeLayerIdx]];
+  activeLayerIdx--;
+  renderLayerList();
+  compositeToMain();
+}
+
+function toggleLayerVisibility(idx) {
+  layers[idx].visible = !layers[idx].visible;
+  renderLayerList();
+  compositeToMain();
+}
+
+function toggleLayerLock(idx) {
+  layers[idx].locked = !layers[idx].locked;
+  renderLayerList();
+}
+
+function renameLayer(idx) {
+  const name = prompt('图层名称:', layers[idx].name);
+  if (name) { layers[idx].name = name; renderLayerList(); }
+}
+
+function renderLayerList() {
+  const list = document.getElementById('layerList');
+  list.innerHTML = '';
+  for (let i = layers.length - 1; i >= 0; i--) {
+    const l = layers[i];
+    const div = document.createElement('div');
+    div.className = 'layer-item' + (i === activeLayerIdx ? ' active' : '');
+    div.innerHTML = `
+      <button onclick="toggleLayerVisibility(${i})" title="${l.visible?'隐藏':'显示'}">${l.visible?'👁️':'🚫'}</button>
+      <button onclick="toggleLayerLock(${i})" title="${l.locked?'解锁':'锁定'}">${l.locked?'🔒':'🔓'}</button>
+      <span class="layer-name" onclick="activeLayerIdx=${i};renderLayerList()" title="双击重命名">${l.name}</span>
+    `;
+    div.querySelector('.layer-name').addEventListener('dblclick', () => renameLayer(i));
+    list.appendChild(div);
+  }
+}
+
+// ============ UNDO ============
+function saveUndoState() {
+  const data = layers.map(l => {
+    const c = document.createElement('canvas');
+    c.width = canvasW; c.height = canvasH;
+    c.getContext('2d').drawImage(l.canvas, 0, 0);
+    return { name: l.name, visible: l.visible, locked: l.locked, data: c };
+  });
+  undoStack.push({ layers: data, activeIdx: activeLayerIdx });
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+}
+
+function undo() {
+  if (undoStack.length === 0) { showToast('没有可撤销的操作'); return; }
+  const state = undoStack.pop();
+  layers = state.layers.map(l => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasW; canvas.height = canvasH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(l.data, 0, 0);
+    return { name: l.name, canvas, ctx, visible: l.visible, locked: l.locked };
+  });
+  activeLayerIdx = state.activeIdx;
+  renderLayerList();
+  compositeToMain();
+  showToast('已撤销');
+}
+
+function commitLayerToStack() {}
+
+// ============ COMPOSITION GUIDES ============
+const guideHints = {
+  thirds: '三分法：将画面横竖各三等分，关键元素放在交叉点上，是最常用的构图法。',
+  perspective: '透视网格：一点/两点透视参考线，帮助建立空间深度感。',
+  golden: '黄金螺旋：按黄金比例1:1.618生成的螺旋线，主体放在螺旋焦点处最和谐。',
+  symmetry: '对称线：中轴和对称辅助线，适合对称构图、镜像构图。',
+  random: '随机参考点：随机分布的重点标记，打破常规构图思维。'
+};
+
+function toggleGuide(type) {
+  document.querySelectorAll('.guide-btn').forEach(b => b.classList.remove('active'));
+  if (activeGuide === type) {
+    activeGuide = null;
+    clearGuide();
+    return;
+  }
+  activeGuide = type;
+  document.querySelectorAll('.guide-btn').forEach(b => {
+    if (b.textContent.includes(type === 'thirds' ? '三分' : type === 'perspective' ? '透视' : type === 'golden' ? '黄金' : type === 'symmetry' ? '对称' : '随机'))
+      b.classList.add('active');
+  });
+  document.getElementById('guideHint').textContent = guideHints[type] || '';
+  drawGuide(type);
+}
+
+function drawGuide(type) {
+  guideCtx.clearRect(0, 0, canvasW, canvasH);
+  guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.6)';
+  guideCtx.lineWidth = 2;
+  guideCtx.setLineDash([10, 6]);
+  
+  if (type === 'thirds') {
+    for (let i = 1; i <= 2; i++) {
+      guideCtx.beginPath();
+      guideCtx.moveTo(canvasW * i / 3, 0);
+      guideCtx.lineTo(canvasW * i / 3, canvasH);
+      guideCtx.stroke();
+      guideCtx.beginPath();
+      guideCtx.moveTo(0, canvasH * i / 3);
+      guideCtx.lineTo(canvasW, canvasH * i / 3);
+      guideCtx.stroke();
+    }
+    // Draw intersection dots
+    guideCtx.setLineDash([]);
+    guideCtx.fillStyle = 'rgba(196, 168, 130, 0.8)';
+    for (let i = 1; i <= 2; i++) {
+      for (let j = 1; j <= 2; j++) {
+        guideCtx.beginPath();
+        guideCtx.arc(canvasW * i / 3, canvasH * j / 3, 8, 0, Math.PI * 2);
+        guideCtx.fill();
+      }
+    }
+  } else if (type === 'perspective') {
+    // Two-point perspective
+    const vpx1 = canvasW * 0.1;
+    const vpx2 = canvasW * 0.9;
+    const vpy = canvasH * 0.4;
+    guideCtx.setLineDash([8, 6]);
+    for (let i = 0; i < 15; i++) {
+      const y = canvasH * (0.1 + i * 0.06);
+      guideCtx.beginPath();
+      guideCtx.moveTo(vpx1, vpy);
+      guideCtx.lineTo(vpx2, vpy);
+      if (i < 8) {
+        guideCtx.moveTo(vpx1, vpy);
+        guideCtx.lineTo(canvasW * (0.2 + i * 0.1), y);
+      }
+      if (i < 8) {
+        guideCtx.moveTo(vpx2, vpy);
+        guideCtx.lineTo(canvasW * (0.8 - i * 0.1), y);
+      }
+      guideCtx.stroke();
+    }
+    // Vanishing points
+    guideCtx.setLineDash([]);
+    guideCtx.fillStyle = 'rgba(196, 168, 130, 0.8)';
+    [vpx1, vpx2].forEach(vx => {
+      guideCtx.beginPath();
+      guideCtx.arc(vx, vpy, 10, 0, Math.PI * 2);
+      guideCtx.fill();
+    });
+  } else if (type === 'golden') {
+    const phi = 1.618033988749895;
+    guideCtx.setLineDash([8, 6]);
+    // Draw golden rectangles/spiral
+    let x = 0, y = 0, w = canvasW, h = canvasH;
+    for (let i = 0; i < 8; i++) {
+      const r = w / phi;
+      guideCtx.strokeRect(x, y, w, h);
+      if (i % 4 === 0) { x += w - r; w = r; }
+      else if (i % 4 === 1) { y += h - h/phi; h = h/phi; }
+      else if (i % 4 === 2) { w = w/phi; }
+      else { h = h/phi; }
+    }
+    // Spiral approximation
+    guideCtx.beginPath();
+    guideCtx.setLineDash([]);
+    guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.9)';
+    guideCtx.lineWidth = 3;
+    let cx = canvasW * 0.618, cy = canvasH * 0.382;
+    for (let t = 0; t < Math.PI * 6; t += 0.05) {
+      const r2 = 20 * Math.exp(0.1 * t);
+      const px = cx + r2 * Math.cos(t);
+      const py = cy + r2 * Math.sin(t);
+      if (t === 0) guideCtx.moveTo(px, py);
+      else guideCtx.lineTo(px, py);
+    }
+    guideCtx.stroke();
+  } else if (type === 'symmetry') {
+    guideCtx.setLineDash([10, 6]);
+    // Center vertical
+    guideCtx.beginPath();
+    guideCtx.moveTo(canvasW / 2, 0);
+    guideCtx.lineTo(canvasW / 2, canvasH);
+    guideCtx.stroke();
+    // Center horizontal
+    guideCtx.beginPath();
+    guideCtx.moveTo(0, canvasH / 2);
+    guideCtx.lineTo(canvasW, canvasH / 2);
+    guideCtx.stroke();
+    // Diagonals
+    guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.3)';
+    guideCtx.beginPath();
+    guideCtx.moveTo(0, 0); guideCtx.lineTo(canvasW, canvasH);
+    guideCtx.moveTo(canvasW, 0); guideCtx.lineTo(0, canvasH);
+    guideCtx.stroke();
+  } else if (type === 'random') {
+    guideCtx.setLineDash([]);
+    const rng = mulberry32(Date.now());
+    guideCtx.fillStyle = 'rgba(196, 168, 130, 0.7)';
+    for (let i = 0; i < 12; i++) {
+      const x = canvasW * 0.1 + rng() * canvasW * 0.8;
+      const y = canvasH * 0.1 + rng() * canvasH * 0.8;
+      guideCtx.beginPath();
+      guideCtx.arc(x, y, 10, 0, Math.PI * 2);
+      guideCtx.fill();
+      guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.5)';
+      guideCtx.lineWidth = 1;
+      guideCtx.beginPath();
+      guideCtx.moveTo(x - 15, y); guideCtx.lineTo(x + 15, y);
+      guideCtx.moveTo(x, y - 15); guideCtx.lineTo(x, y + 15);
+      guideCtx.stroke();
+    }
+  }
+  guideCtx.setLineDash([]);
+}
+
+function clearGuide() {
+  guideCtx.clearRect(0, 0, canvasW, canvasH);
+  activeGuide = null;
+  document.querySelectorAll('.guide-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('guideHint').textContent = '选择一种构图参考线，辅助画面布局。';
+}
+
+function analyzeComposition() {
+  const imgData = bgCtx.getImageData(0, 0, canvasW, canvasH);
+  const d = imgData.data;
+  let totalLum = 0, leftLum = 0, rightLum = 0, topLum = 0, botLum = 0;
+  const total = canvasW * canvasH;
+  // Sample every 10th pixel for speed
+  for (let y = 0; y < canvasH; y += 10) {
+    for (let x = 0; x < canvasW; x += 10) {
+      const i = (y * canvasW + x) * 4;
+      const lum = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+      totalLum += lum;
+      if (x < canvasW / 2) leftLum += lum; else rightLum += lum;
+      if (y < canvasH / 2) topLum += lum; else botLum += lum;
+    }
+  }
+  const samples = Math.floor(canvasW/10) * Math.floor(canvasH/10);
+  const avgLum = totalLum / samples;
+  const hBalance = Math.abs(leftLum - rightLum) / (leftLum + rightLum + 1);
+  const vBalance = Math.abs(topLum - botLum) / (topLum + botLum + 1);
+  
+  let advice = `画面明度分析：\n`;
+  advice += `平均明度: ${avgLum.toFixed(0)}/255 (${avgLum > 170 ? '偏亮' : avgLum > 85 ? '适中' : '偏暗'})\n`;
+  advice += `左右平衡: ${(hBalance * 100).toFixed(1)}% ${hBalance < 0.15 ? '✓ 平衡良好' : '⚠ 偏重一侧'}\n`;
+  advice += `上下平衡: ${(vBalance * 100).toFixed(1)}% ${vBalance < 0.15 ? '✓ 平衡良好' : '⚠ 偏重一侧'}\n`;
+  
+  if (hBalance > 0.2) advice += `💡 建议：画面左右明度差异较大，考虑在较轻一侧增加元素或深色调。\n`;
+  if (vBalance > 0.2) advice += `💡 建议：画面上下明度差异较大，考虑调整前景/背景的明暗关系。\n`;
+  if (hBalance < 0.1 && vBalance < 0.1) advice += `✅ 画面整体平衡感不错！\n`;
+  
+  const el = document.getElementById('analysisResult');
+  el.style.display = 'block';
+  el.textContent = advice;
+}
+
+// ============ COLOR PALETTES ============
+const palettes = [
+  { name: '温暖', colors: ['#E8742C', '#F4A261', '#E9C46A', '#D4652F', '#C1440E', '#F2CC8F'] },
+  { name: '冷调', colors: ['#264653', '#2A9D8F', '#287271', '#1B4965', '#5FA8D3', '#BEE9E8'] },
+  { name: '自然', colors: ['#588157', '#A3B18A', '#3A5A40', '#DAD7CD', '#344E41', '#B7E4C7'] },
+  { name: '复古', colors: ['#9B2226', '#AE2012', '#BB3E03', '#CA6702', '#EE9B00', '#E9D8A6'] },
+  { name: '活力', colors: ['#FF0054', '#FF5400', '#FFBD00', '#00FF87', '#00B4D8', '#9B5DE5'] },
+  { name: '柔和', colors: ['#FFD6E0', '#CDB4DB', '#BDE0FE', '#A2D2FF', '#CAFFBF', '#FFEEDD'] },
+  { name: '对比', colors: ['#000000', '#FFFFFF', '#FF0000', '#0066FF', '#FFD700', '#333333'] },
+  { name: '中性', colors: ['#2B2D42', '#8D99AE', '#EDF2F4', '#4A4E69', '#9A8C98', '#C9ADA7'] },
+  { name: '梦幻', colors: ['#7B2D8E', '#B24BF3', '#D98CE8', '#F0C3F7', '#5C4B99', '#A78BFA'] }
+];
+
+function initPalettes() {
+  const grid = document.getElementById('paletteGrid');
+  palettes.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'palette-card';
+    card.innerHTML = `
+      <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
+      <div class="name">${p.name}</div>
+      <div class="palette-actions">
+        <button onclick="event.stopPropagation();applyPaletteToBg(${palettes.indexOf(p)})">设为背景</button>
+        <button onclick="event.stopPropagation();applyPaletteToRef(${palettes.indexOf(p)})">参考层</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function applyPaletteToBg(idx) {
+  const p = palettes[idx];
+  const ctx = getActiveLayerCtx();
+  if (!ctx) return;
+  const grad = ctx.createLinearGradient(0, 0, canvasW, canvasH);
+  p.colors.forEach((c, i) => grad.addColorStop(i / (p.colors.length - 1), c));
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+  ctx.globalAlpha = 1;
+  compositeToMain();
+  showToast(`已应用"${p.name}"调色板到背景`);
+}
+
+function applyPaletteToRef(idx) {
+  const p = palettes[idx];
+  // Apply to guide layer
+  const grad = guideCtx.createLinearGradient(0, 0, canvasW, canvasH);
+  p.colors.forEach((c, i) => grad.addColorStop(i / (p.colors.length - 1), c));
+  guideCtx.globalAlpha = 0.15;
+  guideCtx.fillStyle = grad;
+  guideCtx.fillRect(0, 0, canvasW, canvasH);
+  guideCtx.globalAlpha = 1;
+  showToast(`已应用"${p.name}"调色板到参考层`);
+}
+
+// ============ STYLE REFERENCES ============
+const artStyles = [
+  { name: '印象派', desc: '光影碎笔触' },
+  { name: '写实主义', desc: '精细还原' },
+  { name: '极简主义', desc: '少即是多' },
+  { name: '超现实主义', desc: '梦境逻辑' },
+  { name: '浮世绘', desc: '日式线条美' },
+  { name: '赛博朋克', desc: '霓虹未来感' },
+  { name: '水彩风', desc: '晕染透明' },
+  { name: '素描风', desc: '铅笔画感' }
+];
+
+let activeStyleIdx = -1;
+
+function initStyles() {
+  const grid = document.getElementById('styleGrid');
+  artStyles.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'style-card';
+    card.innerHTML = `<div style="font-weight:500">${s.name}</div><div style="font-size:10px;color:var(--text-light)">${s.desc}</div>`;
+    card.onclick = () => toggleStyle(i);
+    grid.appendChild(card);
+  });
+}
+
+function toggleStyle(idx) {
+  document.querySelectorAll('.style-card').forEach((c, i) => c.classList.toggle('active', i === idx));
+  const opacityCtrl = document.getElementById('styleOpacity');
+  if (activeStyleIdx === idx) {
+    activeStyleIdx = -1;
+    opacityCtrl.style.display = 'none';
+    guideCtx.clearRect(0, 0, canvasW, canvasH);
+  } else {
+    activeStyleIdx = idx;
+    opacityCtrl.style.display = 'block';
+    applyStyleRef();
+  }
+}
+
+function applyStyleRef() {
+  if (activeStyleIdx < 0) return;
+  const alpha = parseInt(document.getElementById('styleAlpha').value) / 100;
+  guideCtx.clearRect(0, 0, canvasW, canvasH);
+  
+  // Generate style-specific overlay pattern
+  const style = artStyles[activeStyleIdx];
+  guideCtx.save();
+  guideCtx.globalAlpha = alpha;
+  
+  switch (style.name) {
+    case '印象派':
+      drawImpressionistOverlay();
+      break;
+    case '极简主义':
+      drawMinimalistOverlay();
+      break;
+    case '水彩风':
+      drawWatercolorOverlay();
+      break;
+    case '素描风':
+      drawSketchOverlay();
+      break;
+    case '浮世绘':
+      drawUkiyoOverlay();
+      break;
+    case '赛博朋克':
+      drawCyberpunkOverlay();
+      break;
+    case '超现实主义':
+      drawSurrealOverlay();
+      break;
+    default:
+      drawGenericOverlay();
+  }
+  guideCtx.restore();
+}
+
+function drawImpressionistOverlay() {
+  const rng = mulberry32(42);
+  const colors = ['#FFB5E8','#FF9CEE','#B5B9FF','#97E5D7','#F6F6EB','#E7FFAC'];
+  for (let i = 0; i < 3000; i++) {
+    const x = rng() * canvasW;
+    const y = rng() * canvasH;
+    const w = 15 + rng() * 30;
+    const h = 8 + rng() * 15;
+    const angle = rng() * Math.PI;
+    guideCtx.save();
+    guideCtx.translate(x, y);
+    guideCtx.rotate(angle);
+    guideCtx.fillStyle = colors[Math.floor(rng() * colors.length)];
+    guideCtx.fillRect(-w/2, -h/2, w, h);
+    guideCtx.restore();
+  }
+}
+
+function drawMinimalistOverlay() {
+  guideCtx.strokeStyle = '#333';
+  guideCtx.lineWidth = 2;
+  guideCtx.strokeRect(canvasW * 0.2, canvasH * 0.3, canvasW * 0.6, canvasH * 0.4);
+  guideCtx.fillStyle = '#333';
+  guideCtx.fillRect(canvasW * 0.35, canvasH * 0.42, canvasW * 0.12, canvasH * 0.16);
+}
+
+function drawWatercolorOverlay() {
+  const rng = mulberry32(42);
+  const colors = ['rgba(100,149,237,0.3)','rgba(255,182,193,0.3)','rgba(152,251,152,0.3)','rgba(255,218,185,0.3)'];
+  for (let i = 0; i < 20; i++) {
+    const x = rng() * canvasW;
+    const y = rng() * canvasH;
+    const r = 100 + rng() * 400;
+    const grad = guideCtx.createRadialGradient(x, y, 0, x, y, r);
+    grad.addColorStop(0, colors[Math.floor(rng() * colors.length)]);
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    guideCtx.fillStyle = grad;
+    guideCtx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+}
+
+function drawSketchOverlay() {
+  const rng = mulberry32(42);
+  guideCtx.strokeStyle = 'rgba(80,80,80,0.3)';
+  guideCtx.lineWidth = 1;
+  for (let i = 0; i < 500; i++) {
+    const x1 = rng() * canvasW;
+    const y1 = rng() * canvasH;
+    const x2 = x1 + (rng() - 0.5) * 100;
+    const y2 = y1 + (rng() - 0.5) * 80;
+    guideCtx.beginPath();
+    guideCtx.moveTo(x1, y1);
+    guideCtx.lineTo(x2, y2);
+    guideCtx.stroke();
+  }
+}
+
+function drawUkiyoOverlay() {
+  guideCtx.strokeStyle = '#1a1a1a';
+  guideCtx.lineWidth = 3;
+  // Flowing curves
+  for (let i = 0; i < 8; i++) {
+    const y = canvasH * (0.1 + i * 0.1);
+    guideCtx.beginPath();
+    guideCtx.moveTo(0, y);
+    for (let x = 0; x < canvasW; x += 50) {
+      guideCtx.quadraticCurveTo(x + 25, y + Math.sin(x * 0.01 + i) * 80, x + 50, y);
+    }
+    guideCtx.stroke();
+  }
+}
+
+function drawCyberpunkOverlay() {
+  guideCtx.strokeStyle = '#0ff';
+  guideCtx.lineWidth = 1;
+  // Grid
+  for (let x = 0; x < canvasW; x += 80) {
+    guideCtx.beginPath(); guideCtx.moveTo(x, 0); guideCtx.lineTo(x, canvasH); guideCtx.stroke();
+  }
+  for (let y = 0; y < canvasH; y += 80) {
+    guideCtx.beginPath(); guideCtx.moveTo(0, y); guideCtx.lineTo(canvasW, y); guideCtx.stroke();
+  }
+  guideCtx.strokeStyle = '#f0f';
+  guideCtx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    const x = canvasW * (0.2 + i * 0.15);
+    guideCtx.beginPath();
+    guideCtx.moveTo(x, canvasH);
+    guideCtx.lineTo(x + 200, canvasH * 0.3);
+    guideCtx.stroke();
+  }
+}
+
+function drawSurrealOverlay() {
+  const rng = mulberry32(42);
+  guideCtx.strokeStyle = 'rgba(100,0,150,0.3)';
+  guideCtx.lineWidth = 2;
+  for (let i = 0; i < 10; i++) {
+    const cx = rng() * canvasW;
+    const cy = rng() * canvasH;
+    const r = 50 + rng() * 200;
+    guideCtx.beginPath();
+    for (let a = 0; a < Math.PI * 2; a += 0.1) {
+      const rr = r * (1 + 0.3 * Math.sin(a * 3));
+      const px = cx + rr * Math.cos(a);
+      const py = cy + rr * Math.sin(a);
+      if (a === 0) guideCtx.moveTo(px, py);
+      else guideCtx.lineTo(px, py);
+    }
+    guideCtx.closePath();
+    guideCtx.stroke();
+  }
+}
+
+function drawGenericOverlay() {
+  guideCtx.fillStyle = 'rgba(200,180,150,0.1)';
+  guideCtx.fillRect(0, 0, canvasW, canvasH);
+}
+
+// ============ RANDOM DRAFT GENERATOR ============
+function setDraftType(type) {
+  draftType = type;
+  document.querySelectorAll('[data-draft]').forEach(b => b.classList.toggle('active', b.dataset.draft === type));
+}
+
+// Perlin noise (simplified)
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// Simple 2D noise
+function createNoise(seed) {
+  const rng = mulberry32(seed);
+  const perm = Array.from({length: 512}, () => Math.floor(rng() * 256));
+  function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+  function lerp(a, b, t) { return a + t * (b - a); }
+  function grad(hash, x, y) {
+    const h = hash & 3;
+    const u = h < 2 ? x : y;
+    const v = h < 2 ? y : x;
+    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+  }
+  return function noise(x, y) {
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    x -= Math.floor(x);
+    y -= Math.floor(y);
+    const u = fade(x);
+    const v = fade(y);
+    const A = perm[X] + Y;
+    const B = perm[X + 1] + Y;
+    return lerp(
+      lerp(grad(perm[A], x, y), grad(perm[B], x - 1, y), u),
+      lerp(grad(perm[A + 1], x, y - 1), grad(perm[B + 1], x - 1, y - 1), u),
+      v
+    );
+  };
+}
+
+function generateRandomDraft() {
+  const ctx = getActiveLayerCtx();
+  if (!ctx) { showToast('当前图层已锁定'); return; }
+  
+  const density = parseInt(document.getElementById('lineDensity').value);
+  const chaos = parseInt(document.getElementById('chaosLevel').value) / 100;
+  const seed = Date.now();
+  const rng = mulberry32(seed);
+  const noise = createNoise(seed);
+  
+  ctx.save();
+  ctx.strokeStyle = brushColor;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  
+  const densityMult = [0.6, 1, 1.8][density - 1];
+  
+  switch (draftType) {
+    case 'sunflower': drawSunflower(ctx, rng, noise, densityMult, chaos); break;
+    case 'figure': drawFigure(ctx, rng, noise, densityMult, chaos); break;
+    case 'layout': drawLayout(ctx, rng, noise, densityMult, chaos); break;
+    case 'doodle': drawDoodle(ctx, rng, noise, densityMult, chaos); break;
+  }
+  
+  ctx.restore();
+  compositeToMain();
+  showToast('随机草稿已生成 🎲');
+}
+
+function sketchyLine(ctx, x1, y1, x2, y2, passes, jitter) {
+  for (let p = 0; p < passes; p++) {
+    ctx.beginPath();
+    ctx.moveTo(x1 + (Math.random()-0.5)*jitter*3, y1 + (Math.random()-0.5)*jitter*3);
+    const steps = 8;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const x = x1 + (x2-x1)*t + (Math.random()-0.5)*jitter*6;
+      const y = y1 + (y2-y1)*t + (Math.random()-0.5)*jitter*6;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawSunflower(ctx, rng, noise, density, chaos) {
+  const cx = canvasW * (0.4 + rng() * 0.2);
+  const cy = canvasH * (0.3 + rng() * 0.1);
+  const headR = canvasW * (0.1 + rng() * 0.08);
+  
+  // Multiple passes for messy look
+  const passes = Math.ceil(2 + density);
+  ctx.lineWidth = 2 + chaos * 3;
+  ctx.globalAlpha = 0.4 + chaos * 0.3;
+  
+  // Stem - messy lines
+  for (let p = 0; p < passes; p++) {
+    ctx.beginPath();
+    ctx.moveTo(cx + (rng()-0.5)*20, cy + headR);
+    const stemBot = canvasH * (0.7 + rng() * 0.15);
+    const steps = 20;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const noiseVal = noise(t * 3, p * 0.5) * chaos * 80;
+      ctx.lineTo(cx + noiseVal + (rng()-0.5)*15, cy + headR + (stemBot - cy - headR)*t);
+    }
+    ctx.stroke();
+  }
+  
+  // Petals - messy overlapping
+  const petalCount = Math.floor((12 + density * 8) * (1 + chaos));
+  for (let i = 0; i < petalCount; i++) {
+    const angle = (i / petalCount) * Math.PI * 2 + (rng()-0.5) * chaos * 0.5;
+    const pLen = headR * (1.2 + rng() * 0.8 + chaos * 0.5);
+    const pWid = headR * (0.2 + rng() * 0.15);
+    
+    ctx.beginPath();
+    const sx = cx + Math.cos(angle) * headR * 0.5;
+    const sy = cy + Math.sin(angle) * headR * 0.5;
+    ctx.moveTo(sx, sy);
+    
+    const tipX = cx + Math.cos(angle) * pLen;
+    const tipY = cy + Math.sin(angle) * pLen;
+    
+    const cp1x = sx + Math.cos(angle + 0.5) * pLen * 0.6 + (rng()-0.5)*chaos*30;
+    const cp1y = sy + Math.sin(angle + 0.5) * pLen * 0.6 + (rng()-0.5)*chaos*30;
+    const cp2x = sx + Math.cos(angle - 0.5) * pLen * 0.6 + (rng()-0.5)*chaos*30;
+    const cp2y = sy + Math.sin(angle - 0.5) * pLen * 0.6 + (rng()-0.5)*chaos*30;
+    
+    ctx.quadraticCurveTo(cp1x, cp1y, tipX, tipY);
+    ctx.quadraticCurveTo(cp2x, cp2y, sx, sy);
+    ctx.stroke();
+  }
+  
+  // Center spiral (seeds)
+  const seedCount = Math.floor(30 * density);
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < seedCount; i++) {
+    const a = i * goldenAngle;
+    const r = Math.sqrt(i) * headR * 0.04;
+    const x = cx + r * Math.cos(a) + (rng()-0.5)*chaos*8;
+    const y = cy + r * Math.sin(a) + (rng()-0.5)*chaos*8;
+    ctx.beginPath();
+    ctx.arc(x, y, 2 + rng()*3, 0, Math.PI*2);
+    ctx.stroke();
+  }
+  
+  // Leaves on stem
+  for (let i = 0; i < Math.floor(3 + rng()*3*density); i++) {
+    const t = 0.3 + rng() * 0.5;
+    const lx = cx + noise(t, 100) * chaos * 60;
+    const ly = cy + headR + (canvasH * 0.75 - cy - headR) * t;
+    const leafLen = headR * (0.5 + rng() * 0.5);
+    const dir = rng() > 0.5 ? 1 : -1;
+    const leafAngle = dir * (0.3 + rng() * 0.5);
+    
+    ctx.beginPath();
+    ctx.moveTo(lx, ly);
+    const tipLx = lx + Math.cos(leafAngle + Math.PI/2 * dir) * leafLen;
+    const tipLy = ly + Math.sin(leafAngle) * leafLen * 0.3;
+    ctx.quadraticCurveTo(lx + dir * leafLen * 0.5, ly - leafLen * 0.2, tipLx, tipLy);
+    ctx.quadraticCurveTo(lx + dir * leafLen * 0.3, ly + leafLen * 0.1, lx, ly);
+    ctx.stroke();
+  }
+  
+  // Background noise lines
+  ctx.globalAlpha = 0.15;
+  ctx.lineWidth = 1;
+  for (let i = 0; i < Math.floor(50 * density * (1 + chaos)); i++) {
+    const x = rng() * canvasW;
+    const y = rng() * canvasH;
+    const len = 30 + rng() * 80;
+    const angle = noise(x * 0.002, y * 0.002) * Math.PI * 2 * chaos;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+    ctx.stroke();
+  }
+}
+
+function drawFigure(ctx, rng, noise, density, chaos) {
+  ctx.lineWidth = 2 + chaos * 4;
+  ctx.globalAlpha = 0.5 + chaos * 0.2;
+  const passes = Math.ceil(2 + density);
+  
+  // Head
+  const hx = canvasW * (0.4 + rng() * 0.2);
+  const hy = canvasH * (0.15 + rng() * 0.05);
+  const headR = canvasW * (0.03 + rng() * 0.02);
+  
+  for (let p = 0; p < passes; p++) {
+    ctx.beginPath();
+    for (let a = 0; a <= Math.PI * 2; a += 0.2) {
+      const r = headR * (1 + noise(a * 2, p) * chaos * 0.3 + (rng()-0.5)*chaos*0.1);
+      const x = hx + r * Math.cos(a) + (rng()-0.5)*chaos*8;
+      const y = hy + r * Math.sin(a) + (rng()-0.5)*chaos*8;
+      if (a === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+  
+  // Body key points
+  const neck = {x: hx, y: hy + headR};
+  const shoulderW = canvasW * (0.06 + rng() * 0.03);
+  const shoulderL = {x: hx - shoulderW, y: hy + headR * 2};
+  const shoulderR = {x: hx + shoulderW, y: hy + headR * 2};
+  const torsoLen = canvasH * (0.15 + rng() * 0.05);
+  const hip = {x: hx + (rng()-0.5)*20, y: shoulderL.y + torsoLen};
+  const hipW = shoulderW * (0.6 + rng() * 0.2);
+  const hipL = {x: hip.x - hipW, y: hip.y};
+  const hipR = {x: hip.x + hipW, y: hip.y};
+  
+  // Limb length
+  const upperArmL = shoulderW * 1.5;
+  const lowerArmL = shoulderW * 1.3;
+  const upperLegL = torsoLen * 0.8;
+  const lowerLegL = torsoLen * 0.7;
+  
+  // Random pose angles
+  const pose = {
+    lArm: -0.3 + rng() * 1.5 + chaos * (rng()-0.5),
+    lForearm: -0.5 + rng() * 1.2 + chaos * (rng()-0.5),
+    rArm: -0.3 + rng() * 1.5 + chaos * (rng()-0.5),
+    rForearm: -0.5 + rng() * 1.2 + chaos * (rng()-0.5),
+    lLeg: -0.2 + rng() * 0.6 + chaos * (rng()-0.5) * 0.5,
+    lShin: 0 + rng() * 0.4 + chaos * (rng()-0.5) * 0.3,
+    rLeg: -0.2 + rng() * 0.6 + chaos * (rng()-0.5) * 0.5,
+    rShin: 0 + rng() * 0.4 + chaos * (rng()-0.5) * 0.3
+  };
+  
+  // Calculate joint positions
+  function limbEnd(start, len, angle) {
+    return {x: start.x + Math.sin(angle) * len, y: start.y + Math.cos(angle) * len};
+  }
+  
+  const elbowL = limbEnd(shoulderL, upperArmL, pose.lArm);
+  const handL = limbEnd(elbowL, lowerArmL, pose.lArm + pose.lForearm);
+  const elbowR = limbEnd(shoulderR, upperArmL, pose.rArm);
+  const handR = limbEnd(elbowR, lowerArmL, pose.rArm + pose.rForearm);
+  const kneeL = limbEnd(hipL, upperLegL, pose.lLeg);
+  const footL = limbEnd(kneeL, lowerLegL, pose.lLeg + pose.lShin);
+  const kneeR = limbEnd(hipR, upperLegL, pose.rLeg);
+  const footR = limbEnd(kneeR, lowerLegL, pose.rLeg + pose.rShin);
+  
+  // Draw body lines with multiple passes
+  const joints = [
+    [neck, shoulderL], [neck, shoulderR],
+    [shoulderL, hipL], [shoulderR, hipR],
+    [shoulderL, elbowL], [elbowL, handL],
+    [shoulderR, elbowR], [elbowR, handR],
+    [hipL, kneeL], [kneeL, footL],
+    [hipR, kneeR], [kneeR, footR]
+  ];
+  
+  joints.forEach(([from, to]) => {
+    for (let p = 0; p < passes; p++) {
+      sketchyLine(ctx, from.x, from.y, to.x, to.y, 1, chaos * 15);
+    }
+  });
+  
+  // Joint circles
+  ctx.globalAlpha = 0.3;
+  const jointPts = [shoulderL, shoulderR, elbowL, elbowR, handL, handR, hipL, hipR, kneeL, kneeR, footL, footR];
+  jointPts.forEach(pt => {
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 4 + chaos * 6, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+}
+
+function drawLayout(ctx, rng, noise, density, chaos) {
+  const layouts = ['thirds', 'golden', 'diagonal', 'frame', 'S-curve', 'radial', 'L-shape', 'center'];
+  const layout = layouts[Math.floor(rng() * layouts.length)];
+  
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.4 + chaos * 0.3;
+  ctx.strokeStyle = brushColor;
+  ctx.setLineDash([12, 6]);
+  
+  switch (layout) {
+    case 'thirds':
+      for (let i = 1; i <= 2; i++) {
+        ctx.beginPath(); ctx.moveTo(canvasW*i/3, 0); ctx.lineTo(canvasW*i/3, canvasH); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, canvasH*i/3); ctx.lineTo(canvasW, canvasH*i/3); ctx.stroke();
+      }
+      // Indicate focal points
+      for (let i = 1; i <= 2; i++) {
+        for (let j = 1; j <= 2; j++) {
+          const x = canvasW*i/3, y = canvasH*j/3;
+          ctx.setLineDash([]);
+          ctx.beginPath(); ctx.arc(x, y, 20+chaos*30, 0, Math.PI*2); ctx.stroke();
+          ctx.setLineDash([12, 6]);
+        }
+      }
+      break;
+    case 'golden':
+      const phi = 1.618;
+      ctx.strokeRect(canvasW*0.1, canvasH*0.1, canvasW*0.8, canvasH*0.8);
+      ctx.strokeRect(canvasW*0.1, canvasH*0.1, canvasW*0.8/phi, canvasH*0.8);
+      break;
+    case 'diagonal':
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(canvasW, canvasH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(canvasW, 0); ctx.lineTo(0, canvasH); ctx.stroke();
+      break;
+    case 'frame':
+      const m = canvasW * 0.12;
+      ctx.strokeRect(m, m, canvasW-2*m, canvasH-2*m);
+      ctx.strokeRect(m*2, m*2, canvasW-4*m, canvasH-4*m);
+      break;
+    case 'S-curve':
+      ctx.beginPath();
+      ctx.moveTo(canvasW*0.3, 0);
+      ctx.bezierCurveTo(canvasW*0.1, canvasH*0.3, canvasW*0.9, canvasH*0.6, canvasW*0.7, canvasH);
+      ctx.stroke();
+      break;
+    case 'radial':
+      const rcx = canvasW*(0.4+rng()*0.2), rcy = canvasH*(0.4+rng()*0.2);
+      for (let a = 0; a < Math.PI*2; a += Math.PI/6) {
+        ctx.beginPath(); ctx.moveTo(rcx, rcy);
+        ctx.lineTo(rcx + Math.cos(a)*canvasW*0.5, rcy + Math.sin(a)*canvasH*0.5);
+        ctx.stroke();
+      }
+      break;
+    case 'L-shape':
+      ctx.beginPath();
+      ctx.moveTo(canvasW*0.15, canvasH*0.15);
+      ctx.lineTo(canvasW*0.15, canvasH*0.85);
+      ctx.lineTo(canvasW*0.6, canvasH*0.85);
+      ctx.stroke();
+      break;
+    case 'center':
+      ctx.beginPath();
+      ctx.arc(canvasW/2, canvasH/2, Math.min(canvasW, canvasH)*0.25, 0, Math.PI*2);
+      ctx.stroke();
+      break;
+  }
+  ctx.setLineDash([]);
+  
+  // Add some random elements
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < 20 * density; i++) {
+    const x = rng() * canvasW;
+    const y = rng() * canvasH;
+    const size = 20 + rng() * 60;
+    if (rng() > 0.5) {
+      ctx.strokeRect(x, y, size, size * (0.5 + rng()));
+    } else {
+      ctx.beginPath();
+      ctx.arc(x, y, size/2, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawDoodle(ctx, rng, noise, density, chaos) {
+  const subjects = ['猫', '房子', '树', '山', '花', '鱼', '杯子', '星星', '月亮', '云'];
+  const subject = subjects[Math.floor(rng() * subjects.length)];
+  
+  ctx.lineWidth = 2 + chaos * 3;
+  ctx.globalAlpha = 0.5 + chaos * 0.3;
+  
+  const cx = canvasW * (0.3 + rng() * 0.4);
+  const cy = canvasH * (0.3 + rng() * 0.2);
+  const scale2 = canvasW * (0.1 + rng() * 0.05);
+  const passes = Math.ceil(2 + density);
+  
+  // Generic sketchy shapes based on subject
+  for (let p = 0; p < passes; p++) {
+    switch (subject) {
+      case '猫':
+        drawCat(ctx, cx, cy, scale2, rng, noise, chaos, p);
+        break;
+      case '房子':
+        drawHouse(ctx, cx, cy, scale2, rng, noise, chaos, p);
+        break;
+      case '树':
+        drawTree(ctx, cx, cy, scale2, rng, noise, chaos, p);
+        break;
+      default:
+        // Abstract shapes
+        drawAbstract(ctx, cx, cy, scale2, rng, noise, chaos, p);
+    }
+  }
+  
+  // Background texture
+  ctx.globalAlpha = 0.1;
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 100 * density; i++) {
+    const x = rng() * canvasW;
+    const y = rng() * canvasH;
+    const len = 10 + rng() * 40;
+    const angle = noise(x * 0.003, y * 0.003) * Math.PI * 2 * (1 + chaos);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(angle)*len, y + Math.sin(angle)*len);
+    ctx.stroke();
+  }
+}
+
+function drawCat(ctx, cx, cy, s, rng, noise, chaos, pass) {
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + s*0.3, s*0.5, s*0.35, 0, 0, Math.PI*2);
+  ctx.stroke();
+  // Head
+  ctx.beginPath();
+  ctx.arc(cx - s*0.3, cy, s*0.25, 0, Math.PI*2);
+  ctx.stroke();
+  // Ears
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.45, cy - s*0.15);
+  ctx.lineTo(cx - s*0.55, cy - s*0.45 + (rng()-0.5)*chaos*20);
+  ctx.lineTo(cx - s*0.35, cy - s*0.2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.15, cy - s*0.2);
+  ctx.lineTo(cx - s*0.1, cy - s*0.5 + (rng()-0.5)*chaos*20);
+  ctx.lineTo(cx - s*0.05, cy - s*0.15);
+  ctx.stroke();
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(cx + s*0.5, cy + s*0.2);
+  ctx.bezierCurveTo(cx + s*0.8, cy, cx + s*0.7, cy - s*0.3 + (rng()-0.5)*chaos*30, cx + s*0.9, cy - s*0.2);
+  ctx.stroke();
+}
+
+function drawHouse(ctx, cx, cy, s, rng, noise, chaos, pass) {
+  // Walls
+  sketchyLine(ctx, cx - s, cy, cx + s, cy, 1, chaos*10);
+  sketchyLine(ctx, cx - s, cy, cx - s, cy + s, 1, chaos*10);
+  sketchyLine(ctx, cx + s, cy, cx + s, cy + s, 1, chaos*10);
+  // Roof
+  sketchyLine(ctx, cx - s*1.2, cy, cx, cy - s*0.7, 1, chaos*10);
+  sketchyLine(ctx, cx + s*1.2, cy, cx, cy - s*0.7, 1, chaos*10);
+  // Door
+  ctx.strokeRect(cx - s*0.2, cy + s*0.3, s*0.4, s*0.7);
+  // Window
+  ctx.strokeRect(cx + s*0.3, cy + s*0.2, s*0.35, s*0.3);
+}
+
+function drawTree(ctx, cx, cy, s, rng, noise, chaos, pass) {
+  // Trunk
+  sketchyLine(ctx, cx, cy, cx + (rng()-0.5)*chaos*20, cy + s*1.5, 1, chaos*10);
+  // Crown - messy circles
+  for (let i = 0; i < 5 + rng()*5; i++) {
+    const ox = (rng()-0.5) * s * 0.8;
+    const oy = (rng()-0.5) * s * 0.5;
+    const r = s * (0.3 + rng() * 0.3);
+    ctx.beginPath();
+    ctx.arc(cx + ox, cy - s*0.3 + oy, r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+}
+
+function drawAbstract(ctx, cx, cy, s, rng, noise, chaos, pass) {
+  for (let i = 0; i < 8; i++) {
+    const x1 = cx + (rng()-0.5)*s*2;
+    const y1 = cy + (rng()-0.5)*s*2;
+    const x2 = x1 + (rng()-0.5)*s*1.5;
+    const y2 = y1 + (rng()-0.5)*s*1.5;
+    sketchyLine(ctx, x1, y1, x2, y2, 1, chaos*15);
+  }
+  // Some circles
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.arc(cx + (rng()-0.5)*s, cy + (rng()-0.5)*s, s*(0.1+rng()*0.3), 0, Math.PI*2);
+    ctx.stroke();
+  }
+}
+
+// ============ IMAGE TO SKETCH ============
+let uploadedImage = null;
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => { uploadedImage = img; showToast('图片已加载 ✓'); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadImageFromUrl() {
+  const url = document.getElementById('imgUrl').value;
+  if (!url) { showToast('请输入URL'); return; }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => { uploadedImage = img; showToast('图片已加载 ✓'); };
+  img.onerror = () => showToast('图片加载失败');
+  img.src = url;
+}
+
+function convertToSketch(method) {
+  if (!uploadedImage) { showToast('请先上传图片'); return; }
+  const ctx = getActiveLayerCtx();
+  if (!ctx) { showToast('图层已锁定'); return; }
+  
+  // Draw image to temp canvas at canvas size
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvasW;
+  tempCanvas.height = canvasH;
+  const tempCtx = tempCanvas.getContext('2d');
+  
+  // Fit image
+  const imgRatio = uploadedImage.width / uploadedImage.height;
+  const canvasRatio = canvasW / canvasH;
+  let dw, dh;
+  if (imgRatio > canvasRatio) { dw = canvasW; dh = canvasW / imgRatio; }
+  else { dh = canvasH; dw = canvasH * imgRatio; }
+  const dx = (canvasW - dw) / 2;
+  const dy = (canvasH - dh) / 2;
+  tempCtx.drawImage(uploadedImage, dx, dy, dw, dh);
+  
+  // Get pixel data
+  const imgData = tempCtx.getImageData(0, 0, canvasW, canvasH);
+  
+  const density = parseInt(document.getElementById('sketchDensity').value);
+  const thickness = parseInt(document.getElementById('sketchThickness').value);
+  const jitter = parseInt(document.getElementById('sketchJitter').value);
+  const detail = parseInt(document.getElementById('sketchDetail').value);
+  
+  let edges;
+  if (method === 'sobel') {
+    edges = sobelEdgeDetect(imgData);
+  } else {
+    edges = cannyEdgeDetect(imgData, detail);
+  }
+  
+  // Convert edges to sketchy lines
+  ctx.save();
+  ctx.strokeStyle = brushColor;
+  ctx.lineWidth = thickness;
+  ctx.globalAlpha = brushOpacity;
+  
+  const step = Math.max(1, 6 - density);
+  for (let y = 0; y < canvasH; y += step) {
+    for (let x = 0; x < canvasW; x += step) {
+      if (edges[y * canvasW + x] > 128) {
+        const jx = x + (Math.random() - 0.5) * jitter * 2;
+        const jy = y + (Math.random() - 0.5) * jitter * 2;
+        const len = thickness * (1 + Math.random() * 2);
+        const angle = Math.atan2(
+          y > 0 && y < canvasH-1 ? (edges[(y+1)*canvasW+x] - edges[(y-1)*canvasW+x]) : 0,
+          x > 0 && x < canvasW-1 ? (edges[y*canvasW+x+1] - edges[y*canvasW+x-1]) : 0
+        ) + Math.PI/2;
+        
+        ctx.beginPath();
+        ctx.moveTo(jx - Math.cos(angle)*len, jy - Math.sin(angle)*len);
+        ctx.lineTo(jx + Math.cos(angle)*len, jy + Math.sin(angle)*len);
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
+  compositeToMain();
+  showToast(`${method === 'sobel' ? 'Sobel' : 'Canny'}边缘检测完成 ✓`);
+}
+
+function sobelEdgeDetect(imgData) {
+  const w = imgData.width, h = imgData.height;
+  const d = imgData.data;
+  const gray = new Float32Array(w * h);
+  
+  // Grayscale
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = d[i*4] * 0.299 + d[i*4+1] * 0.587 + d[i*4+2] * 0.114;
+  }
+  
+  const edges = new Float32Array(w * h);
+  
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const gx = -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)]
+                 -2*gray[y*w+(x-1)] + 2*gray[y*w+(x+1)]
+                 -gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
+      const gy = -gray[(y-1)*w+(x-1)] - 2*gray[(y-1)*w+x] - gray[(y-1)*w+(x+1)]
+                 +gray[(y+1)*w+(x-1)] + 2*gray[(y+1)*w+x] + gray[(y+1)*w+(x+1)];
+      edges[y * w + x] = Math.sqrt(gx * gx + gy * gy);
+    }
+  }
+  
+  // Normalize
+  let maxVal = 0;
+  for (let i = 0; i < edges.length; i++) maxVal = Math.max(maxVal, edges[i]);
+  if (maxVal > 0) for (let i = 0; i < edges.length; i++) edges[i] = (edges[i] / maxVal) * 255;
+  
+  return edges;
+}
+
+function cannyEdgeDetect(imgData, detail) {
+  const w = imgData.width, h = imgData.height;
+  const d = imgData.data;
+  const gray = new Float32Array(w * h);
+  
+  for (let i = 0; i < w * h; i++) {
+    gray[i] = d[i*4] * 0.299 + d[i*4+1] * 0.587 + d[i*4+2] * 0.114;
+  }
+  
+  // Gaussian blur
+  const blurred = new Float32Array(w * h);
+  const kernel = [1, 2, 1, 2, 4, 2, 1, 2, 1];
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      let sum = 0;
+      for (let ky = -1; ky <= 1; ky++) {
+        for (let kx = -1; kx <= 1; kx++) {
+          sum += gray[(y+ky)*w+(x+kx)] * kernel[(ky+1)*3+(kx+1)];
+        }
+      }
+      blurred[y*w+x] = sum / 16;
+    }
+  }
+  
+  // Sobel
+  const edges = new Float32Array(w * h);
+  const directions = new Float32Array(w * h);
+  
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const gx = -blurred[(y-1)*w+(x-1)] + blurred[(y-1)*w+(x+1)]
+                 -2*blurred[y*w+(x-1)] + 2*blurred[y*w+(x+1)]
+                 -blurred[(y+1)*w+(x-1)] + blurred[(y+1)*w+(x+1)];
+      const gy = -blurred[(y-1)*w+(x-1)] - 2*blurred[(y-1)*w+x] - blurred[(y-1)*w+(x+1)]
+                 +blurred[(y+1)*w+(x-1)] + 2*blurred[(y+1)*w+x] + blurred[(y+1)*w+(x+1)];
+      edges[y*w+x] = Math.sqrt(gx*gx + gy*gy);
+      directions[y*w+x] = Math.atan2(gy, gx);
+    }
+  }
+  
+  // Non-maximum suppression
+  const suppressed = new Float32Array(w * h);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const angle = directions[y*w+x];
+      const mag = edges[y*w+x];
+      let n1 = 0, n2 = 0;
+      
+      const a = angle < 0 ? angle + Math.PI : angle;
+      if (a < Math.PI/8 || a > Math.PI*7/8) {
+        n1 = edges[y*w+x+1]; n2 = edges[y*w+x-1];
+      } else if (a < Math.PI*3/8) {
+        n1 = edges[(y-1)*w+x+1]; n2 = edges[(y+1)*w+x-1];
+      } else if (a < Math.PI*5/8) {
+        n1 = edges[(y-1)*w+x]; n2 = edges[(y+1)*w+x];
+      } else {
+        n1 = edges[(y-1)*w+x-1]; n2 = edges[(y+1)*w+x+1];
+      }
+      
+      suppressed[y*w+x] = (mag >= n1 && mag >= n2) ? mag : 0;
+    }
+  }
+  
+  // Hysteresis thresholding
+  const highThreshold = 200 / detail;
+  const lowThreshold = highThreshold * 0.4;
+  const result = new Float32Array(w * h);
+  
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      if (suppressed[y*w+x] >= highThreshold) {
+        result[y*w+x] = 255;
+      } else if (suppressed[y*w+x] >= lowThreshold) {
+        // Check neighbors
+        let hasStrong = false;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (suppressed[(y+dy)*w+(x+dx)] >= highThreshold) hasStrong = true;
+          }
+        }
+        result[y*w+x] = hasStrong ? 255 : 0;
+      }
+    }
+  }
+  
+  return result;
+}
+
+// ============ AI DRAFT ============
+function setAIMode(mode) {
+  aiMode = mode;
+  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+}
+
+async function generateAIDraft() {
+  const key = document.getElementById('deepseekKey').value;
+  if (!key) { showToast('请输入API Key'); return; }
+  
+  const input = document.getElementById('aiInput').value;
+  if (!input) { showToast('请描述你想要的画面'); return; }
+  
+  const btn = document.getElementById('aiGenBtn');
+  const status = document.getElementById('aiStatus');
+  const result = document.getElementById('aiResult');
+  
+  btn.disabled = true;
+  status.textContent = '🤖 AI正在思考...';
+  
+  try {
+    const resp = await fetch('/api/deepseek', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: key,
+        api_endpoint: document.getElementById('deepseekEndpoint').value || 'https://api.deepseek.com',
+        model: document.getElementById('deepseekModel').value || 'deepseek-chat',
+        mode: aiMode,
+        user_input: input,
+        canvas_info: `画布尺寸: ${canvasW}×${canvasH} (${orientation === 'portrait' ? '竖版' : '横版'})`
+      })
+    });
+    
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(err);
+    }
+    
+    const data = await resp.json();
+    const content = data.choices?.[0]?.message?.content || '无返回内容';
+    
+    result.style.display = 'block';
+    result.textContent = content;
+    status.textContent = '✅ 生成完成';
+  } catch (e) {
+    status.textContent = '❌ 生成失败: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ============ BATCH GENERATE ============
+function setBatchCount(n) {
+  batchCount = n;
+  document.querySelectorAll('[data-count]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.count) === n));
+}
+
+async function batchGenerate() {
+  showToast(`正在生成${batchCount}张草稿...`);
+  
+  for (let i = 0; i < batchCount; i++) {
+    // Create a temp canvas for each draft
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasW;
+    tempCanvas.height = canvasH;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.fillStyle = '#FFFFFF';
+    tempCtx.fillRect(0, 0, canvasW, canvasH);
+    
+    // Generate random draft on temp canvas
+    const seed = Date.now() + i * 1000;
+    const rng = mulberry32(seed);
+    const noise = createNoise(seed);
+    const density = 1 + Math.floor(rng() * 3);
+    const chaos = rng();
+    
+    tempCtx.strokeStyle = '#333';
+    tempCtx.lineCap = 'round';
+    tempCtx.lineJoin = 'round';
+    
+    const types = ['sunflower', 'figure', 'layout', 'doodle'];
+    const type = types[Math.floor(rng() * types.length)];
+    
+    switch(type) {
+      case 'sunflower': drawSunflower(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
+      case 'figure': drawFigure(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
+      case 'layout': drawLayout(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
+      case 'doodle': drawDoodle(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
+    }
+    
+    // Save to IndexedDB
+    const dataUrl = tempCanvas.toDataURL('image/png');
+    await saveDraftToDB({
+      id: `draft_${Date.now()}_${i}`,
+      data: dataUrl,
+      type: type,
+      timestamp: new Date().toISOString(),
+      params: { density, chaos: chaos.toFixed(2) }
+    });
+  }
+  
+  loadGallery();
+  showToast(`已生成${batchCount}张草稿 ✓`);
+}
+
+// IndexedDB
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('DraftGenDB', 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('drafts')) {
+        db.createObjectStore('drafts', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('versions')) {
+        db.createObjectStore('versions', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveDraftToDB(draft) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readwrite');
+    tx.objectStore('drafts').put(draft);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getAllDrafts() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readonly');
+    const req = tx.objectStore('drafts').getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadGallery() {
+  const drafts = await getAllDrafts();
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = '';
+  drafts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  drafts.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = `<img src="${d.data}" alt="${d.type}"><div class="gallery-time">${new Date(d.timestamp).toLocaleTimeString()}</div>`;
+    item.onclick = () => loadDraftToCanvas(d);
+    grid.appendChild(item);
+  });
+}
+
+function loadDraftToCanvas(draft) {
+  const img = new Image();
+  img.onload = () => {
+    const ctx = getActiveLayerCtx();
+    if (!ctx) { showToast('图层已锁定'); return; }
+    ctx.drawImage(img, 0, 0);
+    compositeToMain();
+    showToast('草稿已加载到画布');
+  };
+  img.src = draft.data;
+}
+
+async function batchExportPNG() {
+  const drafts = await getAllDrafts();
+  if (drafts.length === 0) { showToast('草稿库为空'); return; }
+  
+  for (const d of drafts) {
+    const link = document.createElement('a');
+    link.href = d.data;
+    link.download = `draftgen_${d.id}.png`;
+    link.click();
+    await new Promise(r => setTimeout(r, 200));
+  }
+  showToast(`已导出${drafts.length}张PNG`);
+}
+
+// ============ MOOD BOARD ============
+function initMoodBoard() {
+  const grid = document.getElementById('moodGrid');
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'mood-cell';
+    cell.innerHTML = '+';
+    cell.onclick = () => addMoodImage(i, cell);
+    grid.appendChild(cell);
+  }
+}
+
+function addMoodImage(idx, cell) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      cell.innerHTML = `<img src="${ev.target.result}">`;
+      // Save to localStorage
+      const moodData = JSON.parse(localStorage.getItem('moodBoard') || '{}');
+      moodData[idx] = ev.target.result;
+      localStorage.setItem('moodBoard', JSON.stringify(moodData));
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+// ============ VERSION MANAGEMENT ============
+async function saveVersion() {
+  const allLayers = layers.map(l => {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasW; tempCanvas.height = canvasH;
+    tempCanvas.getContext('2d').drawImage(l.canvas, 0, 0);
+    return { name: l.name, data: tempCanvas.toDataURL('image/png'), visible: l.visible, locked: l.locked };
+  });
+  
+  const db = await openDB();
+  const versions = await new Promise((resolve, reject) => {
+    const tx = db.transaction('versions', 'readonly');
+    const req = tx.objectStore('versions').getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  
+  if (versions.length >= 20) {
+    // Remove oldest
+    versions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('versions', 'readwrite');
+      tx.objectStore('versions').delete(versions[0].id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  
+  const version = {
+    id: `v_${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    layers: allLayers
+  };
+  
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction('versions', 'readwrite');
+    tx.objectStore('versions').put(version);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  
+  loadVersions();
+  showToast('版本已保存 ✓');
+}
+
+async function loadVersions() {
+  const db = await openDB();
+  const versions = await new Promise((resolve, reject) => {
+    const tx = db.transaction('versions', 'readonly');
+    const req = tx.objectStore('versions').getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  
+  versions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const list = document.getElementById('versionList');
+  list.innerHTML = '';
+  versions.forEach(v => {
+    const item = document.createElement('div');
+    item.className = 'version-item';
+    const time = new Date(v.timestamp).toLocaleString();
+    item.innerHTML = `<span>${time} (${v.layers.length}层)</span><button onclick="restoreVersion('${v.id}')">恢复</button>`;
+    list.appendChild(item);
+  });
+}
+
+async function restoreVersion(id) {
+  const db = await openDB();
+  const version = await new Promise((resolve, reject) => {
+    const tx = db.transaction('versions', 'readonly');
+    const req = tx.objectStore('versions').get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  
+  if (!version) return;
+  
+  layers = [];
+  for (const lData of version.layers) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasW; canvas.height = canvasH;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    await new Promise(resolve => {
+      img.onload = resolve;
+      img.src = lData.data;
+    });
+    ctx.drawImage(img, 0, 0);
+    layers.push({ name: lData.name, canvas, ctx, visible: lData.visible, locked: lData.locked });
+  }
+  
+  activeLayerIdx = layers.length - 1;
+  renderLayerList();
+  compositeToMain();
+  showToast('版本已恢复 ✓');
+}
+
+// ============ EXPORT ============
+function exportPNG() {
+  // Merge all layers
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = canvasW;
+  exportCanvas.height = canvasH;
+  const exportCtx = exportCanvas.getContext('2d');
+  
+  exportCtx.fillStyle = '#FFFFFF';
+  exportCtx.fillRect(0, 0, canvasW, canvasH);
+  layers.forEach(l => {
+    if (l.visible) exportCtx.drawImage(l.canvas, 0, 0);
+  });
+  
+  const link = document.createElement('a');
+  link.href = exportCanvas.toDataURL('image/png');
+  link.download = `draftgen_${orientation}_${Date.now()}.png`;
+  link.click();
+  showToast('PNG已导出 ✓');
+}
+
+async function copyToClipboard() {
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = canvasW;
+  exportCanvas.height = canvasH;
+  const exportCtx = exportCanvas.getContext('2d');
+  
+  exportCtx.fillStyle = '#FFFFFF';
+  exportCtx.fillRect(0, 0, canvasW, canvasH);
+  layers.forEach(l => {
+    if (l.visible) exportCtx.drawImage(l.canvas, 0, 0);
+  });
+  
+  try {
+    const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    showToast('已复制到剪贴板 ✓');
+  } catch (e) {
+    showToast('复制失败，请尝试导出PNG');
+  }
+}
+
+// ============ RESET ============
+function confirmReset() {
+  const container = document.getElementById('modalContainer');
+  container.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h3>确认重置画布？</h3>
+        <p style="font-size:13px;color:var(--text-light)">此操作将清除所有图层内容，不可恢复。</p>
+        <div class="modal-actions">
+          <button onclick="closeModal()">取消</button>
+          <button class="primary" onclick="resetCanvas();closeModal()">确认重置</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeModal() {
+  document.getElementById('modalContainer').innerHTML = '';
+}
+
+function resetCanvas() {
+  layers.forEach(l => {
+    l.ctx.clearRect(0, 0, canvasW, canvasH);
+  });
+  compositeToMain();
+  clearGuide();
+  showToast('画布已重置');
+}
+
+// ============ TAB SWITCHING ============
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+  const el = document.getElementById('tab-' + tabName);
+  if (el) el.style.display = 'block';
+}
+
+// ============ SLIDERS ============
+function initSliders() {
+  document.getElementById('lineDensity').addEventListener('input', function() {
+    document.getElementById('densityVal').textContent = ['低','中','高'][this.value-1];
+  });
+  document.getElementById('chaosLevel').addEventListener('input', function() {
+    document.getElementById('chaosVal').textContent = this.value;
+  });
+  document.getElementById('sketchDensity').addEventListener('input', function() {
+    document.getElementById('sketchDensityVal').textContent = this.value;
+  });
+  document.getElementById('sketchThickness').addEventListener('input', function() {
+    document.getElementById('sketchThickVal').textContent = this.value;
+  });
+  document.getElementById('sketchJitter').addEventListener('input', function() {
+    document.getElementById('sketchJitterVal').textContent = this.value;
+  });
+  document.getElementById('sketchDetail').addEventListener('input', function() {
+    document.getElementById('sketchDetailVal').textContent = this.value;
+  });
+}
+
+// ============ KEYBOARD SHORTCUTS ============
+function initKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    // Don't trigger shortcuts when typing in inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    
+    if (e.key === 'b' || e.key === 'B') { setTool('brush'); }
+    else if (e.key === 'e' || e.key === 'E') { setTool('eraser'); }
+    else if (e.key === 'r' || e.key === 'R') { generateRandomDraft(); }
+    else if (e.key === '[') {
+      brushSize = Math.max(1, brushSize - 2);
+      document.getElementById('brushSize').value = brushSize;
+    }
+    else if (e.key === ']') {
+      brushSize = Math.min(80, brushSize + 2);
+      document.getElementById('brushSize').value = brushSize;
+    }
+    else if (e.ctrlKey && e.key === 'z') {
+      e.preventDefault();
+      undo();
+    }
+  });
+}
+
+// ============ DRAGGABLE TOOLBAR ============
+function initDragToolbar() {
+  const toolbar = document.getElementById('floatToolbar');
+  let isDragging = false;
+  let startX, startY, origX, origY;
+  
+  toolbar.addEventListener('pointerdown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = toolbar.getBoundingClientRect();
+    origX = rect.left;
+    origY = rect.top;
+    toolbar.style.position = 'absolute';
+    toolbar.style.transform = 'none';
+    toolbar.style.left = origX + 'px';
+    toolbar.style.top = origY + 'px';
+    e.preventDefault();
+  });
+  
+  document.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    toolbar.style.left = (origX + dx) + 'px';
+    toolbar.style.top = (origY + dy) + 'px';
+  });
+  
+  document.addEventListener('pointerup', () => { isDragging = false; });
+}
+
+// ============ TOAST ============
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ============ WINDOW RESIZE ============
+window.addEventListener('resize', () => {
+  // Recalculate scale and resize display
+  const area = document.getElementById('canvasArea');
+  const maxW = area.clientWidth - 80;
+  const maxH = area.clientHeight - 40;
+  const newScale = Math.min(maxW / canvasW, maxH / canvasH, 0.5);
+  
+  if (Math.abs(newScale - scale) > 0.01) {
+    scale = newScale;
+    const dispW = Math.round(canvasW * scale);
+    const dispH = Math.round(canvasH * scale);
+    const wrapper = document.getElementById('canvasWrapper');
+    wrapper.style.width = dispW + 'px';
+    wrapper.style.height = dispH + 'px';
+    [bgCanvas, guideCanvas, drawCanvas].forEach(c => {
+      c.style.width = dispW + 'px';
+      c.style.height = dispH + 'px';
+    });
+  }
+});
+</script>
+</body>
+</html>
