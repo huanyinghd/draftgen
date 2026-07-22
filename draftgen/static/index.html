@@ -259,6 +259,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="float-toolbar" id="floatToolbar">
       <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')" title="画笔 (B)">✏️</button>
       <button class="tool-btn" id="btnEraser" onclick="setTool('eraser')" title="橡皮 (E)">🧹</button>
+      <button class="tool-btn" id="btnEyedropper" onclick="setTool('eyedropper')" title="吸管取色 (I)">💧</button>
       <div class="divider"></div>
       <div class="slider-group">
         <label>大小</label>
@@ -401,28 +402,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <!-- Trainer Tab -->
       <div class="tab-content" id="tab-trainer" style="display:none">
         <div class="panel-section">
-          <h3>训练器（随机生成 + 轮廓临摹）</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">生成一张随机草稿，并自动描出它的所有轮廓形状，作为临摹训练参考。</p>
-          <div class="trainer-types" id="trainerTypes">
-            <button class="draft-type-btn active" data-tt="sunflower" onclick="setTrainerType('sunflower')">🌻 向日葵</button>
-            <button class="draft-type-btn" data-tt="figure" onclick="setTrainerType('figure')">🧍 人物</button>
-            <button class="draft-type-btn" data-tt="layout" onclick="setTrainerType('layout')">📐 构图</button>
-            <button class="draft-type-btn" data-tt="doodle" onclick="setTrainerType('doodle')">✏️ 涂鸦</button>
-            <button class="draft-type-btn" data-tt="random" onclick="setTrainerType('random')">🎲 随机</button>
+          <h3>训练器（上传图片 → 生成草图）</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">上传一张本地图片，后台会识别并生成与之对应的草稿（铅笔素描）。可放入画布临摹，或保存到本地。</p>
+          <div class="upload-area" id="trainerUploadArea" onclick="document.getElementById('trainerImgUpload').click()">
+            <input type="file" id="trainerImgUpload" accept="image/*" onchange="handleTrainerUpload(event)">
+            📷 点击上传本地图片
           </div>
-          <div class="trainer-row">
-            <label>线条密度</label>
-            <input type="range" id="trainerDensity" min="1" max="3" value="2" step="1">
-            <span class="val" id="trainerDensityVal">中</span>
+          <div id="trainerPreview" style="margin:8px 0;display:none">
+            <img id="trainerPreviewImg" style="max-width:100%;max-height:160px;border-radius:6px;border:1px solid var(--border)">
           </div>
-          <div class="trainer-row">
-            <label>混乱度</label>
-            <input type="range" id="trainerChaos" min="0" max="100" value="50">
-            <span class="val" id="trainerChaosVal">50</span>
-          </div>
-          <button class="action-btn" onclick="generateTrainer()">🎯 生成训练图（底图+轮廓）</button>
-          <button class="action-btn secondary" style="margin-top:6px" onclick="toggleTrainerRef()">👁️ 显示 / 隐藏 轮廓参考</button>
-          <div class="trainer-hint">训练图会新建三层：<b>训练底图</b>（参考原图）、<b>轮廓参考</b>（自动描出的所有轮廓草稿）、<b>练习层</b>（空白，用来临摹）。隐藏轮廓参考后可自由练习，再对照检查。</div>
+          <button class="action-btn" onclick="generateTrainerSketch()">🎯 生成草图（后台识别）</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="placeTrainerSketch()">📥 放入画布</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="saveTrainerSketch()">💾 保存到本地</button>
+          <div class="trainer-hint" id="trainerHint">① 上传图片 → ② 点「生成草图」让后台返回与原图对应的素描 → ③ 「放入画布」可临摹，或「保存到本地」下载 PNG。</div>
         </div>
       </div>
 
@@ -647,7 +639,12 @@ function setTool(tool) {
   currentTool = tool;
   document.getElementById('btnBrush').classList.toggle('active', tool==='brush');
   document.getElementById('btnEraser').classList.toggle('active', tool==='eraser');
-  drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+  document.getElementById('btnEyedropper').classList.toggle('active', tool==='eyedropper');
+  if (tool === 'eyedropper') {
+    drawCanvas.style.cursor = 'copy';
+  } else {
+    drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+  }
   if (tool === 'brush' && selectedPaletteIdx >= 0) showPaletteStrip();
 }
 
@@ -662,6 +659,48 @@ function updateBrushOpacity(val) {
 function setBrushColor(color) {
   brushColor = color;
   document.getElementById('colorPreview').style.background = color;
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+// 调色板模式：把整组颜色按一行印在画布上（选中调色板后点/拖画布触发）
+function stampPaletteColors(pos) {
+  const p = palettes[selectedPaletteIdx];
+  if (!p) return;
+  const ctx = getActiveLayerCtx();
+  if (!ctx) return;
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  const r = Math.max(2, brushSize);
+  const gap = r * 2.4;
+  const n = p.colors.length;
+  const startX = pos.x - (n - 1) * gap / 2;
+  p.colors.forEach((c, i) => {
+    ctx.globalAlpha = brushOpacity;
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.arc(startX + i * gap, pos.y, r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+  compositeToMain();
+}
+
+// 吸管：取画布上某点的颜色作为画笔色（并退出调色板模式）
+function pickColor(pos) {
+  const ctx = drawCanvas.getContext('2d');
+  const px = Math.max(0, Math.min(canvasW - 1, Math.round(pos.x)));
+  const py = Math.max(0, Math.min(canvasH - 1, Math.round(pos.y)));
+  const d = ctx.getImageData(px, py, 1, 1).data;
+  if (d[3] === 0) { showToast('此处透明，未取到颜色'); return; }
+  const hex = rgbToHex(d[0], d[1], d[2]);
+  setBrushColor(hex);
+  document.getElementById('colorPicker').value = hex;
+  if (selectedPaletteIdx >= 0) clearPaletteSelection();
+  showToast('已取色 ' + hex);
+  setTool('brush');
 }
 
 function importBrushTip() {
@@ -704,7 +743,18 @@ function onPointerDown(e) {
   const pos = getCanvasPos(e);
   lastX = pos.x;
   lastY = pos.y;
+  // 吸管：取画布颜色
+  if (currentTool === 'eyedropper') {
+    pickColor(pos);
+    isDrawing = false;
+    return;
+  }
   saveUndoState();
+  // 调色板模式：点击/拖动一次性把整组颜色印在画布上
+  if (currentTool === 'brush' && selectedPaletteIdx >= 0) {
+    stampPaletteColors(pos);
+    return;
+  }
   drawDot(pos.x, pos.y);
 }
 
@@ -712,6 +762,13 @@ function onPointerMove(e) {
   if (!isDrawing) return;
   pressure = e.pressure || 0.5;
   const pos = getCanvasPos(e);
+  // 调色板模式：沿途继续印出整组颜色
+  if (currentTool === 'brush' && selectedPaletteIdx >= 0) {
+    stampPaletteColors(pos);
+    lastX = pos.x;
+    lastY = pos.y;
+    return;
+  }
   drawLine(lastX, lastY, pos.x, pos.y);
   lastX = pos.x;
   lastY = pos.y;
@@ -1180,7 +1237,7 @@ function renderPaletteStrip() {
     s.className = 'ps-swatch' + (c.toLowerCase() === brushColor.toLowerCase() ? ' active' : '');
     s.style.background = c;
     s.title = c;
-    s.onclick = () => { setBrushColor(c); document.getElementById('colorPicker').value = c; renderPaletteStrip(); };
+    s.onclick = () => { setBrushColor(c); document.getElementById('colorPicker').value = c; clearPaletteSelection(); };
     sw.appendChild(s);
   });
 }
@@ -1893,95 +1950,86 @@ function drawAbstract(ctx, cx, cy, s, rng, noise, chaos, pass) {
   }
 }
 
-// ============ TRAINER (随机生成 + 轮廓临摹) ============
-let trainerType = 'sunflower';
+// ============ TRAINER (上传图片 → 后台转草图) ============
+let trainerImageFile = null;      // 原始上传文件（发给后台）
+let trainerImage = null;          // 预览用 Image
+let trainerSketchImg = null;      // 后台返回的草图 Image
 
-function setTrainerType(type) {
-  trainerType = type;
-  document.querySelectorAll('[data-tt]').forEach(b => b.classList.toggle('active', b.dataset.tt === type));
+// 上传本地图片
+function handleTrainerUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  trainerImageFile = file;
+  trainerSketchImg = null;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      trainerImage = img;
+      const prev = document.getElementById('trainerPreview');
+      const prevImg = document.getElementById('trainerPreviewImg');
+      prevImg.src = e.target.result;
+      prev.style.display = 'block';
+      showToast('图片已上传 ✓ 点「生成草图」');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
-function trainerRandomType() {
-  const types = ['sunflower', 'figure', 'layout', 'doodle'];
-  return types[Math.floor(Math.random() * types.length)];
-}
-
-// 生成训练图：随机底图 + 自动描出的轮廓参考 + 空白练习层
-async function generateTrainer() {
-  const baseType = trainerType === 'random' ? trainerRandomType() : trainerType;
-  const density = parseInt(document.getElementById('trainerDensity').value);
-  const chaos = parseInt(document.getElementById('trainerChaos').value) / 100;
-
-  // 1) 训练底图
-  addLayer('训练底图');
-  const baseIdx = activeLayerIdx;
-  const baseCtx = layers[baseIdx].ctx;
-  const seed = Date.now();
-  const rng = mulberry32(seed);
-  const noise = createNoise(seed);
-  const densityMult = [0.6, 1, 1.8][density - 1];
-  baseCtx.save();
-  baseCtx.strokeStyle = '#555';
-  baseCtx.lineCap = 'round';
-  baseCtx.lineJoin = 'round';
-  switch (baseType) {
-    case 'sunflower': drawSunflower(baseCtx, rng, noise, densityMult, chaos); break;
-    case 'figure': drawFigure(baseCtx, rng, noise, densityMult, chaos); break;
-    case 'layout': drawLayout(baseCtx, rng, noise, densityMult, chaos); break;
-    case 'doodle': drawDoodle(baseCtx, rng, noise, densityMult, chaos); break;
-  }
-  baseCtx.restore();
-  compositeToMain();
-
-  // 2) 轮廓参考：对底图做边缘检测，描出所有轮廓形状
-  await new Promise(r => setTimeout(r, 30));
-  addLayer('轮廓参考');
-  const contIdx = activeLayerIdx;
-  const contCtx = layers[contIdx].ctx;
-  const tmp = document.createElement('canvas');
-  tmp.width = canvasW; tmp.height = canvasH;
-  const tmpCtx = tmp.getContext('2d');
-  tmpCtx.drawImage(layers[baseIdx].canvas, 0, 0);
-  const imgData = tmpCtx.getImageData(0, 0, canvasW, canvasH);
-  const edges = sobelEdgeDetect(imgData);
-  contCtx.save();
-  contCtx.strokeStyle = brushColor;
-  contCtx.lineWidth = 2;
-  contCtx.globalAlpha = Math.max(0.5, brushOpacity);
-  const step = 5;
-  for (let y = 0; y < canvasH; y += step) {
-    for (let x = 0; x < canvasW; x += step) {
-      if (edges[y * canvasW + x] > 140) {
-        const jx = x + (Math.random() - 0.5) * 3;
-        const jy = y + (Math.random() - 0.5) * 3;
-        const len = 3 + Math.random() * 3;
-        const angle = Math.atan2(
-          y > 0 ? (edges[(y+1)*canvasW+x] - edges[(y-1)*canvasW+x]) : 0,
-          x > 0 ? (edges[y*canvasW+x+1] - edges[y*canvasW+x-1]) : 0
-        ) + Math.PI/2;
-        contCtx.beginPath();
-        contCtx.moveTo(jx - Math.cos(angle)*len, jy - Math.sin(angle)*len);
-        contCtx.lineTo(jx + Math.cos(angle)*len, jy + Math.sin(angle)*len);
-        contCtx.stroke();
-      }
+// 调用后台 /api/sketch，把图片转成对应的草稿
+async function generateTrainerSketch() {
+  if (!trainerImageFile) { showToast('请先上传图片'); return; }
+  showToast('后台识别中...');
+  const fd = new FormData();
+  fd.append('file', trainerImageFile);
+  try {
+    const resp = await fetch('/api/sketch', { method: 'POST', body: fd });
+    if (!resp.ok) {
+      const t = await resp.text();
+      showToast('生成失败: ' + (t || resp.status));
+      return;
     }
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    trainerSketchImg = new Image();
+    trainerSketchImg.onload = () => {
+      showToast('草图已生成 ✓ 可「放入画布」或「保存到本地」');
+      URL.revokeObjectURL(url);
+    };
+    trainerSketchImg.onerror = () => { showToast('草图解析失败'); URL.revokeObjectURL(url); };
+    trainerSketchImg.src = url;
+  } catch (err) {
+    showToast('生成失败: ' + err.message);
   }
-  contCtx.restore();
+}
 
-  // 3) 空白练习层
-  addLayer('练习层');
-
-  // 锁定底图，避免误涂
-  layers[baseIdx].locked = true;
+// 把草图放进画布（新建一层，等比适配居中）
+function placeTrainerSketch() {
+  if (!trainerSketchImg) { showToast('请先生成草图'); return; }
+  addLayer('训练草图');
+  const ctx = layers[activeLayerIdx].ctx;
+  const fit = Math.min(canvasW / trainerSketchImg.width, canvasH / trainerSketchImg.height);
+  const w = trainerSketchImg.width * fit;
+  const h = trainerSketchImg.height * fit;
+  ctx.drawImage(trainerSketchImg, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
   compositeToMain();
   renderLayerList();
-  showToast('训练图已生成：底图(锁定) + 轮廓参考 + 练习层');
+  showToast('草图已放入画布 ✓');
 }
 
-function toggleTrainerRef() {
-  const idx = layers.findIndex(l => l.name === '轮廓参考');
-  if (idx < 0) { showToast('还没有轮廓参考层'); return; }
-  toggleLayerVisibility(idx);
+// 把草图保存到本地（下载 PNG）
+function saveTrainerSketch() {
+  if (!trainerSketchImg) { showToast('请先生成草图'); return; }
+  const tmp = document.createElement('canvas');
+  tmp.width = trainerSketchImg.width;
+  tmp.height = trainerSketchImg.height;
+  tmp.getContext('2d').drawImage(trainerSketchImg, 0, 0);
+  const a = document.createElement('a');
+  a.download = 'sketch_' + Date.now() + '.png';
+  a.href = tmp.toDataURL('image/png');
+  a.click();
+  showToast('草图已保存到本地 ✓');
 }
 
 // ============ IMAGE TO SKETCH ============
@@ -2575,14 +2623,6 @@ function initSliders() {
   document.getElementById('sketchDetail').addEventListener('input', function() {
     document.getElementById('sketchDetailVal').textContent = this.value;
   });
-  const td = document.getElementById('trainerDensity');
-  if (td) td.addEventListener('input', function() {
-    document.getElementById('trainerDensityVal').textContent = ['低','中','高'][this.value-1];
-  });
-  const tc = document.getElementById('trainerChaos');
-  if (tc) tc.addEventListener('input', function() {
-    document.getElementById('trainerChaosVal').textContent = this.value;
-  });
 }
 
 // ============ KEYBOARD SHORTCUTS ============
@@ -2593,6 +2633,7 @@ function initKeyboard() {
     
     if (e.key === 'b' || e.key === 'B') { setTool('brush'); }
     else if (e.key === 'e' || e.key === 'E') { setTool('eraser'); }
+    else if (e.key === 'i' || e.key === 'I') { setTool('eyedropper'); }
     else if (e.key === 'r' || e.key === 'R') { generateRandomDraft(); }
     else if (e.key === '[') {
       brushSize = Math.max(1, brushSize - 2);

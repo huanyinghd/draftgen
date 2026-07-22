@@ -1,11 +1,13 @@
 """DraftGen Backend Server - FastAPI with DeepSeek API proxy"""
+import io
 import os
 import httpx
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel
 from typing import Optional
+from PIL import Image, ImageOps, ImageFilter, ImageChops
 
 app = FastAPI(title="DraftGen Server")
 
@@ -74,6 +76,27 @@ async def deepseek_proxy(req: DeepSeekRequest):
         raise HTTPException(status_code=502, detail="Cannot connect to DeepSeek API")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/sketch")
+async def image_to_sketch(file: UploadFile = File(...)):
+    """上传一张本地图片，后台识别并生成与之对应的铅笔草图（PNG）"""
+    data = await file.read()
+    if len(data) > 12 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="图片过大（请小于 12MB）")
+    try:
+        img = Image.open(io.BytesIO(data))
+        img = img.convert("RGB")
+        gray = img.convert("L")
+        # 铅笔草图：边缘检测 + 反相，得到黑线白底的草稿（不依赖版本相关函数）
+        edges = gray.filter(ImageFilter.FIND_EDGES)
+        sketch = ImageOps.invert(edges)
+        sketch = ImageOps.autocontrast(sketch, cutoff=2)
+        buf = io.BytesIO()
+        sketch.save(buf, format="PNG")
+        return Response(content=buf.getvalue(), media_type="image/png")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"无法处理该图片：{e}")
+
 
 @app.get("/")
 async def index():
