@@ -161,13 +161,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
 .gallery-item .gallery-time { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 8px; padding: 1px 3px; }
 
-/* Mood Board */
-.mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.mood-cell { aspect-ratio: 1; border: 1px dashed var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; font-size: 20px; color: var(--text-light); transition: all .15s; }
-.mood-cell:hover { border-color: var(--accent); background: var(--card); }
-.mood-cell img { width: 100%; height: 100%; object-fit: cover; }
-.mood-cell input { display: none; }
-
 /* Version */
 .version-list { max-height: 200px; overflow-y: auto; }
 .version-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; font-size: 11px; }
@@ -197,6 +190,48 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* Composition Analysis */
 .analysis-result { padding: 8px; background: var(--card); border-radius: 6px; font-size: 12px; line-height: 1.6; margin-top: 8px; }
+
+/* Palette Strip (选中的调色板颜色一次性出现) */
+.palette-strip {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 60;
+  display: none; align-items: center; gap: 6px; padding: 8px 12px; user-select: none; max-width: 92%;
+}
+.palette-strip.show { display: flex; }
+.palette-strip .ps-name { font-size: 11px; color: var(--accent-dark); font-weight: 600; margin-right: 4px; white-space: nowrap; }
+.palette-strip .ps-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.palette-strip .ps-swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .12s; }
+.palette-strip .ps-swatch:hover { transform: scale(1.15); }
+.palette-strip .ps-swatch.active { border-color: var(--accent-dark); box-shadow: 0 0 0 2px #fff inset; }
+.palette-strip .ps-close { margin-left: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); border: none; background: none; }
+.palette-card.selected { border-color: var(--accent); background: #FFF9F0; box-shadow: 0 0 0 2px var(--accent) inset; }
+
+/* Floating Layer Panel (常驻右下角) */
+.layer-floating {
+  position: absolute; right: 12px; bottom: 12px; width: 210px;
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 60; overflow: hidden; user-select: none;
+}
+.layer-floating .lf-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; background: var(--card); font-size: 12px; font-weight: 600; color: var(--accent-dark);
+  border-bottom: 1px solid var(--border);
+}
+.layer-floating .lf-header button { border: none; background: none; cursor: pointer; font-size: 14px; color: var(--accent-dark); }
+.layer-floating .lf-body { max-height: 220px; overflow-y: auto; padding: 8px; }
+.layer-floating .lf-body .layer-item { background: #fff; }
+.layer-floating .lf-actions { display: flex; gap: 4px; padding: 8px; border-top: 1px solid var(--border); }
+.layer-floating .lf-actions button { flex: 1; padding: 4px 2px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 10px; }
+.layer-floating .lf-actions button:hover { background: var(--card); }
+.layer-floating.collapsed .lf-body, .layer-floating.collapsed .lf-actions { display: none; }
+
+/* Trainer (训练器) */
+.trainer-types { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+.trainer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.trainer-row label { font-size: 11px; min-width: 56px; }
+.trainer-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.trainer-hint { font-size: 10px; color: var(--text-light); line-height: 1.5; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -241,6 +276,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="divider"></div>
       <button class="tool-btn" onclick="confirmReset()" title="重置画布">🗑️</button>
     </div>
+
+    <!-- Palette Strip (选中调色板后，画笔相关颜色一次性出现) -->
+    <div class="palette-strip" id="paletteStrip">
+      <span class="ps-name" id="paletteStripName"></span>
+      <div class="ps-swatches" id="paletteStripSwatches"></div>
+      <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
+    </div>
+
+    <!-- Floating Layer Panel (常驻右下角) -->
+    <div class="layer-floating" id="layerFloating">
+      <div class="lf-header">🗂️ 图层 <button onclick="toggleLayerFloat()" title="折叠/展开">▾</button></div>
+      <div class="lf-body" id="layerFloatList"></div>
+      <div class="lf-actions">
+        <button onclick="addLayer()">+ 新建</button>
+        <button onclick="moveLayerUp()">↑</button>
+        <button onclick="moveLayerDown()">↓</button>
+        <button onclick="deleteLayer()">删除</button>
+      </div>
+    </div>
   </div>
 
   <!-- Right Panel -->
@@ -254,7 +308,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab" data-tab="sketch" onclick="switchTab('sketch')">转草稿</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
-      <div class="tab" data-tab="mood" onclick="switchTab('mood')">情绪板</div>
+      <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
       <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
     </div>
@@ -344,6 +398,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         </div>
       </div>
 
+      <!-- Trainer Tab -->
+      <div class="tab-content" id="tab-trainer" style="display:none">
+        <div class="panel-section">
+          <h3>训练器（随机生成 + 轮廓临摹）</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">生成一张随机草稿，并自动描出它的所有轮廓形状，作为临摹训练参考。</p>
+          <div class="trainer-types" id="trainerTypes">
+            <button class="draft-type-btn active" data-tt="sunflower" onclick="setTrainerType('sunflower')">🌻 向日葵</button>
+            <button class="draft-type-btn" data-tt="figure" onclick="setTrainerType('figure')">🧍 人物</button>
+            <button class="draft-type-btn" data-tt="layout" onclick="setTrainerType('layout')">📐 构图</button>
+            <button class="draft-type-btn" data-tt="doodle" onclick="setTrainerType('doodle')">✏️ 涂鸦</button>
+            <button class="draft-type-btn" data-tt="random" onclick="setTrainerType('random')">🎲 随机</button>
+          </div>
+          <div class="trainer-row">
+            <label>线条密度</label>
+            <input type="range" id="trainerDensity" min="1" max="3" value="2" step="1">
+            <span class="val" id="trainerDensityVal">中</span>
+          </div>
+          <div class="trainer-row">
+            <label>混乱度</label>
+            <input type="range" id="trainerChaos" min="0" max="100" value="50">
+            <span class="val" id="trainerChaosVal">50</span>
+          </div>
+          <button class="action-btn" onclick="generateTrainer()">🎯 生成训练图（底图+轮廓）</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="toggleTrainerRef()">👁️ 显示 / 隐藏 轮廓参考</button>
+          <div class="trainer-hint">训练图会新建三层：<b>训练底图</b>（参考原图）、<b>轮廓参考</b>（自动描出的所有轮廓草稿）、<b>练习层</b>（空白，用来临摹）。隐藏轮廓参考后可自由练习，再对照检查。</div>
+        </div>
+      </div>
+
       <!-- Sketch Tab -->
       <div class="tab-content" id="tab-sketch" style="display:none">
         <div class="panel-section">
@@ -416,15 +498,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <h3>草稿库</h3>
           <div class="gallery-grid" id="galleryGrid"></div>
           <button class="action-btn secondary" style="margin-top:8px" onclick="batchExportPNG()">📦 批量导出PNG</button>
-        </div>
-      </div>
-
-      <!-- Mood Board Tab -->
-      <div class="tab-content" id="tab-mood" style="display:none">
-        <div class="panel-section">
-          <h3>情绪板 3×3</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">点击格子添加灵感图片</p>
-          <div class="mood-grid" id="moodGrid"></div>
         </div>
       </div>
 
@@ -501,7 +574,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initLayers();
   initPalettes();
   initStyles();
-  initMoodBoard();
   initSliders();
   initDrawing();
   initKeyboard();
@@ -576,6 +648,7 @@ function setTool(tool) {
   document.getElementById('btnBrush').classList.toggle('active', tool==='brush');
   document.getElementById('btnEraser').classList.toggle('active', tool==='eraser');
   drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+  if (tool === 'brush' && selectedPaletteIdx >= 0) showPaletteStrip();
 }
 
 function updateBrushSize(val) {
@@ -797,21 +870,35 @@ function renameLayer(idx) {
   if (name) { layers[idx].name = name; renderLayerList(); }
 }
 
+function buildLayerItem(i) {
+  const l = layers[i];
+  const div = document.createElement('div');
+  div.className = 'layer-item' + (i === activeLayerIdx ? ' active' : '');
+  div.innerHTML = `
+    <button onclick="toggleLayerVisibility(${i})" title="${l.visible?'隐藏':'显示'}">${l.visible?'👁️':'🚫'}</button>
+    <button onclick="toggleLayerLock(${i})" title="${l.locked?'解锁':'锁定'}">${l.locked?'🔒':'🔓'}</button>
+    <span class="layer-name" onclick="activeLayerIdx=${i};renderLayerList()" title="双击重命名">${l.name}</span>
+  `;
+  div.querySelector('.layer-name').addEventListener('dblclick', () => renameLayer(i));
+  return div;
+}
+
 function renderLayerList() {
   const list = document.getElementById('layerList');
-  list.innerHTML = '';
+  const floatList = document.getElementById('layerFloatList');
+  if (list) list.innerHTML = '';
+  if (floatList) floatList.innerHTML = '';
   for (let i = layers.length - 1; i >= 0; i--) {
-    const l = layers[i];
-    const div = document.createElement('div');
-    div.className = 'layer-item' + (i === activeLayerIdx ? ' active' : '');
-    div.innerHTML = `
-      <button onclick="toggleLayerVisibility(${i})" title="${l.visible?'隐藏':'显示'}">${l.visible?'👁️':'🚫'}</button>
-      <button onclick="toggleLayerLock(${i})" title="${l.locked?'解锁':'锁定'}">${l.locked?'🔒':'🔓'}</button>
-      <span class="layer-name" onclick="activeLayerIdx=${i};renderLayerList()" title="双击重命名">${l.name}</span>
-    `;
-    div.querySelector('.layer-name').addEventListener('dblclick', () => renameLayer(i));
-    list.appendChild(div);
+    if (list) list.appendChild(buildLayerItem(i));
+    if (floatList) floatList.appendChild(buildLayerItem(i));
   }
+}
+
+function toggleLayerFloat() {
+  const panel = document.getElementById('layerFloating');
+  panel.classList.toggle('collapsed');
+  const btn = panel.querySelector('.lf-header button');
+  if (btn) btn.textContent = panel.classList.contains('collapsed') ? '▸' : '▾';
 }
 
 // ============ UNDO ============
@@ -1045,21 +1132,67 @@ const palettes = [
   { name: '梦幻', colors: ['#7B2D8E', '#B24BF3', '#D98CE8', '#F0C3F7', '#5C4B99', '#A78BFA'] }
 ];
 
+let selectedPaletteIdx = -1;
+
 function initPalettes() {
   const grid = document.getElementById('paletteGrid');
-  palettes.forEach(p => {
+  palettes.forEach((p, idx) => {
     const card = document.createElement('div');
     card.className = 'palette-card';
+    card.dataset.pidx = idx;
     card.innerHTML = `
       <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
       <div class="name">${p.name}</div>
       <div class="palette-actions">
-        <button onclick="event.stopPropagation();applyPaletteToBg(${palettes.indexOf(p)})">设为背景</button>
-        <button onclick="event.stopPropagation();applyPaletteToRef(${palettes.indexOf(p)})">参考层</button>
+        <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">设为背景</button>
+        <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考层</button>
+        <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
       </div>
     `;
+    card.onclick = () => selectPalette(idx);
     grid.appendChild(card);
   });
+}
+
+function selectPalette(idx) {
+  if (selectedPaletteIdx === idx) { clearPaletteSelection(); return; }
+  selectedPaletteIdx = idx;
+  document.querySelectorAll('.palette-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.pidx) === idx));
+  showPaletteStrip();
+  showToast(`已选「${palettes[idx].name}」调色板，画笔可一键切换全部颜色`);
+}
+
+function clearPaletteSelection() {
+  selectedPaletteIdx = -1;
+  document.querySelectorAll('.palette-card').forEach(c => c.classList.remove('selected'));
+  hidePaletteStrip();
+}
+
+function renderPaletteStrip() {
+  const sw = document.getElementById('paletteStripSwatches');
+  const nameEl = document.getElementById('paletteStripName');
+  if (selectedPaletteIdx < 0) return;
+  const p = palettes[selectedPaletteIdx];
+  nameEl.textContent = p.name;
+  sw.innerHTML = '';
+  p.colors.forEach(c => {
+    const s = document.createElement('div');
+    s.className = 'ps-swatch' + (c.toLowerCase() === brushColor.toLowerCase() ? ' active' : '');
+    s.style.background = c;
+    s.title = c;
+    s.onclick = () => { setBrushColor(c); document.getElementById('colorPicker').value = c; renderPaletteStrip(); };
+    sw.appendChild(s);
+  });
+}
+
+function showPaletteStrip() {
+  if (selectedPaletteIdx < 0) return;
+  renderPaletteStrip();
+  document.getElementById('paletteStrip').classList.add('show');
+}
+
+function hidePaletteStrip() {
+  document.getElementById('paletteStrip').classList.remove('show');
 }
 
 function applyPaletteToBg(idx) {
@@ -1760,6 +1893,97 @@ function drawAbstract(ctx, cx, cy, s, rng, noise, chaos, pass) {
   }
 }
 
+// ============ TRAINER (随机生成 + 轮廓临摹) ============
+let trainerType = 'sunflower';
+
+function setTrainerType(type) {
+  trainerType = type;
+  document.querySelectorAll('[data-tt]').forEach(b => b.classList.toggle('active', b.dataset.tt === type));
+}
+
+function trainerRandomType() {
+  const types = ['sunflower', 'figure', 'layout', 'doodle'];
+  return types[Math.floor(Math.random() * types.length)];
+}
+
+// 生成训练图：随机底图 + 自动描出的轮廓参考 + 空白练习层
+async function generateTrainer() {
+  const baseType = trainerType === 'random' ? trainerRandomType() : trainerType;
+  const density = parseInt(document.getElementById('trainerDensity').value);
+  const chaos = parseInt(document.getElementById('trainerChaos').value) / 100;
+
+  // 1) 训练底图
+  addLayer('训练底图');
+  const baseIdx = activeLayerIdx;
+  const baseCtx = layers[baseIdx].ctx;
+  const seed = Date.now();
+  const rng = mulberry32(seed);
+  const noise = createNoise(seed);
+  const densityMult = [0.6, 1, 1.8][density - 1];
+  baseCtx.save();
+  baseCtx.strokeStyle = '#555';
+  baseCtx.lineCap = 'round';
+  baseCtx.lineJoin = 'round';
+  switch (baseType) {
+    case 'sunflower': drawSunflower(baseCtx, rng, noise, densityMult, chaos); break;
+    case 'figure': drawFigure(baseCtx, rng, noise, densityMult, chaos); break;
+    case 'layout': drawLayout(baseCtx, rng, noise, densityMult, chaos); break;
+    case 'doodle': drawDoodle(baseCtx, rng, noise, densityMult, chaos); break;
+  }
+  baseCtx.restore();
+  compositeToMain();
+
+  // 2) 轮廓参考：对底图做边缘检测，描出所有轮廓形状
+  await new Promise(r => setTimeout(r, 30));
+  addLayer('轮廓参考');
+  const contIdx = activeLayerIdx;
+  const contCtx = layers[contIdx].ctx;
+  const tmp = document.createElement('canvas');
+  tmp.width = canvasW; tmp.height = canvasH;
+  const tmpCtx = tmp.getContext('2d');
+  tmpCtx.drawImage(layers[baseIdx].canvas, 0, 0);
+  const imgData = tmpCtx.getImageData(0, 0, canvasW, canvasH);
+  const edges = sobelEdgeDetect(imgData);
+  contCtx.save();
+  contCtx.strokeStyle = brushColor;
+  contCtx.lineWidth = 2;
+  contCtx.globalAlpha = Math.max(0.5, brushOpacity);
+  const step = 5;
+  for (let y = 0; y < canvasH; y += step) {
+    for (let x = 0; x < canvasW; x += step) {
+      if (edges[y * canvasW + x] > 140) {
+        const jx = x + (Math.random() - 0.5) * 3;
+        const jy = y + (Math.random() - 0.5) * 3;
+        const len = 3 + Math.random() * 3;
+        const angle = Math.atan2(
+          y > 0 ? (edges[(y+1)*canvasW+x] - edges[(y-1)*canvasW+x]) : 0,
+          x > 0 ? (edges[y*canvasW+x+1] - edges[y*canvasW+x-1]) : 0
+        ) + Math.PI/2;
+        contCtx.beginPath();
+        contCtx.moveTo(jx - Math.cos(angle)*len, jy - Math.sin(angle)*len);
+        contCtx.lineTo(jx + Math.cos(angle)*len, jy + Math.sin(angle)*len);
+        contCtx.stroke();
+      }
+    }
+  }
+  contCtx.restore();
+
+  // 3) 空白练习层
+  addLayer('练习层');
+
+  // 锁定底图，避免误涂
+  layers[baseIdx].locked = true;
+  compositeToMain();
+  renderLayerList();
+  showToast('训练图已生成：底图(锁定) + 轮廓参考 + 练习层');
+}
+
+function toggleTrainerRef() {
+  const idx = layers.findIndex(l => l.name === '轮廓参考');
+  if (idx < 0) { showToast('还没有轮廓参考层'); return; }
+  toggleLayerVisibility(idx);
+}
+
 // ============ IMAGE TO SKETCH ============
 let uploadedImage = null;
 
@@ -2154,38 +2378,6 @@ async function batchExportPNG() {
   showToast(`已导出${drafts.length}张PNG`);
 }
 
-// ============ MOOD BOARD ============
-function initMoodBoard() {
-  const grid = document.getElementById('moodGrid');
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'mood-cell';
-    cell.innerHTML = '+';
-    cell.onclick = () => addMoodImage(i, cell);
-    grid.appendChild(cell);
-  }
-}
-
-function addMoodImage(idx, cell) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      cell.innerHTML = `<img src="${ev.target.result}">`;
-      // Save to localStorage
-      const moodData = JSON.parse(localStorage.getItem('moodBoard') || '{}');
-      moodData[idx] = ev.target.result;
-      localStorage.setItem('moodBoard', JSON.stringify(moodData));
-    };
-    reader.readAsDataURL(file);
-  };
-  input.click();
-}
-
 // ============ VERSION MANAGEMENT ============
 async function saveVersion() {
   const allLayers = layers.map(l => {
@@ -2382,6 +2574,14 @@ function initSliders() {
   });
   document.getElementById('sketchDetail').addEventListener('input', function() {
     document.getElementById('sketchDetailVal').textContent = this.value;
+  });
+  const td = document.getElementById('trainerDensity');
+  if (td) td.addEventListener('input', function() {
+    document.getElementById('trainerDensityVal').textContent = ['低','中','高'][this.value-1];
+  });
+  const tc = document.getElementById('trainerChaos');
+  if (tc) tc.addEventListener('input', function() {
+    document.getElementById('trainerChaosVal').textContent = this.value;
   });
 }
 
