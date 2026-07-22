@@ -403,7 +403,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab-content" id="tab-trainer" style="display:none">
         <div class="panel-section">
           <h3>训练器（上传图片 → 生成草图）</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">上传一张本地图片，后台会识别并生成与之对应的草稿（铅笔素描）。可放入画布临摹，或保存到本地。</p>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">上传一张本地图片，应用会自动识别并生成与之对应的草稿（铅笔素描）。可放入画布临摹，或保存到本地。</p>
           <div class="upload-area" id="trainerUploadArea" onclick="document.getElementById('trainerImgUpload').click()">
             <input type="file" id="trainerImgUpload" accept="image/*" onchange="handleTrainerUpload(event)">
             📷 点击上传本地图片
@@ -414,7 +414,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <button class="action-btn" onclick="generateTrainerSketch()">🎯 生成草图（后台识别）</button>
           <button class="action-btn secondary" style="margin-top:6px" onclick="placeTrainerSketch()">📥 放入画布</button>
           <button class="action-btn secondary" style="margin-top:6px" onclick="saveTrainerSketch()">💾 保存到本地</button>
-          <div class="trainer-hint" id="trainerHint">① 上传图片 → ② 点「生成草图」让后台返回与原图对应的素描 → ③ 「放入画布」可临摹，或「保存到本地」下载 PNG。</div>
+          <div class="trainer-hint" id="trainerHint">① 上传图片 → ② 点「生成草图」让应用生成与原图对应的素描 → ③ 「放入画布」可临摹，或「保存到本地」下载 PNG。</div>
         </div>
       </div>
 
@@ -1977,31 +1977,36 @@ function handleTrainerUpload(event) {
   reader.readAsDataURL(file);
 }
 
-// 调用后台 /api/sketch，把图片转成对应的草稿
+// 浏览器本地把上传图片转成对应的草稿（复用 Sobel 边缘检测，无需后端依赖）
 async function generateTrainerSketch() {
-  if (!trainerImageFile) { showToast('请先上传图片'); return; }
-  showToast('后台识别中...');
-  const fd = new FormData();
-  fd.append('file', trainerImageFile);
-  try {
-    const resp = await fetch('/api/sketch', { method: 'POST', body: fd });
-    if (!resp.ok) {
-      const t = await resp.text();
-      showToast('生成失败: ' + (t || resp.status));
-      return;
-    }
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    trainerSketchImg = new Image();
-    trainerSketchImg.onload = () => {
-      showToast('草图已生成 ✓ 可「放入画布」或「保存到本地」');
-      URL.revokeObjectURL(url);
-    };
-    trainerSketchImg.onerror = () => { showToast('草图解析失败'); URL.revokeObjectURL(url); };
-    trainerSketchImg.src = url;
-  } catch (err) {
-    showToast('生成失败: ' + err.message);
+  if (!trainerImage) { showToast('请先上传图片'); return; }
+  showToast('正在生成草图...');
+  // 把图片等比适配画布
+  const temp = document.createElement('canvas');
+  temp.width = canvasW; temp.height = canvasH;
+  const tctx = temp.getContext('2d');
+  const ratio = trainerImage.width / trainerImage.height;
+  const cRatio = canvasW / canvasH;
+  let dw, dh;
+  if (ratio > cRatio) { dw = canvasW; dh = canvasW / ratio; }
+  else { dh = canvasH; dw = canvasH * ratio; }
+  const dx = (canvasW - dw) / 2, dy = (canvasH - dh) / 2;
+  tctx.drawImage(trainerImage, dx, dy, dw, dh);
+  const imgData = tctx.getImageData(0, 0, canvasW, canvasH);
+  const edges = sobelEdgeDetect(imgData);
+  // 黑线白底草稿
+  const out = document.createElement('canvas');
+  out.width = canvasW; out.height = canvasH;
+  const octx = out.getContext('2d');
+  const od = octx.createImageData(canvasW, canvasH);
+  for (let i = 0; i < canvasW * canvasH; i++) {
+    const v = Math.max(0, Math.min(255, Math.round(255 - edges[i] * 1.4)));
+    od.data[i*4] = v; od.data[i*4+1] = v; od.data[i*4+2] = v; od.data[i*4+3] = 255;
   }
+  octx.putImageData(od, 0, 0);
+  trainerSketchImg = new Image();
+  trainerSketchImg.onload = () => showToast('草图已生成 ✓ 可「放入画布」或「保存到本地」');
+  trainerSketchImg.src = out.toDataURL('image/png');
 }
 
 // 把草图放进画布（新建一层，等比适配居中）
