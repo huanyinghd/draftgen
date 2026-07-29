@@ -232,6 +232,36 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .trainer-row label { font-size: 11px; min-width: 56px; }
 .trainer-row input[type=range] { flex: 1; accent-color: var(--accent); }
 .trainer-hint { font-size: 10px; color: var(--text-light); line-height: 1.5; margin-top: 6px; }
+
+/* Artist油画配色 */
+.artist-card { border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all .15s; padding:8px; position:relative; }
+.artist-card:hover { border-color:var(--accent); transform:translateY(-1px); }
+.artist-card.selected { border-color:var(--accent); background:#FFF9F0; box-shadow:0 0 0 2px var(--accent) inset; }
+.artist-card .colors { display:flex; gap:3px; margin-bottom:4px; }
+.artist-card .swatch { width:16px; height:16px; border-radius:3px; cursor:pointer; border:1px solid rgba(0,0,0,0.1); }
+.artist-card .ap-name { font-size:11px; font-weight:600; color:var(--accent-dark); }
+.artist-card .ap-meta { font-size:9px; color:var(--text-light); line-height:1.3; }
+.artist-card .ap-badge { position:absolute; top:6px; right:6px; font-size:8px; background:var(--accent); color:#fff; padding:1px 5px; border-radius:8px; }
+.artist-card .palette-actions { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+.artist-card .palette-actions button { font-size:9px; padding:2px 5px; border:1px solid var(--border); border-radius:4px; background:#fff; cursor:pointer; }
+
+/* 构图识别结果 */
+.comp-result { padding:8px; background:var(--card); border-radius:6px; font-size:12px; line-height:1.6; margin-top:8px; }
+.comp-type { font-size:14px; font-weight:700; color:var(--accent-dark); }
+.comp-bar { height:6px; background:#E0D8C8; border-radius:3px; overflow:hidden; margin:4px 0; }
+.comp-bar > span { display:block; height:100%; background:var(--accent); }
+.comp-sim { font-size:10px; color:var(--text-light); margin-top:4px; }
+
+/* 构图草稿库 */
+.complib-group { margin-bottom:14px; }
+.complib-group h4 { font-size:12px; color:var(--accent-dark); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.complib-group .cnt { font-size:10px; color:var(--text-light); background:#fff; padding:0 6px; border-radius:8px; border:1px solid var(--border); }
+.complib-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.complib-item { border:1px solid var(--border); border-radius:6px; overflow:hidden; cursor:pointer; position:relative; background:#fff; }
+.complib-item img { width:100%; display:block; aspect-ratio:1; object-fit:cover; }
+.complib-item .ci-type { font-size:9px; padding:2px 4px; color:var(--accent-dark); background:var(--card); }
+.complib-item .ci-sim { position:absolute; top:2px; left:2px; font-size:8px; background:rgba(0,0,0,0.6); color:#fff; padding:1px 4px; border-radius:6px; }
+.complib-empty { font-size:11px; color:var(--text-light); text-align:center; padding:20px 0; }
 </style>
 </head>
 <body>
@@ -310,6 +340,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
+      <div class="tab" data-tab="complib" onclick="switchTab('complib')">构图库</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
       <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
     </div>
@@ -341,6 +372,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="panel-section">
           <h3>情绪调色板</h3>
           <div class="palette-grid" id="paletteGrid"></div>
+        </div>
+        <div class="panel-section">
+          <h3>🎨 艺术家油画配色</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">标注自世界名画的经典配色。点击色块取色，点「选为调色板」可把整组颜色一次性印到画布。</p>
+          <div class="palette-grid" id="artistPaletteGrid"></div>
         </div>
       </div>
 
@@ -415,6 +451,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <button class="action-btn secondary" style="margin-top:6px" onclick="placeTrainerSketch()">📥 放入画布</button>
           <button class="action-btn secondary" style="margin-top:6px" onclick="saveTrainerSketch()">💾 保存到本地</button>
           <div class="trainer-hint" id="trainerHint">① 上传图片 → ② 点「生成草图」让应用生成与原图对应的素描 → ③ 「放入画布」可临摹，或「保存到本地」下载 PNG。</div>
+        </div>
+
+        <div class="panel-section" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+          <h3>🧠 构图识别系统</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">应用自动分析图片的视觉重心、对称性与线条走向，判定构图类型，并与库内草稿比对相似度。</p>
+          <button class="action-btn" onclick="analyzeTrainerComposition()">🔍 识别当前图片构图</button>
+          <div class="comp-result" id="trainerCompResult" style="display:none"></div>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="saveToCompositionLibrary()">📚 收入构图草稿库</button>
+        </div>
+      </div>
+
+      <!-- Composition Library Tab -->
+      <div class="tab-content" id="tab-complib" style="display:none">
+        <div class="panel-section">
+          <h3>📚 构图草稿库</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">按识别出的构图类型自动归类。相似构图的草稿归到同一类型，点击缩略图可载入画布临摹。</p>
+          <div id="complibContainer"><div class="complib-empty">暂无构图草稿，去「训练」页上传图片并识别后收入即可。</div></div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button class="action-btn secondary" style="flex:1" onclick="exportCompositionLibrary()">📦 导出到本地文件</button>
+            <button class="action-btn secondary" style="flex:1" onclick="document.getElementById('complibImport').click()">📥 从本地导入</button>
+          </div>
+          <input type="file" id="complibImport" accept="application/json,.json" style="display:none" onchange="importCompositionLibrary(event)">
+          <button class="action-btn secondary" style="margin-top:6px;width:100%" onclick="clearCompositionLibrary()">🗑️ 清空草稿库</button>
         </div>
       </div>
 
@@ -1186,42 +1245,74 @@ const palettes = [
   { name: '柔和', colors: ['#FFD6E0', '#CDB4DB', '#BDE0FE', '#A2D2FF', '#CAFFBF', '#FFEEDD'] },
   { name: '对比', colors: ['#000000', '#FFFFFF', '#FF0000', '#0066FF', '#FFD700', '#333333'] },
   { name: '中性', colors: ['#2B2D42', '#8D99AE', '#EDF2F4', '#4A4E69', '#9A8C98', '#C9ADA7'] },
-  { name: '梦幻', colors: ['#7B2D8E', '#B24BF3', '#D98CE8', '#F0C3F7', '#5C4B99', '#A78BFA'] }
+  { name: '梦幻', colors: ['#7B2D8E', '#B24BF3', '#D98CE8', '#F0C3F7', '#5C4B99', '#A78BFA'] },
+  // ===== 艺术家油画配色（标注画家与代表画作）=====
+  { name:'星月夜', artist:true, painter:'文森特·梵高', painting:'星月夜 The Starry Night', colors:['#0B1E3D','#1B3A6B','#2E6FB0','#3E78B0','#F4C430','#E8A33D'] },
+  { name:'向日葵', artist:true, painter:'文森特·梵高', painting:'向日葵 Sunflowers', colors:['#E8A33D','#D97E1E','#B5531B','#F2D06B','#6E8C3A','#2E241A'] },
+  { name:'睡莲', artist:true, painter:'克劳德·莫奈', painting:'睡莲 Water Lilies', colors:['#7BA6A0','#A7C4B8','#C9D6C0','#E4B7C9','#B8A9C9','#DCE8D8'] },
+  { name:'印象·日出', artist:true, painter:'克劳德·莫奈', painting:'印象·日出 Impression Sunrise', colors:['#4A6274','#7C97A6','#B7C7CE','#E06B2E','#C68A5C','#D9D2C4'] },
+  { name:'戴珍珠耳环的少女', artist:true, painter:'约翰内斯·维米尔', painting:'戴珍珠耳环的少女 Girl with a Pearl Earring', colors:['#1A1C2B','#20508C','#C8A24B','#E6DCC8','#3A2E26','#F2EDE3'] },
+  { name:'夜巡', artist:true, painter:'伦勃朗', painting:'夜巡 The Night Watch', colors:['#1C140C','#3E2A17','#7A5320','#B5893E','#2E2A22','#D9C9A3'] },
+  { name:'吻', artist:true, painter:'古斯塔夫·克里姆特', painting:'吻 The Kiss', colors:['#C9A227','#8C6B1F','#D6B34A','#6E4A2A','#3E2C1E','#A8C66C'] },
+  { name:'红黄蓝构成', artist:true, painter:'皮特·蒙德里安', painting:'红黄蓝的构成 Composition', colors:['#D40920','#1356A2','#F2C300','#FFFFFF','#000000','#EDEDED'] },
+  { name:'呐喊', artist:true, painter:'爱德华·蒙克', painting:'呐喊 The Scream', colors:['#D94E2B','#E89A3C','#6E8CB0','#2E4A6B','#C9B8A0','#1A1A1A'] },
+  { name:'蓝色时期', artist:true, painter:'巴勃罗·毕加索', painting:'蓝色时期 Blue Period', colors:['#1B3A5C','#2E5C8A','#4A7BA6','#6E97B8','#C9D2D6','#2A2A35'] },
+  { name:'蒙娜丽莎', artist:true, painter:'列奥纳多·达·芬奇', painting:'蒙娜丽莎 Mona Lisa', colors:['#3A2E1E','#5C4A2E','#7A6A45','#2E3A2A','#C9B89A','#1C1812'] },
+  { name:'夜游者', artist:true, painter:'爱德华·霍珀', painting:'夜游者 Nighthawks', colors:['#1A1E1A','#E8A33D','#C98A3C','#2E5C4A','#6E8C8C','#3A2E2A'] }
 ];
 
 let selectedPaletteIdx = -1;
 
 function initPalettes() {
   const grid = document.getElementById('paletteGrid');
+  const agrid = document.getElementById('artistPaletteGrid');
+  if (agrid) agrid.innerHTML = '';
   palettes.forEach((p, idx) => {
     const card = document.createElement('div');
-    card.className = 'palette-card';
     card.dataset.pidx = idx;
-    card.innerHTML = `
-      <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
-      <div class="name">${p.name}</div>
-      <div class="palette-actions">
-        <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">设为背景</button>
-        <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考层</button>
-        <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
-      </div>
-    `;
-    card.onclick = () => selectPalette(idx);
-    grid.appendChild(card);
+    if (p.artist) {
+      card.className = 'artist-card';
+      card.innerHTML = `
+        <span class="ap-badge">名画</span>
+        <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
+        <div class="ap-name">${p.name}</div>
+        <div class="ap-meta">${p.painter}<br>${p.painting}</div>
+        <div class="palette-actions">
+          <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">背景</button>
+          <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考</button>
+          <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
+        </div>
+      `;
+      card.onclick = () => selectPalette(idx);
+      if (agrid) agrid.appendChild(card);
+    } else {
+      card.className = 'palette-card';
+      card.innerHTML = `
+        <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
+        <div class="name">${p.name}</div>
+        <div class="palette-actions">
+          <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">设为背景</button>
+          <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考层</button>
+          <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
+        </div>
+      `;
+      card.onclick = () => selectPalette(idx);
+      grid.appendChild(card);
+    }
   });
 }
 
 function selectPalette(idx) {
   if (selectedPaletteIdx === idx) { clearPaletteSelection(); return; }
   selectedPaletteIdx = idx;
-  document.querySelectorAll('.palette-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.pidx) === idx));
+  document.querySelectorAll('.palette-card, .artist-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.pidx) === idx));
   showPaletteStrip();
   showToast(`已选「${palettes[idx].name}」调色板，画笔可一键切换全部颜色`);
 }
 
 function clearPaletteSelection() {
   selectedPaletteIdx = -1;
-  document.querySelectorAll('.palette-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.palette-card, .artist-card').forEach(c => c.classList.remove('selected'));
   hidePaletteStrip();
 }
 
@@ -2037,6 +2128,256 @@ function saveTrainerSketch() {
   showToast('草图已保存到本地 ✓');
 }
 
+// ============ 构图识别 & 草稿库 (IndexedDB 本地 + 导出/导入) ============
+let lastComposition = null;
+
+function extractCompositionFeatures(img) {
+  const W = 256, H = 256;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const ratio = img.width / img.height, cR = W / H;
+  let dw, dh;
+  if (ratio > cR) { dw = W; dh = W / ratio; } else { dh = H; dw = H * ratio; }
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  x.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  const d = x.getImageData(0, 0, W, H).data;
+  const gray = new Float32Array(W * H);
+  for (let i = 0; i < W * H; i++) gray[i] = d[i*4]*0.299 + d[i*4+1]*0.587 + d[i*4+2]*0.114;
+  const edge = new Float32Array(W * H);
+  let maxE = 0;
+  for (let y = 1; y < H - 1; y++) {
+    for (let xx = 1; xx < W - 1; xx++) {
+      const gx = -gray[(y-1)*W+xx-1] + gray[(y-1)*W+xx+1] - 2*gray[y*W+xx-1] + 2*gray[y*W+xx+1] - gray[(y+1)*W+xx-1] + gray[(y+1)*W+xx+1];
+      const gy = -gray[(y-1)*W+xx-1] - 2*gray[(y-1)*W+xx] - gray[(y-1)*W+xx+1] + gray[(y+1)*W+xx-1] + 2*gray[(y+1)*W+xx] + gray[(y+1)*W+xx+1];
+      const e = Math.sqrt(gx*gx + gy*gy);
+      edge[y*W+xx] = e; if (e > maxE) maxE = e;
+    }
+  }
+  const inv = 1 / (maxE || 1);
+  for (let i = 0; i < W * H; i++) edge[i] *= inv;
+  let massX = 0, massY = 0, massTotal = 0, fill = 0;
+  const TH = 0.12;
+  for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
+    const i = y*W+xx, w = edge[i];
+    massX += xx * w; massY += y * w; massTotal += w;
+    if (w > TH) fill++;
+  }
+  const nx = massX / (massTotal || 1) / W;
+  const ny = massY / (massTotal || 1) / H;
+  const fillRatio = fill / (W * H);
+  let symLR = 0, symTB = 0, cntLR = 0, cntTB = 0;
+  for (let y = 0; y < H; y++) for (let xx = 0; xx < (W>>1); xx++) { symLR += Math.abs(edge[y*W+xx] - edge[y*W+(W-1-xx)]); cntLR++; }
+  for (let y = 0; y < (H>>1); y++) for (let xx = 0; xx < W; xx++) { symTB += Math.abs(edge[y*W+xx] - edge[(H-1-y)*W+xx]); cntTB++; }
+  const symScore = 1 - (symLR/(cntLR*2) + symTB/(cntTB*2)) / 2;
+  let horiz = 0, vert = 0, diag1 = 0, diag2 = 0, dir = 0;
+  for (let y = 1; y < H - 1; y++) for (let xx = 1; xx < W - 1; xx++) {
+    const i = y*W+xx;
+    if (edge[i] < TH) continue;
+    const gx = -gray[(y-1)*W+xx-1] + gray[(y-1)*W+xx+1] - 2*gray[y*W+xx-1] + 2*gray[y*W+xx+1];
+    const gy = -gray[(y-1)*W+xx-1] - 2*gray[(y-1)*W+xx] - gray[(y-1)*W+xx+1] + gray[(y+1)*W+xx-1] + 2*gray[(y+1)*W+xx] + gray[(y+1)*W+xx+1];
+    let a = Math.atan2(gy, gx); if (a < 0) a += Math.PI;
+    if (a < Math.PI/6 || a > Math.PI*5/6) horiz++;
+    else if (a > Math.PI/3 && a < Math.PI*2/3) vert++;
+    else if (a >= Math.PI/6 && a <= Math.PI/3) diag1++;
+    else diag2++;
+    dir++;
+  }
+  const n = dir || 1;
+  return { nx, ny, symScore, horiz:horiz/n, vert:vert/n, diag1:diag1/n, diag2:diag2/n, fillRatio };
+}
+
+function compositionDistance(a, b) {
+  const dw = (a.nx-b.nx), dy = (a.ny-b.ny), ds = (a.symScore-b.symScore);
+  const dd = (a.horiz-b.horiz)+(a.vert-b.vert)+(a.diag1-b.diag1)+(a.diag2-b.diag2), df = (a.fillRatio-b.fillRatio);
+  return Math.sqrt(dw*dw*4 + dy*dy*4 + ds*ds*2 + dd*dd*3 + df*df*4);
+}
+
+function classifyComposition(f) {
+  if (f.fillRatio > 0.42) return { type:'满幅构图', conf:0.7, desc:'线条/主体几乎占满画面，视觉冲击力强，适合特写或装饰性构图。' };
+  if (f.symScore > 0.82) return { type:'对称构图', conf:0.85, desc:'左右与上下高度对称，庄重稳定，常用于建筑、人像、仪式感画面。' };
+  if (f.diag1 > 0.38 || f.diag2 > 0.38) return { type:'对角线构图', conf:0.8, desc:'主要线条沿对角线走向，富有动势与引导性。' };
+  if (f.vert > 0.4) return { type:'竖向构成', conf:0.75, desc:'垂直线条主导，挺拔、上升感强。' };
+  if (f.horiz > 0.4) return { type:'水平构图', conf:0.75, desc:'水平线条主导，平静、开阔，适合风景。' };
+  const thirds=[[1/3,1/3],[2/3,1/3],[1/3,2/3],[2/3,2/3]], gold=[[0.382,0.382],[0.618,0.382],[0.382,0.618],[0.618,0.618]];
+  let mT=1, mG=1;
+  thirds.forEach(p=>mT=Math.min(mT,Math.hypot(f.nx-p[0],f.ny-p[1])));
+  gold.forEach(p=>mG=Math.min(mG,Math.hypot(f.nx-p[0],f.ny-p[1])));
+  const dc = Math.hypot(f.nx-0.5, f.ny-0.5);
+  if (dc < 0.12) return { type:'中心构图', conf:0.8, desc:'视觉重心居中，聚焦、直观，适合主体突出的画面。' };
+  if (mG < mT) return { type:'黄金分割构图', conf:0.7, desc:'重心落在黄金分割点附近，天然和谐、符合经典美学。' };
+  if (mT < 0.18) return { type:'三分构图', conf:0.85, desc:'重心靠近三分法交叉点，经典且具平衡张力。' };
+  return { type:'均衡自由构图', conf:0.6, desc:'重心偏离经典节点，呈自由均衡分布，适合随性表达。' };
+}
+
+function recognizeComposition(img) {
+  const f = extractCompositionFeatures(img);
+  const c = classifyComposition(f);
+  const TW = 240, TH = Math.round(240 * (img.height / img.width));
+  const tc = document.createElement('canvas'); tc.width = TW; tc.height = TH;
+  tc.getContext('2d').drawImage(img, 0, 0, TW, TH);
+  const thumb = tc.toDataURL('image/jpeg', 0.7);
+  return { ...c, features:f, thumb };
+}
+
+function analyzeTrainerComposition() {
+  if (!trainerImage) { showToast('请先上传图片'); return; }
+  showToast('正在识别构图...');
+  const r = recognizeComposition(trainerImage);
+  lastComposition = r;
+  const el = document.getElementById('trainerCompResult');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="comp-type">${r.type} <span style="font-size:11px;color:var(--text-light)">(置信度 ${(r.conf*100).toFixed(0)}%)</span></div>
+    <div class="comp-bar"><span style="width:${(r.conf*100).toFixed(0)}%"></span></div>
+    <div>${r.desc}</div>
+    <div style="font-size:10px;color:var(--text-light);margin-top:4px">视觉重心: (${(r.features.nx*100).toFixed(0)}%, ${(r.features.ny*100).toFixed(0)}%) · 对称度 ${(r.features.symScore*100).toFixed(0)}% · 线条填充 ${(r.features.fillRatio*100).toFixed(0)}%</div>
+  `;
+}
+
+async function saveToCompositionLibrary() {
+  if (!lastComposition) { showToast('请先点「识别当前图片构图」'); return; }
+  const db = await openDB();
+  const all = await new Promise((res, rej) => {
+    const tx = db.transaction('compositions', 'readonly');
+    const rq = tx.objectStore('compositions').getAll();
+    rq.onsuccess = () => res(rq.result || []); rq.onerror = () => rej(rq.error);
+  });
+  let sim = 0;
+  all.forEach(o => { if (o.type === lastComposition.type && compositionDistance(o.features, lastComposition.features) < 0.42) sim++; });
+  let sketchData = null;
+  if (trainerSketchImg) {
+    const maxSide = 1000, ow = trainerSketchImg.width, oh = trainerSketchImg.height;
+    const sc = Math.min(1, maxSide / Math.max(ow, oh));
+    const sw = Math.round(ow*sc), sh = Math.round(oh*sc);
+    const sc2 = document.createElement('canvas'); sc2.width = sw; sc2.height = sh;
+    sc2.getContext('2d').drawImage(trainerSketchImg, 0, 0, sw, sh);
+    sketchData = sc2.toDataURL('image/png');
+  }
+  const rec = {
+    id: 'comp_' + Date.now(),
+    type: lastComposition.type, conf: lastComposition.conf, desc: lastComposition.desc,
+    features: lastComposition.features, thumb: lastComposition.thumb, sketch: sketchData,
+    similar: sim, timestamp: new Date().toISOString()
+  };
+  await new Promise((res, rej) => {
+    const tx = db.transaction('compositions', 'readwrite');
+    tx.objectStore('compositions').put(rec);
+    tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error);
+  });
+  showToast(`已收入「${rec.type}」草稿库${sim?('（与库内 '+sim+' 张相似）'):''} ✓`);
+  loadCompositionLibrary();
+}
+
+async function getAllCompositions() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('compositions', 'readonly');
+    const rq = tx.objectStore('compositions').getAll();
+    rq.onsuccess = () => resolve(rq.result || []); rq.onerror = () => reject(rq.error);
+  });
+}
+
+async function loadCompositionLibrary() {
+  const container = document.getElementById('complibContainer');
+  if (!container) return;
+  let all;
+  try { all = await getAllCompositions(); }
+  catch(e) { container.innerHTML = '<div class="complib-empty">读取失败</div>'; return; }
+  if (!all || all.length === 0) {
+    container.innerHTML = '<div class="complib-empty">暂无构图草稿，去「训练」页上传图片并识别后收入即可。</div>';
+    return;
+  }
+  const groups = {};
+  all.forEach(o => { (groups[o.type] = groups[o.type] || []).push(o); });
+  container.innerHTML = '';
+  Object.keys(groups).forEach(type => {
+    const list = groups[type].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const g = document.createElement('div'); g.className = 'complib-group';
+    g.innerHTML = `<h4>${type} <span class="cnt">${list.length} 张</span></h4>`;
+    const grid = document.createElement('div'); grid.className = 'complib-grid';
+    list.forEach(o => {
+      const item = document.createElement('div'); item.className = 'complib-item';
+      const simTag = o.similar ? `<span class="ci-sim">相似${o.similar}</span>` : '';
+      item.innerHTML = `${simTag}<img src="${o.thumb}" alt="${o.type}"><div class="ci-type">${(o.conf*100).toFixed(0)}%</div>`;
+      item.title = `${o.type} · 置信度 ${(o.conf*100).toFixed(0)}% · 点击载入画布`;
+      item.onclick = () => loadCompositionToCanvas(o);
+      grid.appendChild(item);
+    });
+    g.appendChild(grid); container.appendChild(g);
+  });
+}
+
+function loadCompositionToCanvas(o) {
+  const data = o.sketch || o.thumb;
+  if (!data) { showToast('该草稿无可载入图像'); return; }
+  const img = new Image();
+  img.onload = () => {
+    addLayer('构图草稿·' + o.type);
+    const ctx = layers[activeLayerIdx].ctx;
+    const fit = Math.min(canvasW / img.width, canvasH / img.height);
+    const w = img.width * fit, h = img.height * fit;
+    ctx.drawImage(img, (canvasW - w)/2, (canvasH - h)/2, w, h);
+    compositeToMain(); renderLayerList();
+    showToast('构图草稿已载入画布 ✓');
+  };
+  img.src = data;
+}
+
+async function clearCompositionLibrary() {
+  if (!confirm('确定清空构图草稿库？此操作不可恢复。')) return;
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction('compositions', 'readwrite');
+    tx.objectStore('compositions').clear();
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+  showToast('构图草稿库已清空');
+  loadCompositionLibrary();
+}
+
+async function exportCompositionLibrary() {
+  const all = await getAllCompositions();
+  const payload = { app:'DraftGen', kind:'composition-library', version:1, exportedAt:new Date().toISOString(), items: all };
+  const blob = new Blob([JSON.stringify(payload)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'draftgen_compositions_' + Date.now() + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  showToast(`已导出 ${all.length} 张构图草稿到本地文件 ✓`);
+}
+
+function importCompositionLibrary(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const items = Array.isArray(data) ? data : (data.items || []);
+      if (!items.length) { showToast('文件中没有构图草稿'); return; }
+      const db = await openDB();
+      let added = 0;
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction('compositions', 'readwrite');
+        const store = tx.objectStore('compositions');
+        items.forEach(it => {
+          if (!it.id) it.id = 'comp_imp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+          store.put(it); added++;
+        });
+        tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+      });
+      showToast(`已导入 ${added} 张构图草稿 ✓`);
+      loadCompositionLibrary();
+    } catch(err) {
+      showToast('导入失败：文件格式不正确');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
 // ============ IMAGE TO SKETCH ============
 let uploadedImage = null;
 
@@ -2365,6 +2706,9 @@ function openDB() {
       if (!db.objectStoreNames.contains('versions')) {
         db.createObjectStore('versions', { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains('compositions')) {
+        db.createObjectStore('compositions', { keyPath: 'id' });
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -2606,6 +2950,7 @@ function switchTab(tabName) {
   document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
   const el = document.getElementById('tab-' + tabName);
   if (el) el.style.display = 'block';
+  if (tabName === 'complib') loadCompositionLibrary();
 }
 
 // ============ SLIDERS ============
