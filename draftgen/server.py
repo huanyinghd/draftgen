@@ -196,13 +196,16 @@ ART_SEM = asyncio.Semaphore(2)
 async def _wm_fetch(wm: str, aid: str = None):
     """拉取名作图片字节；成功返回 bytes，失败返回 None。"""
     ua = {"User-Agent": "DraftGen/1.0 (art prefetch)"}
-    # 1) 直链回退（超大/受限图）
+    # 1) 直链回退（超大/受限图）—— WGA 等站会拦截机器人 UA，故用浏览器 UA
     alt = _WM_ALT.get(aid) if aid else None
     if alt:
+        browser_ua = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                   "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                   "Chrome/120.0 Safari/537.36"}
         for attempt in range(4):
             try:
                 async with httpx.AsyncClient(follow_redirects=True, timeout=120) as client:
-                    r = await client.get(alt, headers=ua)
+                    r = await client.get(alt, headers=browser_ua)
                 if r.status_code == 200 and len(r.content) > 1000:
                     return r.content
             except Exception:
