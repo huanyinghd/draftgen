@@ -182,12 +182,33 @@ async def index():
 # 名作图片按需代理：文件不存在时实时从 Wikimedia 拉取并缓存到本地。
 # 由 Render 服务端代取，规避国内 GFW 对维基的封锁；尊重 429 的 Retry-After 退避重试，
 # 并在 Special:FilePath 双源（Commons / en.wikipedia）失效时回退到 imageinfo 规范 URL。
+# 个别超大原图在 Wikimedia 的 Special:FilePath?width= 缩略图会因新版权限/体积限制而 404：
+# 丢勒自画像取 Wikimedia 原图直链（非 /thumb/ 路径，不受缩略图限制）；
+# 宫娥(266MB)/忧郁症(17.9MB)改取 Web Gallery of Art 直链（小图、无缩略图限制）。
+_WM_ALT = {
+    "durer-self": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Albrecht_D%C3%BCrer_-_1500_self-portrait_%28High_resolution_and_detail%29.jpg",
+    "melencolia": "https://www.wga.hu/art/d/durer/2/13/4/079.jpg",
+    "las-meninas": "https://www.wga.hu/art/v/velazque/08/0804vela.jpg",
+}
 _WM_MAP = dict(ART_COLLECTION)
 ART_SEM = asyncio.Semaphore(2)
 
-async def _wm_fetch(wm: str):
-    """拉取维基图片字节；成功返回 bytes，失败返回 None。"""
+async def _wm_fetch(wm: str, aid: str = None):
+    """拉取名作图片字节；成功返回 bytes，失败返回 None。"""
     ua = {"User-Agent": "DraftGen/1.0 (art prefetch)"}
+    # 1) 直链回退（超大/受限图）
+    alt = _WM_ALT.get(aid) if aid else None
+    if alt:
+        for attempt in range(4):
+            try:
+                async with httpx.AsyncClient(follow_redirects=True, timeout=120) as client:
+                    r = await client.get(alt, headers=ua)
+                if r.status_code == 200 and len(r.content) > 1000:
+                    return r.content
+            except Exception:
+                pass
+            await asyncio.sleep(2 * (attempt + 1))
+    # 2) Wikimedia Special:FilePath 双源（Commons / en.wikipedia）
     bases = (
         "https://commons.wikimedia.org/wiki/Special:FilePath/",
         "https://en.wikipedia.org/wiki/Special:FilePath/",
@@ -223,9 +244,9 @@ async def _wm_fetch(wm: str):
                 retried = True
         if not retried:  # 两源都确定性失败（如 404 文件名错），不再重试
             break
-    # 回退：用 imageinfo 取规范 upload URL 再拉一次
+    # 3) 回退：用 imageinfo 取规范 upload URL（原图）再拉一次
     try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=120) as client:
             api = ("https://commons.wikimedia.org/w/api.php?action=query&format=json"
                    "&prop=imageinfo&iiprop=url&titles=File:" + urllib.parse.quote(wm))
             r = await client.get(api, headers=ua)
@@ -256,7 +277,7 @@ async def art_collection_proxy(filename: str):
     wm = _WM_MAP.get(aid)
     if not wm:
         raise HTTPException(status_code=404, detail="not found")
-    data = await _wm_fetch(wm)
+    data = await _wm_fetch(wm, aid)
     if data:
         with open(dest, "wb") as f:
             f.write(data)
