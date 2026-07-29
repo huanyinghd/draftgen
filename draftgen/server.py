@@ -9,6 +9,85 @@ from typing import Optional
 
 app = FastAPI(title="DraftGen Server")
 
+# ---- 美术馆·名作图片预下载（部署/启动时自动补齐 static/art-collection，避免依赖被墙的外部图源）----
+import urllib.parse
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+# (id, Wikimedia 文件名) —— 与 index.html 中 aestheticCollection 的 wm 字段保持一致
+ART_COLLECTION = [
+    ("mona-lisa", "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg"),
+    ("birth-of-venus", "Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg"),
+    ("school-of-athens", "Raffael_058.jpg"),
+    ("sistine-madonna", "Raphael_-_Sistine_Madonna_-_Google_Art_Project.jpg"),
+    ("creation-adam", "Michelangelo_-_Creation_of_Adam_(cropped).jpg"),
+    ("arnolfini", "Van_Eyck_-_Arnolfini_Portrait.jpg"),
+    ("garden-delights", "The_Garden_of_earthly_delights.jpg"),
+    ("tower-babel", "Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_(Vienna)_-_Google_Art_Project_-_edited.jpg"),
+    ("durer-self", "Albrecht_Dürer_-_1500_self-portrait_-_Google_Art_Project.jpg"),
+    ("melencolia", "Melencolia_I.jpg"),
+    ("night-watch", "Rembrandt_van_Rijn-De_Nachtwacht-1642.jpg"),
+    ("rembrandt-self", "Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg"),
+    ("las-meninas", "Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg"),
+    ("girl-pearl", "1665_Girl_with_a_Pearl_Earring.jpg"),
+    ("liberty", "Eugène_Delacroix_-_Le_28_Juillet._La_Liberté_guidant_le_peuple.jpg"),
+    ("wanderer-fog", "Wanderer_above_the_sea_of_fog.jpg"),
+    ("third-may", "Francisco_de_Goya_y_Lucientes_-_El_tres_de_mayo_en_Madrid_o_Los_fusilamientos_-_Google_Art_Project.jpg"),
+    ("hay-wain", "John_Constable_The_Hay_Wain.jpg"),
+    ("fighting-temeraire", "Joseph_Mallord_William_Turner_-_The_Fighting_Temeraire_-_Google_Art_Project.jpg"),
+    ("ophelia", "John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg"),
+    ("impression-sunrise", "Monet_-_Impression,_Sunrise.jpg"),
+    ("water-lilies", "Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg"),
+    ("starry-night", "Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"),
+    ("sunflowers", "Vincent_Willem_van_Gogh_127.jpg"),
+    ("moulin-rouge", "Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_Google_Art_Project.jpg"),
+    ("kiss-klimt", "The_Kiss_-_Gustav_Klimt_-_Google_Art_Project.jpg"),
+    ("scream", "Edvard_Munch,_1893,_The_Scream,_oil,_tempera_and_pastel_on_cardboard,_91_x_73_cm,_National_Gallery_of_Norway.jpg"),
+    ("schiele-self", "Egon_Schiele_-_Self-Portrait_with_Halo.jpg"),
+    ("persistence-memory", "The_Persistence_of_Memory.jpg"),
+    ("american-gothic", "Grant_Wood_-_American_Gothic_-_Google_Art_Project.jpg"),
+    ("sleeping-gypsy", "Henri_Rousseau_-_The_Sleeping_Gypsy_-_Google_Art_Project.jpg"),
+    ("mondrian-comp", "Piet_Mondrian,_Composition_with_Red,_Blue_and_Yellow,_1930.jpg"),
+    ("black-square", "Kazimir_Malevich_-_Black_Square.jpg"),
+    ("whistler-mother", "James_McNeill_Whistler_-_Arrangement_in_Grey_and_Black_No._1_-_Google_Art_Project.jpg"),
+    ("olympia", "Édouard_Manet_-_Olympia_-_Google_Art_Project.jpg"),
+    ("great-wave", "Tsunami_by_hokusai_19th_century.jpg"),
+    ("vitruvian", "Da_Vinci_Vitruvian_Man.jpg"),
+    ("libyan-sibyl", "Michelangelo_-_Studies_for_the_Libyan_Sibyl_-_Google_Art_Project.jpg"),
+    ("anatomical-shoulder", "Leonardo_da_Vinci_-_Anatomical_studies_of_a_male_shoulder.jpg"),
+    ("study-hands", "Leonardo_da_Vinci_-_Study_of_hands.jpg"),
+    ("draftsman-nude", "Albrecht_Dürer_-_Draftsman_drawing_a_recumbent_nude_-_WGA7027.jpg"),
+    ("woman-toilette", "Edgar_Degas_-_Woman_at_her_Toilette_-_Google_Art_Project.jpg"),
+    ("rembrandt-draw", "Rembrandt_-_Self-portrait_drawing_at_a_window_-_WGA19016.jpg"),
+    ("hokusai-manga", "Hokusai_manga_-_vol_03_-_012.jpg"),
+]
+
+def _download_art_one(aid, wm):
+    base = os.path.join(os.path.dirname(__file__), "static", "art-collection")
+    os.makedirs(base, exist_ok=True)
+    dest = os.path.join(base, aid + ".jpg")
+    try:
+        if os.path.exists(dest) and os.path.getsize(dest) > 1000:
+            return
+        url = ("https://commons.wikimedia.org/wiki/Special:FilePath/"
+               + urllib.parse.quote(wm) + "?width=800")
+        with httpx.Client(follow_redirects=True, timeout=30) as client:
+            r = client.get(url, headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
+            if r.status_code == 200 and len(r.content) > 1000:
+                with open(dest, "wb") as f:
+                    f.write(r.content)
+    except Exception:
+        pass
+
+def prefetch_art_collection():
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        ex.map(lambda p: _download_art_one(*p), ART_COLLECTION)
+
+@app.on_event("startup")
+def _on_startup():
+    # 后台补齐名作图片，不阻塞服务器启动；已存在的图会跳过
+    threading.Thread(target=prefetch_art_collection, daemon=True).start()
+
 class DeepSeekRequest(BaseModel):
     api_key: str
     api_endpoint: str = "https://api.deepseek.com"
