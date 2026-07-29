@@ -1,9 +1,11 @@
 """DraftGen Backend Server - FastAPI with DeepSeek API proxy"""
 import os
+import re
+import asyncio
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel
 from typing import Optional
 
@@ -107,11 +109,6 @@ def prefetch_art_collection():
     for k, v in fails:
         print("[art-prefetch] 失败 %s -> %s" % (k, v))
 
-@app.on_event("startup")
-def _on_startup():
-    # 后台补齐名作图片，不阻塞服务器启动；已存在的图会跳过
-    threading.Thread(target=prefetch_art_collection, daemon=True).start()
-
 class DeepSeekRequest(BaseModel):
     api_key: str
     api_endpoint: str = "https://api.deepseek.com"
@@ -181,6 +178,45 @@ async def deepseek_proxy(req: DeepSeekRequest):
 @app.get("/")
 async def index():
     return FileResponse("./draftgen/static/index.html")
+
+# 名作图片按需代理：文件不存在时实时从 Wikimedia 拉取并缓存到本地，
+# 由浏览器自然分散请求（同域并发有限），避免一次性批量请求被限流
+_WM_MAP = dict(ART_COLLECTION)
+@app.get("/static/art-collection/{filename}")
+async def art_collection_proxy(filename: str):
+    if not re.match(r"^[a-z0-9-]+\.jpg$", filename):
+        raise HTTPException(status_code=404, detail="not found")
+    base = os.path.join(os.path.dirname(__file__), "static", "art-collection")
+    os.makedirs(base, exist_ok=True)
+    dest = os.path.join(base, filename)
+    if os.path.exists(dest) and os.path.getsize(dest) > 1000:
+        return FileResponse(dest, media_type="image/jpeg")
+    aid = filename[:-4]
+    wm = _WM_MAP.get(aid)
+    if not wm:
+        raise HTTPException(status_code=404, detail="not found")
+    data = None
+    for attempt in range(5):
+        try:
+            async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
+                r = await client.get(
+                    "https://commons.wikimedia.org/wiki/Special:FilePath/"
+                    + urllib.parse.quote(wm) + "?width=800",
+                    headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
+            if r.status_code == 200 and len(r.content) > 1000:
+                data = r.content
+                break
+            if r.status_code in (429, 500, 502, 503, 504):
+                await asyncio.sleep(1.5 * (attempt + 1))
+                continue
+            break
+        except Exception:
+            await asyncio.sleep(1.5 * (attempt + 1))
+    if data:
+        with open(dest, "wb") as f:
+            f.write(data)
+        return Response(data, media_type="image/jpeg")
+    raise HTTPException(status_code=404, detail="fetch failed")
 
 app.mount("/static", StaticFiles(directory="./draftgen/static"), name="static")
 
