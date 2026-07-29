@@ -10,6 +10,7 @@ from typing import Optional
 app = FastAPI(title="DraftGen Server")
 
 # ---- 美术馆·名作图片预下载（部署/启动时自动补齐 static/art-collection，避免依赖被墙的外部图源）----
+import time
 import urllib.parse
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -68,20 +69,43 @@ def _download_art_one(aid, wm):
     dest = os.path.join(base, aid + ".jpg")
     try:
         if os.path.exists(dest) and os.path.getsize(dest) > 1000:
-            return
+            return "skip"
         url = ("https://commons.wikimedia.org/wiki/Special:FilePath/"
                + urllib.parse.quote(wm) + "?width=800")
-        with httpx.Client(follow_redirects=True, timeout=30) as client:
-            r = client.get(url, headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
-            if r.status_code == 200 and len(r.content) > 1000:
-                with open(dest, "wb") as f:
-                    f.write(r.content)
-    except Exception:
-        pass
+        last_err = ""
+        for attempt in range(4):
+            try:
+                with httpx.Client(follow_redirects=True, timeout=60) as client:
+                    r = client.get(url, headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
+                if r.status_code == 200 and len(r.content) > 1000:
+                    with open(dest, "wb") as f:
+                        f.write(r.content)
+                    return "ok"
+                if r.status_code in (429, 500, 502, 503, 504):
+                    last_err = "HTTP %d" % r.status_code
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                last_err = "HTTP %d" % r.status_code
+                break
+            except Exception as e:
+                last_err = str(e)[:60]
+                time.sleep(2 * (attempt + 1))
+        return "fail:" + last_err
+    except Exception as e:
+        return "fail:" + str(e)[:60]
+
 
 def prefetch_art_collection():
-    with ThreadPoolExecutor(max_workers=8) as ex:
-        ex.map(lambda p: _download_art_one(*p), ART_COLLECTION)
+    results = {}
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        for res in ex.map(lambda p: (p[0], _download_art_one(*p)), ART_COLLECTION):
+            results[res[0]] = res[1]
+    ok = sum(1 for v in results.values() if v == "ok")
+    skip = sum(1 for v in results.values() if v == "skip")
+    fails = [(k, v) for k, v in results.items() if not v.startswith(("ok", "skip"))]
+    print("[art-prefetch] 完成：新增 %d / 跳过 %d / 失败 %d" % (ok, skip, len(fails)))
+    for k, v in fails:
+        print("[art-prefetch] 失败 %s -> %s" % (k, v))
 
 @app.on_event("startup")
 def _on_startup():
