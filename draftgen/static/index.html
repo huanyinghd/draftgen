@@ -353,6 +353,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </div>
 </div>
 
+<!-- Image Draft Modal -->
+<div class="art-modal" id="imgDraftModal" onclick="if(event.target===this)closeImgDraftModal()">
+  <div class="art-modal-inner">
+    <img id="imgDraftModalImg" src="" alt="">
+    <div class="art-modal-body">
+      <h3 id="imgDraftModalTitle"></h3>
+      <div class="sub" id="imgDraftModalSub"></div>
+      <div class="art-modal-actions">
+        <button class="action-btn" onclick="imgDraftToCanvas()">🖼️ 放入画布</button>
+        <button class="action-btn" onclick="imgDraftToRef()">📐 放入参考层</button>
+        <button class="action-btn" onclick="imgDraftToBg()">🌄 设为背景</button>
+        <button class="action-btn" onclick="imgDraftDownload()">⬇️ 下载到本地</button>
+        <button class="action-btn secondary" onclick="imgDraftDelete()">🗑️ 删除</button>
+        <button class="action-btn secondary" onclick="closeImgDraftModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Header -->
 <div class="header">
   <h1>🎨 DraftGen 草稿生成器</h1>
@@ -429,6 +448,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
       <div class="tab" data-tab="complib" onclick="switchTab('complib')">构图库</div>
       <div class="tab" data-tab="aesthetic" onclick="switchTab('aesthetic')">审美积累</div>
+      <div class="tab" data-tab="imgdraft" onclick="switchTab('imgdraft')">图片库</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
       <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
     </div>
@@ -584,6 +604,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
             <input id="aesSearch" placeholder="搜索作品 / 艺术家…">
           </div>
           <div class="aesthetic-grid" id="aesGrid"></div>
+        </div>
+      </div>
+
+      <!-- Image Draft Library Tab -->
+      <div class="tab-content" id="tab-imgdraft" style="display:none">
+        <div class="panel-section">
+          <h3>🖼️ 图片草稿库</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">所有经过网站的图片（上传训练、转草图、URL导入、审美作品）都会自动收集到这里，存在你浏览器本地，随时调取、不丢失。</p>
+          <div class="aesthetic-toolbar">
+            <select id="imgdraftFilter" onchange="renderImgDraftLibrary()">
+              <option value="">全部来源</option>
+              <option value="训练·原图">训练·原图</option>
+              <option value="训练·草图">训练·草图</option>
+              <option value="转草图·原图">转草图·原图</option>
+              <option value="URL导入">URL导入</option>
+              <option value="审美作品">审美作品</option>
+            </select>
+            <input id="imgdraftSearch" placeholder="搜索来源 / 名称…" oninput="renderImgDraftLibrary()">
+          </div>
+          <div class="aesthetic-grid" id="imgdraftGrid"></div>
+          <div class="aes-actions">
+            <button class="action-btn secondary" style="flex:1" onclick="exportImgDrafts()">📦 导出</button>
+            <button class="action-btn secondary" style="flex:1" onclick="document.getElementById('imgdraftImport').click()">📥 导入</button>
+            <button class="action-btn secondary" style="flex:1" onclick="clearImgDraftsConfirm()">🗑️ 清空</button>
+          </div>
+          <input type="file" id="imgdraftImport" accept="application/json,.json" style="display:none" onchange="importImgDrafts(event)">
         </div>
       </div>
 
@@ -2354,6 +2400,7 @@ function handleTrainerUpload(event) {
     const img = new Image();
     img.onload = () => {
       trainerImage = img;
+      captureImage(img, '训练原图', '训练·原图');
       const prev = document.getElementById('trainerPreview');
       const prevImg = document.getElementById('trainerPreviewImg');
       prevImg.src = e.target.result;
@@ -2393,7 +2440,10 @@ async function generateTrainerSketch() {
   }
   octx.putImageData(od, 0, 0);
   trainerSketchImg = new Image();
-  trainerSketchImg.onload = () => showToast('草图已生成 ✓ 可「放入画布」或「保存到本地」');
+  trainerSketchImg.onload = () => {
+    showToast('草图已生成 ✓ 可「放入画布」或「保存到本地」');
+    captureImage(trainerSketchImg, '训练草图', '训练·草图');
+  };
   trainerSketchImg.src = out.toDataURL('image/png');
 }
 
@@ -2809,6 +2859,7 @@ function artPlaceRef() {
     ctx.globalAlpha = 1;
     compositeToMain(); renderLayerList();
     showToast('已放入参考层 ✓');
+    captureImage(img, a.title, '审美作品');
   });
 }
 function artSetBg() {
@@ -2822,6 +2873,7 @@ function artSetBg() {
     while (activeLayerIdx > 1) moveLayerDown();
     compositeToMain(); renderLayerList();
     showToast('已设为背景 ✓');
+    captureImage(img, a.title, '审美作品');
   });
 }
 async function artDownload() {
@@ -2848,6 +2900,218 @@ function artToggleFav() {
   showToast(favs.includes(id) ? '已收藏，可在「★ 我的收藏」随时调取 ✓' : '已取消收藏');
 }
 
+// ============ 图片草稿库（所有经过网站的图片自动收集 / IndexedDB 本地） ============
+let _imgdraftSeq = 0;
+let currentImgDraftRec = null;
+
+// 把图片降采样成可存储的全图（限制最长边，省空间）
+function downscaleImage(img, maxSide) {
+  maxSide = maxSide || 1200;
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').drawImage(img, 0, 0, w, h);
+  return { dataURL: c.toDataURL('image/jpeg', 0.85), w, h };
+}
+function makeThumb(img, maxSide) {
+  maxSide = maxSide || 220;
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').drawImage(img, 0, 0, w, h);
+  return c.toDataURL('image/jpeg', 0.72);
+}
+
+// 自动收集：任何图片入口调用此函数即可入库（跨域受限时静默跳过）
+function captureImage(img, name, source) {
+  if (!img || !img.width) return;
+  try {
+    const ds = downscaleImage(img, 1200);
+    const thumb = makeThumb(img, 220);
+    const rec = {
+      id: 'img_' + Date.now() + '_' + (_imgdraftSeq++),
+      src: ds.dataURL, thumb: thumb,
+      name: (name || source || '图片'),
+      source: (source || '导入'),
+      w: ds.w, h: ds.h,
+      ts: new Date().toISOString()
+    };
+    saveImgDraft(rec).catch(() => {});
+  } catch (e) { /* 跨域图片无法抓取时静默跳过 */ }
+}
+
+async function saveImgDraft(rec) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('imgdrafts', 'readwrite');
+    tx.objectStore('imgdrafts').put(rec);
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+}
+async function getAllImgDrafts() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('imgdrafts', 'readonly');
+    const req = tx.objectStore('imgdrafts').getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(tx.error);
+  });
+}
+async function deleteImgDraft(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('imgdrafts', 'readwrite');
+    tx.objectStore('imgdrafts').delete(id);
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+}
+async function clearImgDrafts() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('imgdrafts', 'readwrite');
+    tx.objectStore('imgdrafts').clear();
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function renderImgDraftLibrary() {
+  const grid = document.getElementById('imgdraftGrid');
+  if (!grid) return;
+  let items = [];
+  try { items = await getAllImgDrafts(); } catch (e) { items = []; }
+  items.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  const filter = (document.getElementById('imgdraftFilter') || {}).value || '';
+  const q = ((document.getElementById('imgdraftSearch') || {}).value || '').toLowerCase();
+  grid.innerHTML = '';
+  const filtered = items.filter(it =>
+    (filter === '' || it.source === filter) &&
+    (!q || (it.name || '').toLowerCase().includes(q) || (it.source || '').toLowerCase().includes(q))
+  );
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="art-empty">还没有图片经过网站。上传训练图片、转草图、导入URL或调取审美作品，都会自动收集到这里。</div>';
+    return;
+  }
+  filtered.forEach(it => {
+    const card = document.createElement('div');
+    card.className = 'art-card';
+    card.innerHTML =
+      `<img src="${it.thumb}" alt="${it.name}" loading="lazy">` +
+      `<div class="meta"><div class="t">${it.name}</div><div class="a">${it.source}</div>` +
+      `<span class="badge painting">${it.w}×${it.h}</span></div>`;
+    card.onclick = () => openImgDraftModal(it.id);
+    grid.appendChild(card);
+  });
+}
+
+function openImgDraftModal(id) {
+  getAllImgDrafts().then(items => {
+    const it = items.find(x => x.id === id);
+    if (!it) return;
+    currentImgDraftRec = it;
+    document.getElementById('imgDraftModalImg').src = it.src;
+    document.getElementById('imgDraftModalTitle').textContent = it.name;
+    document.getElementById('imgDraftModalSub').textContent = `${it.source} · ${it.w}×${it.h} · ${new Date(it.ts).toLocaleString()}`;
+    document.getElementById('imgDraftModal').style.display = 'flex';
+  });
+}
+function closeImgDraftModal() { document.getElementById('imgDraftModal').style.display = 'none'; currentImgDraftRec = null; }
+
+function imgDraftToCanvas() {
+  if (!currentImgDraftRec) return;
+  const img = new Image();
+  img.onload = () => {
+    const ctx = getActiveLayerCtx();
+    if (!ctx) { showToast('图层已锁定'); return; }
+    ctx.drawImage(img, 0, 0);
+    compositeToMain();
+    showToast('已放入画布 ✓');
+  };
+  img.src = currentImgDraftRec.src;
+}
+function imgDraftToRef() {
+  if (!currentImgDraftRec) return;
+  const img = new Image();
+  img.onload = () => {
+    addLayer('图片·' + currentImgDraftRec.name);
+    const ctx = layers[activeLayerIdx].ctx;
+    const fit = Math.min(canvasW / img.width, canvasH / img.height);
+    const w = img.width * fit, h = img.height * fit;
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(img, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    ctx.globalAlpha = 1;
+    compositeToMain(); renderLayerList();
+    showToast('已放入参考层 ✓');
+  };
+  img.src = currentImgDraftRec.src;
+}
+function imgDraftToBg() {
+  if (!currentImgDraftRec) return;
+  const img = new Image();
+  img.onload = () => {
+    addLayer('背景·' + currentImgDraftRec.name);
+    const ctx = layers[activeLayerIdx].ctx;
+    const fit = Math.min(canvasW / img.width, canvasH / img.height);
+    const w = img.width * fit, h = img.height * fit;
+    ctx.drawImage(img, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    while (activeLayerIdx > 1) moveLayerDown();
+    compositeToMain(); renderLayerList();
+    showToast('已设为背景 ✓');
+  };
+  img.src = currentImgDraftRec.src;
+}
+function imgDraftDownload() {
+  if (!currentImgDraftRec) return;
+  const a = document.createElement('a');
+  a.href = currentImgDraftRec.src;
+  a.download = (currentImgDraftRec.name || 'image') + '.jpg';
+  document.body.appendChild(a); a.click(); a.remove();
+  showToast('已下载到本地 ✓');
+}
+async function imgDraftDelete() {
+  if (!currentImgDraftRec) return;
+  await deleteImgDraft(currentImgDraftRec.id);
+  closeImgDraftModal();
+  renderImgDraftLibrary();
+  showToast('已删除 ✓');
+}
+async function clearImgDraftsConfirm() {
+  if (!confirm('确定清空图片草稿库？此操作不可恢复。')) return;
+  await clearImgDrafts();
+  renderImgDraftLibrary();
+  showToast('已清空 ✓');
+}
+async function exportImgDrafts() {
+  const all = await getAllImgDrafts();
+  const payload = { app: 'DraftGen', kind: 'image-library', version: 1, exportedAt: new Date().toISOString(), items: all };
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'draftgen_images_' + Date.now() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  showToast(`已导出 ${all.length} 张图片到本地文件 ✓`);
+}
+function importImgDrafts(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const items = Array.isArray(data) ? data : (data.items || []);
+      if (!items.length) { showToast('文件中没有图片'); return; }
+      for (const it of items) {
+        if (!it.id) it.id = 'img_imp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        await saveImgDraft(it);
+      }
+      showToast(`已导入 ${items.length} 张图片 ✓`);
+      renderImgDraftLibrary();
+    } catch (err) { showToast('导入失败：文件格式不正确'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
 // ============ IMAGE TO SKETCH ============
 let uploadedImage = null;
 
@@ -2857,7 +3121,7 @@ function handleImageUpload(event) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
-    img.onload = () => { uploadedImage = img; showToast('图片已加载 ✓'); };
+    img.onload = () => { uploadedImage = img; captureImage(img, '转草图原图', '转草图·原图'); showToast('图片已加载 ✓'); };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
@@ -2868,7 +3132,7 @@ function loadImageFromUrl() {
   if (!url) { showToast('请输入URL'); return; }
   const img = new Image();
   img.crossOrigin = 'anonymous';
-  img.onload = () => { uploadedImage = img; showToast('图片已加载 ✓'); };
+  img.onload = () => { uploadedImage = img; captureImage(img, (url.split('/').pop().slice(0,30) || 'URL图片'), 'URL导入'); showToast('图片已加载 ✓'); };
   img.onerror = () => showToast('图片加载失败');
   img.src = url;
 }
@@ -3167,7 +3431,7 @@ async function batchGenerate() {
 // IndexedDB
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('DraftGenDB', 1);
+    const req = indexedDB.open('DraftGenDB', 2);
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains('drafts')) {
@@ -3178,6 +3442,9 @@ function openDB() {
       }
       if (!db.objectStoreNames.contains('compositions')) {
         db.createObjectStore('compositions', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('imgdrafts')) {
+        db.createObjectStore('imgdrafts', { keyPath: 'id' });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -3421,6 +3688,7 @@ function switchTab(tabName) {
   const el = document.getElementById('tab-' + tabName);
   if (el) el.style.display = 'block';
   if (tabName === 'complib') loadCompositionLibrary();
+  if (tabName === 'imgdraft') renderImgDraftLibrary();
 }
 
 // ============ SLIDERS ============
