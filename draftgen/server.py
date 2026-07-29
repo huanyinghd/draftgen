@@ -22,47 +22,47 @@ ART_COLLECTION = [
     ("mona-lisa", "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg"),
     ("birth-of-venus", "Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg"),
     ("school-of-athens", "Raffael_058.jpg"),
-    ("sistine-madonna", "Raphael_-_Sistine_Madonna_-_Google_Art_Project.jpg"),
+    ("sistine-madonna", "Sistine_Madonna_(original)_FXD.jpg"),
     ("creation-adam", "Michelangelo_-_Creation_of_Adam_(cropped).jpg"),
     ("arnolfini", "Van_Eyck_-_Arnolfini_Portrait.jpg"),
     ("garden-delights", "The_Garden_of_earthly_delights.jpg"),
     ("tower-babel", "Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_(Vienna)_-_Google_Art_Project_-_edited.jpg"),
-    ("durer-self", "Albrecht_Dürer_-_1500_self-portrait_-_Google_Art_Project.jpg"),
-    ("melencolia", "Melencolia_I.jpg"),
+    ("durer-self", "Albrecht_Dürer_-_1500_self-portrait_(High_resolution_and_detail).jpg"),
+    ("melencolia", "Albrecht_Dürer_-_Melencolia_I_-_Google_Art_Project_(427760).jpg"),
     ("night-watch", "Rembrandt_van_Rijn-De_Nachtwacht-1642.jpg"),
     ("rembrandt-self", "Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg"),
     ("las-meninas", "Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg"),
     ("girl-pearl", "1665_Girl_with_a_Pearl_Earring.jpg"),
     ("liberty", "Eugène_Delacroix_-_Le_28_Juillet._La_Liberté_guidant_le_peuple.jpg"),
-    ("wanderer-fog", "Wanderer_above_the_sea_of_fog.jpg"),
-    ("third-may", "Francisco_de_Goya_y_Lucientes_-_El_tres_de_mayo_en_Madrid_o_Los_fusilamientos_-_Google_Art_Project.jpg"),
+    ("wanderer-fog", "Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg"),
+    ("third-may", "El_Tres_de_Mayo,_by_Francisco_de_Goya,_from_Prado_in_Google_Earth.jpg"),
     ("hay-wain", "John_Constable_The_Hay_Wain.jpg"),
-    ("fighting-temeraire", "Joseph_Mallord_William_Turner_-_The_Fighting_Temeraire_-_Google_Art_Project.jpg"),
+    ("fighting-temeraire", "The_Fighting_Temeraire,_JMW_Turner,_National_Gallery.jpg"),
     ("ophelia", "John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg"),
     ("impression-sunrise", "Monet_-_Impression,_Sunrise.jpg"),
     ("water-lilies", "Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg"),
     ("starry-night", "Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"),
     ("sunflowers", "Vincent_Willem_van_Gogh_127.jpg"),
     ("moulin-rouge", "Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_Google_Art_Project.jpg"),
-    ("kiss-klimt", "The_Kiss_-_Gustav_Klimt_-_Google_Art_Project.jpg"),
+    ("kiss-klimt", "The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg"),
     ("scream", "Edvard_Munch,_1893,_The_Scream,_oil,_tempera_and_pastel_on_cardboard,_91_x_73_cm,_National_Gallery_of_Norway.jpg"),
-    ("schiele-self", "Egon_Schiele_-_Self-Portrait_with_Halo.jpg"),
+    ("schiele-self", "Egon_Schiele_-_Self-Portrait_with_Lowered_Head_-_Google_Art_Project.jpg"),
     ("persistence-memory", "The_Persistence_of_Memory.jpg"),
     ("american-gothic", "Grant_Wood_-_American_Gothic_-_Google_Art_Project.jpg"),
-    ("sleeping-gypsy", "Henri_Rousseau_-_The_Sleeping_Gypsy_-_Google_Art_Project.jpg"),
-    ("mondrian-comp", "Piet_Mondrian,_Composition_with_Red,_Blue_and_Yellow,_1930.jpg"),
-    ("black-square", "Kazimir_Malevich_-_Black_Square.jpg"),
-    ("whistler-mother", "James_McNeill_Whistler_-_Arrangement_in_Grey_and_Black_No._1_-_Google_Art_Project.jpg"),
-    ("olympia", "Édouard_Manet_-_Olympia_-_Google_Art_Project.jpg"),
+    ("sleeping-gypsy", "La_Bohémienne_endormie.jpg"),
+    ("mondrian-comp", "Composition-with-red-yellow-and-blue.jpg"),
+    ("black-square", "Malevich.black-square.jpg"),
+    ("whistler-mother", "Whistlers_Mother_high_res.jpg"),
+    ("olympia", "Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg"),
     ("great-wave", "Tsunami_by_hokusai_19th_century.jpg"),
-    ("vitruvian", "Da_Vinci_Vitruvian_Man.jpg"),
-    ("libyan-sibyl", "Michelangelo_-_Studies_for_the_Libyan_Sibyl_-_Google_Art_Project.jpg"),
-    ("anatomical-shoulder", "Leonardo_da_Vinci_-_Anatomical_studies_of_a_male_shoulder.jpg"),
-    ("study-hands", "Leonardo_da_Vinci_-_Study_of_hands.jpg"),
-    ("draftsman-nude", "Albrecht_Dürer_-_Draftsman_drawing_a_recumbent_nude_-_WGA7027.jpg"),
-    ("woman-toilette", "Edgar_Degas_-_Woman_at_her_Toilette_-_Google_Art_Project.jpg"),
-    ("rembrandt-draw", "Rembrandt_-_Self-portrait_drawing_at_a_window_-_WGA19016.jpg"),
-    ("hokusai-manga", "Hokusai_manga_-_vol_03_-_012.jpg"),
+    ("vitruvian", "Da_Vinci_Vitruve_Luc_Viatour.jpg"),
+    ("libyan-sibyl", "LibyanSibyl_SistineChapel.jpg"),
+    ("anatomical-shoulder", "Leonardo_da_Vinci_-_Anatomical_studies_of_the_shoulder_-_WGA12824.jpg"),
+    ("study-hands", "Leonardo_da_Vinci_-_Study_of_hands_-_WGA12812.jpg"),
+    ("draftsman-nude", "Dürer_-_Zeichner_und_Akt.jpg"),
+    ("woman-toilette", "Degas_-_Woman-At-Her-Toilette-I.jpg"),
+    ("rembrandt-draw", "Rembrandt_van_Rijn,_Self-Portrait_Drawing_at_a_Window,_1648,_NGA_9930.jpg"),
+    ("hokusai-manga", "Manga_Hokusai.jpg"),
 ]
 
 def _download_art_one(aid, wm):
@@ -182,6 +182,7 @@ async def index():
 # 名作图片按需代理：文件不存在时实时从 Wikimedia 拉取并缓存到本地，
 # 由浏览器自然分散请求（同域并发有限），避免一次性批量请求被限流
 _WM_MAP = dict(ART_COLLECTION)
+ART_SEM = asyncio.Semaphore(2)
 @app.get("/static/art-collection/{filename}")
 async def art_collection_proxy(filename: str):
     if not re.match(r"^[a-z0-9-]+\.jpg$", filename):
@@ -196,22 +197,29 @@ async def art_collection_proxy(filename: str):
     if not wm:
         raise HTTPException(status_code=404, detail="not found")
     data = None
+    last_status = None
     for attempt in range(5):
-        try:
-            async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
-                r = await client.get(
-                    "https://commons.wikimedia.org/wiki/Special:FilePath/"
-                    + urllib.parse.quote(wm) + "?width=800",
-                    headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
-            if r.status_code == 200 and len(r.content) > 1000:
-                data = r.content
-                break
-            if r.status_code in (429, 500, 502, 503, 504):
-                await asyncio.sleep(1.5 * (attempt + 1))
-                continue
+        for base in ("https://commons.wikimedia.org/wiki/Special:FilePath/",
+                     "https://en.wikipedia.org/wiki/Special:FilePath/"):
+            try:
+                async with ART_SEM:
+                    async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
+                        r = await client.get(
+                            base + urllib.parse.quote(wm) + "?width=800",
+                            headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
+                if r.status_code == 200 and len(r.content) > 1000:
+                    data = r.content
+                    break
+                last_status = r.status_code
+            except Exception as e:
+                last_status = str(e)[:40]
+        if data:
             break
-        except Exception:
+        # 两源都失败：限流类退避重试；404 类（文件名仍错）直接放弃
+        if last_status in (429, 500, 502, 503, 504):
             await asyncio.sleep(1.5 * (attempt + 1))
+        else:
+            break
     if data:
         with open(dest, "wb") as f:
             f.write(data)
