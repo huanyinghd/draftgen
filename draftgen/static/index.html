@@ -262,9 +262,55 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .complib-item .ci-type { font-size:9px; padding:2px 4px; color:var(--accent-dark); background:var(--card); }
 .complib-item .ci-sim { position:absolute; top:2px; left:2px; font-size:8px; background:rgba(0,0,0,0.6); color:#fff; padding:1px 4px; border-radius:6px; }
 .complib-empty { font-size:11px; color:var(--text-light); text-align:center; padding:20px 0; }
+
+/* 艺术家名单 + 对话框 */
+.artist-list { display:flex; flex-direction:column; gap:6px; max-height:360px; overflow-y:auto; padding-right:4px; }
+.artist-row { display:flex; align-items:center; gap:10px; padding:6px 8px; border:1px solid var(--border); border-radius:8px; background:var(--card); cursor:pointer; transition:.15s; }
+.artist-row:hover { border-color:var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.08); transform:translateY(-1px); }
+.artist-row .av { width:34px; height:34px; border-radius:50%; object-fit:cover; background:#ddd; flex:0 0 auto; font-weight:700; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.artist-row .nm { font-size:13px; font-weight:600; }
+.artist-row .en { font-size:10px; color:var(--text-light); }
+.artist-row .arrow { margin-left:auto; color:var(--text-light); font-size:16px; }
+
+.artist-modal { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; background:rgba(20,16,10,.55); }
+.artist-modal-card { position:relative; width:min(440px,92vw); max-height:86vh; overflow:hidden; border-radius:16px; background:#fff; box-shadow:0 20px 60px rgba(0,0,0,.4); display:flex; flex-direction:column; }
+.artist-modal-bg { position:absolute; inset:0; background-size:cover; background-position:center top; }
+.artist-modal-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.82) 100%); }
+.artist-modal-head { position:relative; z-index:2; padding:22px 22px 14px; color:#fff; }
+.artist-modal-head .am-en { font-size:11px; opacity:.82; letter-spacing:.4px; }
+.artist-modal-head .am-nm { font-size:22px; font-weight:800; margin-top:2px; text-shadow:0 2px 8px rgba(0,0,0,.5); }
+.artist-modal-head .am-sub { font-size:11px; opacity:.85; margin-top:4px; }
+.artist-modal-close { position:absolute; top:12px; right:12px; z-index:3; width:30px; height:30px; border:none; border-radius:50%; background:rgba(0,0,0,.4); color:#fff; font-size:20px; cursor:pointer; line-height:1; }
+.artist-modal-close:hover { background:rgba(0,0,0,.65); }
+.artist-works { position:relative; z-index:2; padding:8px 16px 20px; overflow-y:auto; background:#fff; border-radius:16px 16px 0 0; margin-top:auto; }
+.artist-works .aw-title { font-size:12px; color:var(--text-light); margin:8px 4px 10px; }
+.aw-item { display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px; cursor:pointer; background:#fff; transition:.15s; }
+.aw-item:hover { border-color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,.1); }
+.aw-swatches { display:flex; gap:3px; }
+.aw-swatches i { width:16px; height:16px; border-radius:3px; display:inline-block; border:1px solid rgba(0,0,0,.08); }
+.aw-name { font-size:13px; font-weight:600; }
+.aw-meta { font-size:10px; color:var(--text-light); }
+.aw-apply { margin-left:auto; font-size:11px; color:var(--accent-dark); font-weight:700; white-space:nowrap; }
 </style>
 </head>
 <body>
+
+<!-- 艺术家对话框 -->
+<div class="artist-modal" id="artistModal" style="display:none" onclick="if(event.target===this)closeArtistModal()">
+  <div class="artist-modal-card">
+    <button class="artist-modal-close" onclick="closeArtistModal()">×</button>
+    <div class="artist-modal-bg" id="artistModalBg"></div>
+    <div class="artist-modal-head">
+      <div class="am-en" id="amEn"></div>
+      <div class="am-nm" id="amNm"></div>
+      <div class="am-sub" id="amSub"></div>
+    </div>
+    <div class="artist-works">
+      <div class="aw-title">选择代表作 · 点击把该画配色铺到画布</div>
+      <div id="artistWorks"></div>
+    </div>
+  </div>
+</div>
 
 <!-- Header -->
 <div class="header">
@@ -375,8 +421,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         </div>
         <div class="panel-section">
           <h3>🎨 艺术家油画配色</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">标注自世界名画的经典配色。点击色块取色，点「选为调色板」可把整组颜色一次性印到画布。</p>
-          <div class="palette-grid" id="artistPaletteGrid"></div>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">点击艺术家，弹出对话框（含肖像）。选择代表作，即可把该画的经典配色铺到画布。</p>
+          <div class="artist-list" id="artistList"></div>
         </div>
       </div>
 
@@ -1246,73 +1292,259 @@ const palettes = [
   { name: '对比', colors: ['#000000', '#FFFFFF', '#FF0000', '#0066FF', '#FFD700', '#333333'] },
   { name: '中性', colors: ['#2B2D42', '#8D99AE', '#EDF2F4', '#4A4E69', '#9A8C98', '#C9ADA7'] },
   { name: '梦幻', colors: ['#7B2D8E', '#B24BF3', '#D98CE8', '#F0C3F7', '#5C4B99', '#A78BFA'] },
-  // ===== 艺术家油画配色（标注画家与代表画作）=====
-  { name:'星月夜', artist:true, painter:'文森特·梵高', painting:'星月夜 The Starry Night', colors:['#0B1E3D','#1B3A6B','#2E6FB0','#3E78B0','#F4C430','#E8A33D'] },
-  { name:'向日葵', artist:true, painter:'文森特·梵高', painting:'向日葵 Sunflowers', colors:['#E8A33D','#D97E1E','#B5531B','#F2D06B','#6E8C3A','#2E241A'] },
-  { name:'睡莲', artist:true, painter:'克劳德·莫奈', painting:'睡莲 Water Lilies', colors:['#7BA6A0','#A7C4B8','#C9D6C0','#E4B7C9','#B8A9C9','#DCE8D8'] },
-  { name:'印象·日出', artist:true, painter:'克劳德·莫奈', painting:'印象·日出 Impression Sunrise', colors:['#4A6274','#7C97A6','#B7C7CE','#E06B2E','#C68A5C','#D9D2C4'] },
-  { name:'戴珍珠耳环的少女', artist:true, painter:'约翰内斯·维米尔', painting:'戴珍珠耳环的少女 Girl with a Pearl Earring', colors:['#1A1C2B','#20508C','#C8A24B','#E6DCC8','#3A2E26','#F2EDE3'] },
-  { name:'夜巡', artist:true, painter:'伦勃朗', painting:'夜巡 The Night Watch', colors:['#1C140C','#3E2A17','#7A5320','#B5893E','#2E2A22','#D9C9A3'] },
-  { name:'吻', artist:true, painter:'古斯塔夫·克里姆特', painting:'吻 The Kiss', colors:['#C9A227','#8C6B1F','#D6B34A','#6E4A2A','#3E2C1E','#A8C66C'] },
-  { name:'红黄蓝构成', artist:true, painter:'皮特·蒙德里安', painting:'红黄蓝的构成 Composition', colors:['#D40920','#1356A2','#F2C300','#FFFFFF','#000000','#EDEDED'] },
-  { name:'呐喊', artist:true, painter:'爱德华·蒙克', painting:'呐喊 The Scream', colors:['#D94E2B','#E89A3C','#6E8CB0','#2E4A6B','#C9B8A0','#1A1A1A'] },
-  { name:'蓝色时期', artist:true, painter:'巴勃罗·毕加索', painting:'蓝色时期 Blue Period', colors:['#1B3A5C','#2E5C8A','#4A7BA6','#6E97B8','#C9D2D6','#2A2A35'] },
-  { name:'蒙娜丽莎', artist:true, painter:'列奥纳多·达·芬奇', painting:'蒙娜丽莎 Mona Lisa', colors:['#3A2E1E','#5C4A2E','#7A6A45','#2E3A2A','#C9B89A','#1C1812'] },
-  { name:'夜游者', artist:true, painter:'爱德华·霍珀', painting:'夜游者 Nighthawks', colors:['#1A1E1A','#E8A33D','#C98A3C','#2E5C4A','#6E8C8C','#3A2E2A'] }
+];
+
+// ===== 艺术家油画配色：名单 + 对话框 + 作品配色 =====
+// 每位艺术家含 Wikipedia 条目名(wiki)，对话框头像由浏览器实时拉取该条目肖像；
+// 拉取失败(如网络限制)则回退为该画家代表色生成的渐变背景。
+const artists = [
+  { name:'文森特·梵高', en:'Vincent van Gogh', wiki:'Vincent van Gogh', life:'1853–1890', works:[
+    { name:'星月夜', en:'The Starry Night', colors:['#0B1E3D','#1B3A6B','#2E6FB0','#3E78B0','#F4C430','#E8A33D'] },
+    { name:'向日葵', en:'Sunflowers', colors:['#E8A33D','#D97E1E','#B5531B','#F2D06B','#6E8C3A','#2E241A'] },
+    { name:'夜间咖啡馆', en:'Café Terrace at Night', colors:['#1B2A4A','#2E4A7A','#E8B23C','#C97B2E','#6E4A2E','#F2D06B'] }
+  ]},
+  { name:'克劳德·莫奈', en:'Claude Monet', wiki:'Claude Monet', life:'1840–1926', works:[
+    { name:'睡莲', en:'Water Lilies', colors:['#7BA6A0','#A7C4B8','#C9D6C0','#E4B7C9','#B8A9C9','#DCE8D8'] },
+    { name:'印象·日出', en:'Impression, Sunrise', colors:['#4A6274','#7C97A6','#B7C7CE','#E06B2E','#C68A5C','#D9D2C4'] },
+    { name:'干草堆', en:'Haystacks', colors:['#C9A05A','#E8C77A','#A8783C','#6E8C8C','#D9B98C','#3E5C5C'] }
+  ]},
+  { name:'列奥纳多·达·芬奇', en:'Leonardo da Vinci', wiki:'Leonardo da Vinci', life:'1452–1519', works:[
+    { name:'蒙娜丽莎', en:'Mona Lisa', colors:['#3A2E1E','#5C4A2E','#7A6A45','#2E3A2A','#C9B89A','#1C1812'] },
+    { name:'最后的晚餐', en:'The Last Supper', colors:['#4A3A28','#6E5A3E','#8C7A55','#C9B89A','#2E2A22','#B5A47E'] }
+  ]},
+  { name:'伦勃朗', en:'Rembrandt', wiki:'Rembrandt', life:'1606–1669', works:[
+    { name:'夜巡', en:'The Night Watch', colors:['#1C140C','#3E2A17','#7A5320','#B5893E','#2E2A22','#D9C9A3'] },
+    { name:'自画像', en:'Self-Portrait', colors:['#2E1C10','#5C3A1E','#8C5A2E','#C98A4A','#1C140C','#B5893E'] }
+  ]},
+  { name:'约翰内斯·维米尔', en:'Johannes Vermeer', wiki:'Johannes Vermeer', life:'1632–1675', works:[
+    { name:'戴珍珠耳环的少女', en:'Girl with a Pearl Earring', colors:['#1A1C2B','#20508C','#C8A24B','#E6DCC8','#3A2E26','#F2EDE3'] },
+    { name:'倒牛奶的女仆', en:'The Milkmaid', colors:['#2E3A3A','#6E8C8C','#C9B89A','#8CA0A0','#E6DCC8','#4A5A5A'] }
+  ]},
+  { name:'巴勃罗·毕加索', en:'Pablo Picasso', wiki:'Pablo Picasso', life:'1881–1973', works:[
+    { name:'格尔尼卡', en:'Guernica', colors:['#1A1A1A','#3E3E3E','#6E6E6E','#B5B5B5','#D9D9D9','#000000'] },
+    { name:'蓝色时期', en:'The Old Guitarist', colors:['#1B3A5C','#2E5C8A','#4A7BA6','#6E97B8','#C9D2D6','#2A2A35'] }
+  ]},
+  { name:'古斯塔夫·克里姆特', en:'Gustav Klimt', wiki:'Gustav Klimt', life:'1862–1918', works:[
+    { name:'吻', en:'The Kiss', colors:['#C9A227','#8C6B1F','#D6B34A','#6E4A2A','#3E2C1E','#A8C66C'] },
+    { name:'阿黛尔夫人', en:'Adele Bloch-Bauer', colors:['#C9A227','#D6B34A','#8C6B1F','#3E2C1E','#6E4A2A','#E8D06B'] }
+  ]},
+  { name:'爱德华·蒙克', en:'Edvard Munch', wiki:'Edvard Munch', life:'1863–1944', works:[
+    { name:'呐喊', en:'The Scream', colors:['#D94E2B','#E89A3C','#6E8CB0','#2E4A6B','#C9B8A0','#1A1A1A'] }
+  ]},
+  { name:'皮特·蒙德里安', en:'Piet Mondrian', wiki:'Piet Mondrian', life:'1872–1944', works:[
+    { name:'红黄蓝构成', en:'Composition with Red, Blue and Yellow', colors:['#D40920','#1356A2','#F2C300','#FFFFFF','#000000','#EDEDED'] }
+  ]},
+  { name:'爱德华·霍珀', en:'Edward Hopper', wiki:'Edward Hopper', life:'1882–1967', works:[
+    { name:'夜游者', en:'Nighthawks', colors:['#1A1E1A','#E8A33D','#C98A3C','#2E5C4A','#6E8C8C','#3A2E2A'] },
+    { name:'自动售货机', en:'Automat', colors:['#1A1E28','#C98A3C','#6E8C8C','#E8D6A0','#2E3A4A','#3A2E2A'] }
+  ]},
+  { name:'萨尔瓦多·达利', en:'Salvador Dalí', wiki:'Salvador Dalí', life:'1904–1989', works:[
+    { name:'记忆的永恒', en:'The Persistence of Memory', colors:['#C9A05A','#E8C77A','#6E8CB0','#2E4A6B','#D9B98C','#1A1A2A'] }
+  ]},
+  { name:'米开朗基罗', en:'Michelangelo', wiki:'Michelangelo', life:'1475–1564', works:[
+    { name:'创世纪天顶画', en:'Sistine Chapel Ceiling', colors:['#C9A05A','#B5773C','#8C5A2E','#E6D2A8','#5C3A1E','#2E1C10'] }
+  ]},
+  { name:'拉斐尔', en:'Raphael', wiki:'Raphael', life:'1483–1520', works:[
+    { name:'西斯廷圣母', en:'Sistine Madonna', colors:['#E6C7C7','#C9A0A0','#6E8CB0','#C9B89A','#8CA0C0','#F2EDE3'] }
+  ]},
+  { name:'皮埃尔-奥古斯特·雷诺阿', en:'Pierre-Auguste Renoir', wiki:'Pierre-Auguste Renoir', life:'1841–1919', works:[
+    { name:'煎饼磨坊的舞会', en:'Dance at Le Moulin de la Galette', colors:['#E8B78C','#C98A6E','#B5C9D9','#E8D06B','#8CA0A0','#6E8C3A'] }
+  ]},
+  { name:'保罗·塞尚', en:'Paul Cézanne', wiki:'Paul Cézanne', life:'1839–1906', works:[
+    { name:'玩纸牌者', en:'The Card Players', colors:['#6E5A3E','#8C7350','#C9A87E','#4A3A28','#2E241A','#B5893E'] },
+    { name:'圣维克多山', en:'Mont Sainte-Victoire', colors:['#6E8C8C','#A0B0A0','#C9B89A','#8C9C7A','#5C6E5C','#E6DCC8'] }
+  ]},
+  { name:'桑德罗·波提切利', en:'Sandro Botticelli', wiki:'Sandro Botticelli', life:'1445–1510', works:[
+    { name:'维纳斯的诞生', en:'The Birth of Venus', colors:['#E6C7C7','#C9A0A0','#8CB0C0','#A0C0A0','#F2EDE3','#D9B98C'] }
+  ]},
+  { name:'迭戈·委拉斯开兹', en:'Diego Velázquez', wiki:'Diego Velázquez', life:'1599–1660', works:[
+    { name:'宫娥', en:'Las Meninas', colors:['#3A2E1E','#5C4A2E','#8C7A55','#C9B89A','#2E241A','#6E5A3E'] }
+  ]},
+  { name:'詹姆斯·惠斯勒', en:'James McNeill Whistler', wiki:'James McNeill Whistler', life:'1834–1903', works:[
+    { name:'惠斯勒的母亲', en:'Whistler’s Mother', colors:['#2E2A22','#4A453A','#6E6555','#8C8275','#C9BCA8','#1A1812'] }
+  ]},
+  { name:'乔治·修拉', en:'Georges Seurat', wiki:'Georges Seurat', life:'1859–1891', works:[
+    { name:'大碗岛的星期天下午', en:'A Sunday on La Grande Jatte', colors:['#9CB0A0','#B5C9B0','#C9D2B0','#8CA0A0','#E6DCC8','#6E8C8C'] }
+  ]},
+  { name:'格兰特·伍德', en:'Grant Wood', wiki:'Grant Wood', life:'1891–1942', works:[
+    { name:'美国哥特式', en:'American Gothic', colors:['#8CA05A','#C9B87A','#6E5A3E','#E6DCC8','#4A5A3A','#B5893E'] }
+  ]},
+  { name:'乔治亚·奥基夫', en:'Georgia O’Keeffe', wiki:'Georgia O’Keeffe', life:'1887–1986', works:[
+    { name:'红色美人蕉', en:'Red Canna', colors:['#C92E2E','#E85A2E','#F2C300','#8C2E2E','#E89A3C','#6E1E1E'] },
+    { name:'牛头骨', en:'Cow’s Skull', colors:['#E6DCC8','#C9B89A','#B5893E','#8C5A2E','#D9C9A3','#F2EDE3'] }
+  ]},
+  { name:'弗里达·卡罗', en:'Frida Kahlo', wiki:'Frida Kahlo', life:'1907–1954', works:[
+    { name:'两个弗里达', en:'The Two Fridas', colors:['#C92E4A','#E86A8C','#6E8CB0','#C9B89A','#2E4A6B','#E6DCC8'] }
+  ]},
+  { name:'杰克逊·波洛克', en:'Jackson Pollock', wiki:'Jackson Pollock', life:'1912–1956', works:[
+    { name:'1948年作品5号', en:'No. 5, 1948', colors:['#1A1A1A','#C9A05A','#E8D06B','#B53A2E','#2E5C8A','#F2EDE3'] }
+  ]},
+  { name:'亨利·马蒂斯', en:'Henri Matisse', wiki:'Henri Matisse', life:'1869–1954', works:[
+    { name:'舞蹈', en:'The Dance', colors:['#C92E2E','#E85A2E','#1B3A5C','#2E5C8A','#E6DCC8','#C9A05A'] },
+    { name:'红色画室', en:'The Red Studio', colors:['#C92E2E','#E85A2E','#8C2E2E','#E6DCC8','#C9A05A','#2E241A'] }
+  ]},
+  { name:'保罗·高更', en:'Paul Gauguin', wiki:'Paul Gauguin', life:'1848–1903', works:[
+    { name:'我们从何处来', en:'Where Do We Come From', colors:['#C95A2E','#E8A33D','#6E8C3A','#2E5C8A','#C9A05A','#8C3A2E'] }
+  ]},
+  { name:'卡拉瓦乔', en:'Caravaggio', wiki:'Caravaggio', life:'1571–1610', works:[
+    { name:'召唤圣马太', en:'The Calling of St Matthew', colors:['#1C140C','#3E2A17','#7A5320','#B5893E','#C9B89A','#2E1C10'] }
+  ]},
+  { name:'爱德华·马奈', en:'Édouard Manet', wiki:'Édouard Manet', life:'1832–1883', works:[
+    { name:'草地上的午餐', en:'Le Déjeuner sur l’herbe', colors:['#6E8C3A','#C9B87A','#E6DCC8','#8C5A2E','#2E5C4A','#B5893E'] }
+  ]},
+  { name:'瓦西里·康定斯基', en:'Wassily Kandinsky', wiki:'Wassily Kandinsky', life:'1866–1944', works:[
+    { name:'构成八号', en:'Composition VIII', colors:['#1B3A5C','#C92E2E','#F2C300','#2E5C8A','#E8A33D','#6E8C3A'] }
+  ]},
+  { name:'马克·夏加尔', en:'Marc Chagall', wiki:'Marc Chagall', life:'1887–1985', works:[
+    { name:'我与村庄', en:'I and the Village', colors:['#2E5C8A','#6E8CB0','#C9A05A','#E8A33D','#C92E4A','#8CA0C0'] }
+  ]},
+  { name:'弗朗西斯科·戈雅', en:'Francisco Goya', wiki:'Francisco Goya', life:'1746–1828', works:[
+    { name:'裸体的玛哈', en:'The Naked Maja', colors:['#E6DCC8','#C9B89A','#8C5A2E','#6E5A3E','#2E241A','#B5893E'] }
+  ]},
+  { name:'卡斯帕·大卫·弗里德里希', en:'Caspar David Friedrich', wiki:'Caspar David Friedrich', life:'1774–1840', works:[
+    { name:'雾海里的旅人', en:'Wanderer above the Sea of Fog', colors:['#2E3A4A','#4A5A6E','#6E8C8C','#C9D2D6','#8CA0A0','#1A1E28'] }
+  ]},
+  { name:'威廉·透纳', en:'J. M. W. Turner', wiki:'J. M. W. Turner', life:'1775–1851', works:[
+    { name:'雨、蒸汽和速度', en:'Rain, Steam and Speed', colors:['#4A6274','#7C97A6','#B7C7CE','#E8C77A','#C9B89A','#2E3A4A'] }
+  ]},
+  { name:'亨利·德·图卢兹-劳特累克', en:'Henri de Toulouse-Lautrec', wiki:'Henri de Toulouse-Lautrec', life:'1864–1901', works:[
+    { name:'红磨坊', en:'Moulin Rouge', colors:['#C92E4A','#E86A8C','#1B3A5C','#E8C300','#8C3A2E','#C9B89A'] }
+  ]},
+  { name:'老彼得·勃鲁盖尔', en:'Pieter Bruegel the Elder', wiki:'Pieter Bruegel the Elder', life:'1525–1569', works:[
+    { name:'雪中猎人', en:'The Hunters in the Snow', colors:['#6E8C8C','#C9D2D6','#8CA0A0','#4A5A6E','#C9B89A','#2E3A4A'] }
+  ]},
+  { name:'阿梅代奥·莫迪里阿尼', en:'Amedeo Modigliani', wiki:'Amedeo Modigliani', life:'1884–1920', works:[
+    { name:'侧卧的裸女', en:'Reclining Nude', colors:['#C9A0A0','#E6C7C7','#8CA0C0','#C9B89A','#6E5A3E','#E6DCC8'] }
+  ]},
+  { name:'埃贡·席勒', en:'Egon Schiele', wiki:'Egon Schiele', life:'1890–1918', works:[
+    { name:'自画像', en:'Self-Portrait', colors:['#C98A3C','#8C5A2E','#E6DCC8','#6E5A3E','#2E241A','#B5893E'] }
+  ]},
+  { name:'保罗·克利', en:'Paul Klee', wiki:'Paul Klee', life:'1879–1940', works:[
+    { name:'红与白', en:'Red and White', colors:['#C92E2E','#E8DCC8','#1B3A5C','#F2C300','#2E5C8A','#6E8C3A'] }
+  ]}
 ];
 
 let selectedPaletteIdx = -1;
 
 function initPalettes() {
   const grid = document.getElementById('paletteGrid');
-  const agrid = document.getElementById('artistPaletteGrid');
-  if (agrid) agrid.innerHTML = '';
+  grid.innerHTML = '';
   palettes.forEach((p, idx) => {
     const card = document.createElement('div');
+    card.className = 'palette-card';
     card.dataset.pidx = idx;
-    if (p.artist) {
-      card.className = 'artist-card';
-      card.innerHTML = `
-        <span class="ap-badge">名画</span>
-        <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
-        <div class="ap-name">${p.name}</div>
-        <div class="ap-meta">${p.painter}<br>${p.painting}</div>
-        <div class="palette-actions">
-          <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">背景</button>
-          <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考</button>
-          <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
-        </div>
-      `;
-      card.onclick = () => selectPalette(idx);
-      if (agrid) agrid.appendChild(card);
-    } else {
-      card.className = 'palette-card';
-      card.innerHTML = `
-        <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
-        <div class="name">${p.name}</div>
-        <div class="palette-actions">
-          <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">设为背景</button>
-          <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考层</button>
-          <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
-        </div>
-      `;
-      card.onclick = () => selectPalette(idx);
-      grid.appendChild(card);
-    }
+    card.innerHTML = `
+      <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
+      <div class="name">${p.name}</div>
+      <div class="palette-actions">
+        <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">设为背景</button>
+        <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考层</button>
+        <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
+      </div>
+    `;
+    card.onclick = () => selectPalette(idx);
+    grid.appendChild(card);
   });
+  initArtistList();
+}
+
+// ===== 艺术家油画配色：名单 + 对话框 + 作品配色 =====
+function gradFromColors(colors) {
+  const c = colors.slice(0, 3);
+  return `linear-gradient(135deg, ${c.join(', ')})`;
+}
+
+function initArtistList() {
+  const list = document.getElementById('artistList');
+  if (!list) return;
+  list.innerHTML = '';
+  artists.forEach((a, idx) => {
+    const row = document.createElement('div');
+    row.className = 'artist-row';
+    row.innerHTML = `
+      <div class="av" style="background:${gradFromColors(a.works[0].colors)}">${a.name.charAt(0)}</div>
+      <div>
+        <div class="nm">${a.name}</div>
+        <div class="en">${a.en} · ${a.works.length}幅代表作</div>
+      </div>
+      <div class="arrow">›</div>
+    `;
+    row.onclick = () => openArtistModal(idx);
+    list.appendChild(row);
+  });
+}
+
+function openArtistModal(idx) {
+  const a = artists[idx];
+  document.getElementById('amEn').textContent = a.en;
+  document.getElementById('amNm').textContent = a.name;
+  document.getElementById('amSub').textContent = a.life + ' · 点击作品把配色铺到画布';
+  const bg = document.getElementById('artistModalBg');
+  bg.style.backgroundImage = gradFromColors(a.works[0].colors);
+  getArtistPortrait(a, (url) => { if (url) bg.style.backgroundImage = `url("${url}")`; });
+  const wbox = document.getElementById('artistWorks');
+  wbox.innerHTML = '';
+  a.works.forEach((w, wi) => {
+    const item = document.createElement('div');
+    item.className = 'aw-item';
+    item.innerHTML = `
+      <div class="aw-swatches">${w.colors.map(c => `<i style="background:${c}"></i>`).join('')}</div>
+      <div>
+        <div class="aw-name">${w.name}</div>
+        <div class="aw-meta">${w.en}</div>
+      </div>
+      <div class="aw-apply">应用 →</div>
+    `;
+    item.onclick = () => applyArtistWork(idx, wi);
+    wbox.appendChild(item);
+  });
+  document.getElementById('artistModal').style.display = 'flex';
+}
+
+function closeArtistModal() {
+  document.getElementById('artistModal').style.display = 'none';
+}
+
+// 浏览器实时从 Wikipedia 拉取艺术家肖像（拉不到则保留渐变背景）
+function getArtistPortrait(a, cb) {
+  if (a._img !== undefined) { cb(a._img); return; }
+  if (!a.wiki) { cb(null); return; }
+  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(a.wiki))
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => {
+      const url = d && d.thumbnail && d.thumbnail.source;
+      a._img = url || null;
+      cb(a._img);
+    })
+    .catch(() => { a._img = null; cb(null); });
+}
+
+// 点击代表作：把该画配色铺到画布（选中整组 + 在画布中央印出整组颜色）
+function applyArtistWork(ai, wi) {
+  const work = artists[ai].works[wi];
+  const colors = work.colors.slice();
+  palettes.push({ name: work.name, colors: colors });
+  const idx = palettes.length - 1;
+  selectedPaletteIdx = -1;
+  selectPalette(idx);
+  if (typeof stampPaletteColors === 'function') {
+    stampPaletteColors({ x: canvasW / 2, y: canvasH / 2 });
+  }
+  showToast(`已应用「${work.name}」配色 · 点画布可重印整组`);
+  closeArtistModal();
 }
 
 function selectPalette(idx) {
   if (selectedPaletteIdx === idx) { clearPaletteSelection(); return; }
   selectedPaletteIdx = idx;
-  document.querySelectorAll('.palette-card, .artist-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.pidx) === idx));
+  document.querySelectorAll('.palette-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.pidx) === idx));
   showPaletteStrip();
   showToast(`已选「${palettes[idx].name}」调色板，画笔可一键切换全部颜色`);
 }
 
 function clearPaletteSelection() {
   selectedPaletteIdx = -1;
-  document.querySelectorAll('.palette-card, .artist-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.palette-card').forEach(c => c.classList.remove('selected'));
   hidePaletteStrip();
 }
 
