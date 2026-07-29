@@ -95,13 +95,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .palette-actions button { font-size: 9px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; }
 .palette-actions button:hover { background: var(--card); }
 
-/* Style Ref */
-.style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.style-card { padding: 8px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 11px; text-align: center; transition: all .15s; }
-.style-card:hover { border-color: var(--accent); }
-.style-card.active { border-color: var(--accent); background: var(--card); }
-.style-opacity { margin-top: 6px; }
-
 /* Layer Panel */
 .layer-item {
   display: flex; align-items: center; gap: 6px; padding: 6px 8px;
@@ -314,6 +307,50 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .art-modal-body .sub { color:var(--text-light); font-size:12px; margin-bottom:12px; }
 .art-modal-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .art-empty { text-align:center; color:var(--text-light); font-size:12px; padding:30px 10px; }
+
+/* Oil-Frame Viewer (油画框展厅) */
+.art-frame-modal {
+  position:fixed; inset:0; z-index:300;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(18,14,10,.93);
+  padding:24px;
+}
+.art-frame-stage { position:relative; max-width:90vw; max-height:90vh; }
+.art-frame-mat {
+  /* 画框：金色浮雕感外框 */
+  padding:22px;
+  border-radius:8px;
+  background:
+    linear-gradient(135deg, #5e4716 0%, #b8893a 18%, #f6e6ad 34%, #c9a24a 50%, #f6e6ad 66%, #b8893a 82%, #5e4716 100%);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.6),
+    inset 0 0 0 2px rgba(40,28,10,.5),
+    inset 0 0 0 12px rgba(255,240,200,.12),
+    inset 0 0 22px rgba(0,0,0,.45);
+}
+.art-frame-inner {
+  background:#0d0a07;
+  padding:10px;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.85), inset 0 0 0 2px rgba(0,0,0,.6);
+}
+.art-frame-inner img { display:block; max-width:78vw; max-height:68vh; object-fit:contain; background:#000; }
+.art-frame-caption {
+  margin-top:14px; text-align:center; color:#f3e7cf;
+  text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+.af-title { font-size:17px; font-weight:600; }
+.af-sub { font-size:12px; opacity:.8; margin:4px 0 10px; }
+.art-frame-caption .art-modal-actions { justify-content:center; }
+.frame-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(246,230,173,.16); color:#f6e6ad; font-size:28px; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s, transform .15s; z-index:2;
+}
+.frame-nav:hover { background:rgba(246,230,173,.34); transform:translateY(-50%) scale(1.08); }
+.frame-prev { left:max(12px, calc(50% - 46vw)); }
+.frame-next { right:max(12px, calc(50% - 46vw)); }
 </style>
 </head>
 <body>
@@ -336,21 +373,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 </div>
 
 <!-- Artwork Modal (审美积累) -->
-<div class="art-modal" id="artModal" onclick="if(event.target===this)closeArtModal()">
-  <div class="art-modal-inner">
-    <img id="artModalImg" src="" alt="">
-    <div class="art-modal-body">
-      <h3 id="artModalTitle"></h3>
-      <div class="sub" id="artModalSub"></div>
+<!-- Oil-Frame Viewer Modal -->
+<div class="art-frame-modal" id="artFrameModal" onclick="if(event.target===this)closeArtModal()">
+  <button class="frame-nav frame-prev" onclick="event.stopPropagation();artFramePrev()" title="上一张 (←)">‹</button>
+  <div class="art-frame-stage">
+    <div class="art-frame-mat">
+      <div class="art-frame-inner">
+        <img id="artFrameImg" src="" alt="">
+      </div>
+    </div>
+    <div class="art-frame-caption">
+      <div class="af-title" id="artFrameTitle"></div>
+      <div class="af-sub" id="artFrameSub"></div>
       <div class="art-modal-actions">
-        <button class="action-btn" onclick="artPlaceRef()">📐 放入参考层</button>
-        <button class="action-btn" onclick="artSetBg()">🖼️ 设为背景</button>
-        <button class="action-btn" onclick="artDownload()">⬇️ 下载到本地</button>
-        <button class="action-btn" id="artFavBtn" onclick="artToggleFav()">☆ 收藏</button>
-        <button class="action-btn secondary" onclick="closeArtModal()">关闭</button>
+        <button class="action-btn" onclick="event.stopPropagation();artPlaceRef()">📐 参考层</button>
+        <button class="action-btn" onclick="event.stopPropagation();artSetBg()">🖼️ 背景</button>
+        <button class="action-btn" id="artFrameFavBtn" onclick="event.stopPropagation();artToggleFav()">☆ 收藏</button>
+        <button class="action-btn" onclick="event.stopPropagation();artDownload()">⬇️ 下载</button>
+        <button class="action-btn secondary" onclick="event.stopPropagation();closeArtModal()">关闭</button>
       </div>
     </div>
   </div>
+  <button class="frame-nav frame-next" onclick="event.stopPropagation();artFrameNext()" title="下一张 (→)">›</button>
 </div>
 
 <!-- Image Draft Modal -->
@@ -439,7 +483,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="panel-tabs">
       <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
-      <div class="tab" data-tab="style" onclick="switchTab('style')">风格</div>
       <div class="tab" data-tab="layer" onclick="switchTab('layer')">图层</div>
       <div class="tab" data-tab="random" onclick="switchTab('random')">随机</div>
       <div class="tab" data-tab="sketch" onclick="switchTab('sketch')">转草稿</div>
@@ -489,19 +532,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
 
       <!-- Style Tab -->
-      <div class="tab-content" id="tab-style" style="display:none">
-        <div class="panel-section">
-          <h3>艺术风格参考</h3>
-          <div class="style-grid" id="styleGrid"></div>
-          <div class="style-opacity" id="styleOpacity" style="display:none">
-            <div class="slider-row">
-              <label>透明度</label>
-              <input type="range" id="styleAlpha" min="5" max="80" value="30" oninput="applyStyleRef()">
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Layer Tab -->
       <div class="tab-content" id="tab-layer" style="display:none">
         <div class="panel-section">
@@ -780,7 +810,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initCanvas();
   initLayers();
   initPalettes();
-  initStyles();
   initSliders();
   initDrawing();
   initKeyboard();
@@ -1712,201 +1741,6 @@ function applyPaletteToRef(idx) {
   showToast(`已应用"${p.name}"调色板到参考层`);
 }
 
-// ============ STYLE REFERENCES ============
-const artStyles = [
-  { name: '印象派', desc: '光影碎笔触' },
-  { name: '写实主义', desc: '精细还原' },
-  { name: '极简主义', desc: '少即是多' },
-  { name: '超现实主义', desc: '梦境逻辑' },
-  { name: '浮世绘', desc: '日式线条美' },
-  { name: '赛博朋克', desc: '霓虹未来感' },
-  { name: '水彩风', desc: '晕染透明' },
-  { name: '素描风', desc: '铅笔画感' }
-];
-
-let activeStyleIdx = -1;
-
-function initStyles() {
-  const grid = document.getElementById('styleGrid');
-  artStyles.forEach((s, i) => {
-    const card = document.createElement('div');
-    card.className = 'style-card';
-    card.innerHTML = `<div style="font-weight:500">${s.name}</div><div style="font-size:10px;color:var(--text-light)">${s.desc}</div>`;
-    card.onclick = () => toggleStyle(i);
-    grid.appendChild(card);
-  });
-}
-
-function toggleStyle(idx) {
-  document.querySelectorAll('.style-card').forEach((c, i) => c.classList.toggle('active', i === idx));
-  const opacityCtrl = document.getElementById('styleOpacity');
-  if (activeStyleIdx === idx) {
-    activeStyleIdx = -1;
-    opacityCtrl.style.display = 'none';
-    guideCtx.clearRect(0, 0, canvasW, canvasH);
-  } else {
-    activeStyleIdx = idx;
-    opacityCtrl.style.display = 'block';
-    applyStyleRef();
-  }
-}
-
-function applyStyleRef() {
-  if (activeStyleIdx < 0) return;
-  const alpha = parseInt(document.getElementById('styleAlpha').value) / 100;
-  guideCtx.clearRect(0, 0, canvasW, canvasH);
-  
-  // Generate style-specific overlay pattern
-  const style = artStyles[activeStyleIdx];
-  guideCtx.save();
-  guideCtx.globalAlpha = alpha;
-  
-  switch (style.name) {
-    case '印象派':
-      drawImpressionistOverlay();
-      break;
-    case '极简主义':
-      drawMinimalistOverlay();
-      break;
-    case '水彩风':
-      drawWatercolorOverlay();
-      break;
-    case '素描风':
-      drawSketchOverlay();
-      break;
-    case '浮世绘':
-      drawUkiyoOverlay();
-      break;
-    case '赛博朋克':
-      drawCyberpunkOverlay();
-      break;
-    case '超现实主义':
-      drawSurrealOverlay();
-      break;
-    default:
-      drawGenericOverlay();
-  }
-  guideCtx.restore();
-}
-
-function drawImpressionistOverlay() {
-  const rng = mulberry32(42);
-  const colors = ['#FFB5E8','#FF9CEE','#B5B9FF','#97E5D7','#F6F6EB','#E7FFAC'];
-  for (let i = 0; i < 3000; i++) {
-    const x = rng() * canvasW;
-    const y = rng() * canvasH;
-    const w = 15 + rng() * 30;
-    const h = 8 + rng() * 15;
-    const angle = rng() * Math.PI;
-    guideCtx.save();
-    guideCtx.translate(x, y);
-    guideCtx.rotate(angle);
-    guideCtx.fillStyle = colors[Math.floor(rng() * colors.length)];
-    guideCtx.fillRect(-w/2, -h/2, w, h);
-    guideCtx.restore();
-  }
-}
-
-function drawMinimalistOverlay() {
-  guideCtx.strokeStyle = '#333';
-  guideCtx.lineWidth = 2;
-  guideCtx.strokeRect(canvasW * 0.2, canvasH * 0.3, canvasW * 0.6, canvasH * 0.4);
-  guideCtx.fillStyle = '#333';
-  guideCtx.fillRect(canvasW * 0.35, canvasH * 0.42, canvasW * 0.12, canvasH * 0.16);
-}
-
-function drawWatercolorOverlay() {
-  const rng = mulberry32(42);
-  const colors = ['rgba(100,149,237,0.3)','rgba(255,182,193,0.3)','rgba(152,251,152,0.3)','rgba(255,218,185,0.3)'];
-  for (let i = 0; i < 20; i++) {
-    const x = rng() * canvasW;
-    const y = rng() * canvasH;
-    const r = 100 + rng() * 400;
-    const grad = guideCtx.createRadialGradient(x, y, 0, x, y, r);
-    grad.addColorStop(0, colors[Math.floor(rng() * colors.length)]);
-    grad.addColorStop(1, 'rgba(255,255,255,0)');
-    guideCtx.fillStyle = grad;
-    guideCtx.fillRect(x - r, y - r, r * 2, r * 2);
-  }
-}
-
-function drawSketchOverlay() {
-  const rng = mulberry32(42);
-  guideCtx.strokeStyle = 'rgba(80,80,80,0.3)';
-  guideCtx.lineWidth = 1;
-  for (let i = 0; i < 500; i++) {
-    const x1 = rng() * canvasW;
-    const y1 = rng() * canvasH;
-    const x2 = x1 + (rng() - 0.5) * 100;
-    const y2 = y1 + (rng() - 0.5) * 80;
-    guideCtx.beginPath();
-    guideCtx.moveTo(x1, y1);
-    guideCtx.lineTo(x2, y2);
-    guideCtx.stroke();
-  }
-}
-
-function drawUkiyoOverlay() {
-  guideCtx.strokeStyle = '#1a1a1a';
-  guideCtx.lineWidth = 3;
-  // Flowing curves
-  for (let i = 0; i < 8; i++) {
-    const y = canvasH * (0.1 + i * 0.1);
-    guideCtx.beginPath();
-    guideCtx.moveTo(0, y);
-    for (let x = 0; x < canvasW; x += 50) {
-      guideCtx.quadraticCurveTo(x + 25, y + Math.sin(x * 0.01 + i) * 80, x + 50, y);
-    }
-    guideCtx.stroke();
-  }
-}
-
-function drawCyberpunkOverlay() {
-  guideCtx.strokeStyle = '#0ff';
-  guideCtx.lineWidth = 1;
-  // Grid
-  for (let x = 0; x < canvasW; x += 80) {
-    guideCtx.beginPath(); guideCtx.moveTo(x, 0); guideCtx.lineTo(x, canvasH); guideCtx.stroke();
-  }
-  for (let y = 0; y < canvasH; y += 80) {
-    guideCtx.beginPath(); guideCtx.moveTo(0, y); guideCtx.lineTo(canvasW, y); guideCtx.stroke();
-  }
-  guideCtx.strokeStyle = '#f0f';
-  guideCtx.lineWidth = 2;
-  for (let i = 0; i < 5; i++) {
-    const x = canvasW * (0.2 + i * 0.15);
-    guideCtx.beginPath();
-    guideCtx.moveTo(x, canvasH);
-    guideCtx.lineTo(x + 200, canvasH * 0.3);
-    guideCtx.stroke();
-  }
-}
-
-function drawSurrealOverlay() {
-  const rng = mulberry32(42);
-  guideCtx.strokeStyle = 'rgba(100,0,150,0.3)';
-  guideCtx.lineWidth = 2;
-  for (let i = 0; i < 10; i++) {
-    const cx = rng() * canvasW;
-    const cy = rng() * canvasH;
-    const r = 50 + rng() * 200;
-    guideCtx.beginPath();
-    for (let a = 0; a < Math.PI * 2; a += 0.1) {
-      const rr = r * (1 + 0.3 * Math.sin(a * 3));
-      const px = cx + rr * Math.cos(a);
-      const py = cy + rr * Math.sin(a);
-      if (a === 0) guideCtx.moveTo(px, py);
-      else guideCtx.lineTo(px, py);
-    }
-    guideCtx.closePath();
-    guideCtx.stroke();
-  }
-}
-
-function drawGenericOverlay() {
-  guideCtx.fillStyle = 'rgba(200,180,150,0.1)';
-  guideCtx.fillRect(0, 0, canvasW, canvasH);
-}
 
 // ============ RANDOM DRAFT GENERATOR ============
 function setDraftType(type) {
@@ -2808,6 +2642,7 @@ function renderAestheticGrid() {
     if (q && !(a.title.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q))) return false;
     return true;
   });
+  lastAesList = list;
   if (list.length === 0) { grid.innerHTML = '<div class="art-empty">没有匹配的作品，试试调整筛选或搜索。</div>'; return; }
   list.forEach(a => {
     const card = document.createElement('div');
@@ -2824,20 +2659,68 @@ function renderAestheticGrid() {
 }
 
 let currentArtId = null;
+let lastAesList = [];
+const aesImgCache = new Map();
+
 function openArtModal(id) {
-  const a = aestheticCollection.find(x => x.id === id); if (!a) return;
   currentArtId = id;
-  const img = document.getElementById('artModalImg');
-  img.onerror = () => { img.onerror = null; img.src = aesWikiUrl(a, 1000); };
-  img.src = aesLocalUrl(a);
-  document.getElementById('artModalTitle').textContent = a.title;
-  document.getElementById('artModalSub').textContent = `${a.artist} · ${a.year} · ${a.movement} · ${a.type === 'sketch' ? '素描' : '绘画'}`;
-  const favs = getArtFavs();
-  document.getElementById('artFavBtn').textContent = favs.includes(id) ? '★ 已收藏' : '☆ 收藏';
-  document.getElementById('artModal').style.display = 'flex';
+  // 若当前列表里没有它（如外部调用），临时用单元素列表
+  if (!lastAesList.length || !lastAesList.find(x => x.id === id)) {
+    lastAesList = aestheticCollection.filter(a => a.id === id);
+  }
+  document.getElementById('artFrameModal').style.display = 'flex';
+  renderArtFrame();
 }
-function closeArtModal() { document.getElementById('artModal').style.display = 'none'; currentArtId = null; }
+function closeArtModal() {
+  const m = document.getElementById('artFrameModal');
+  if (m) m.style.display = 'none';
+  currentArtId = null;
+}
 function currentArt() { return aestheticCollection.find(x => x.id === currentArtId); }
+
+function currentAesIndex() {
+  if (!lastAesList.length) return -1;
+  const i = lastAesList.findIndex(x => x.id === currentArtId);
+  return i < 0 ? 0 : i;
+}
+
+// 带内存缓存的加载，翻页瞬时
+function loadArtImageCached(a, cb) {
+  if (aesImgCache.has(a.id)) { cb(aesImgCache.get(a.id)); return; }
+  loadArtImage(a, (img) => { aesImgCache.set(a.id, img); cb(img); });
+}
+
+function renderArtFrame() {
+  const a = currentArt(); if (!a) return;
+  const img = document.getElementById('artFrameImg');
+  img.onerror = () => { img.onerror = null; img.src = aesWikiUrl(a, 1400); };
+  img.src = aesLocalUrl(a);
+  document.getElementById('artFrameTitle').textContent = a.title;
+  document.getElementById('artFrameSub').textContent = `${a.artist} · ${a.year} · ${a.movement} · ${a.type === 'sketch' ? '素描' : '绘画'}`;
+  const favs = getArtFavs();
+  const favBtn = document.getElementById('artFrameFavBtn');
+  if (favBtn) favBtn.textContent = favs.includes(a.id) ? '★ 已收藏' : '☆ 收藏';
+  // 预加载相邻图片，翻页瞬时
+  if (lastAesList.length > 1) {
+    const i = currentAesIndex();
+    const n1 = lastAesList[(i + 1) % lastAesList.length];
+    const n2 = lastAesList[(i - 1 + lastAesList.length) % lastAesList.length];
+    if (n1) loadArtImageCached(n1, () => {});
+    if (n2) loadArtImageCached(n2, () => {});
+  }
+}
+function artFramePrev() {
+  if (!lastAesList.length) return;
+  const i = currentAesIndex();
+  currentArtId = lastAesList[(i - 1 + lastAesList.length) % lastAesList.length].id;
+  renderArtFrame();
+}
+function artFrameNext() {
+  if (!lastAesList.length) return;
+  const i = currentAesIndex();
+  currentArtId = lastAesList[(i + 1) % lastAesList.length].id;
+  renderArtFrame();
+}
 
 function loadArtImage(item, cb) {
   const img = new Image();
@@ -2895,7 +2778,8 @@ function artToggleFav() {
   const i = favs.indexOf(id);
   if (i >= 0) favs.splice(i, 1); else favs.push(id);
   setArtFavs(favs);
-  document.getElementById('artFavBtn').textContent = favs.includes(id) ? '★ 已收藏' : '☆ 收藏';
+  const fb = document.getElementById('artFrameFavBtn');
+  if (fb) fb.textContent = favs.includes(id) ? '★ 已收藏' : '☆ 收藏';
   renderAestheticGrid();
   showToast(favs.includes(id) ? '已收藏，可在「★ 我的收藏」随时调取 ✓' : '已取消收藏');
 }
@@ -3716,6 +3600,14 @@ function initSliders() {
 // ============ KEYBOARD SHORTCUTS ============
 function initKeyboard() {
   document.addEventListener('keydown', (e) => {
+    // 油画框展厅打开时：左右翻页 / Esc 关闭
+    const frameOpen = document.getElementById('artFrameModal') && document.getElementById('artFrameModal').style.display === 'flex';
+    if (frameOpen) {
+      if (e.key === 'ArrowLeft') { artFramePrev(); e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { artFrameNext(); e.preventDefault(); }
+      else if (e.key === 'Escape') { closeArtModal(); }
+      return;
+    }
     // Don't trigger shortcuts when typing in inputs
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     
