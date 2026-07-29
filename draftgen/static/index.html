@@ -291,6 +291,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .aw-name { font-size:13px; font-weight:600; }
 .aw-meta { font-size:10px; color:var(--text-light); }
 .aw-apply { margin-left:auto; font-size:11px; color:var(--accent-dark); font-weight:700; white-space:nowrap; }
+.aesthetic-toolbar { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.aesthetic-toolbar select, .aesthetic-toolbar input { font-size:11px; padding:5px 7px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); }
+.aesthetic-toolbar input { flex:1; min-width:120px; }
+.aesthetic-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:10px; }
+.art-card { border:1px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; background:var(--panel); transition:transform .12s, box-shadow .12s; position:relative; }
+.art-card:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.12); }
+.art-card img { width:100%; height:128px; object-fit:cover; display:block; background:#eee; }
+.art-card .meta { padding:6px 8px; }
+.art-card .t { font-size:11px; font-weight:600; line-height:1.3; }
+.art-card .a { font-size:10px; color:var(--text-light); }
+.art-card .badge { display:inline-block; font-size:9px; padding:1px 5px; border-radius:5px; margin-top:4px; }
+.art-card .badge.sketch { background:#e8e0d0; color:#7a5a2e; }
+.art-card .badge.painting { background:#dbe7f0; color:#2a5a8c; }
+.art-card.fav { outline:2px solid var(--accent); }
+.art-card .star { position:absolute; top:4px; right:6px; font-size:13px; color:#f2b705; text-shadow:0 1px 2px rgba(0,0,0,.4); }
+.art-modal { position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:200; padding:20px; }
+.art-modal-inner { background:var(--panel); border-radius:14px; max-width:780px; width:100%; max-height:92vh; overflow:auto; }
+.art-modal-inner img { width:100%; display:block; background:#000; max-height:62vh; object-fit:contain; }
+.art-modal-body { padding:16px 20px 20px; }
+.art-modal-body h3 { margin:0 0 4px; font-size:16px; }
+.art-modal-body .sub { color:var(--text-light); font-size:12px; margin-bottom:12px; }
+.art-modal-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.art-empty { text-align:center; color:var(--text-light); font-size:12px; padding:30px 10px; }
 </style>
 </head>
 <body>
@@ -308,6 +331,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="artist-works">
       <div class="aw-title">选择代表作 · 点击把该画配色铺到画布</div>
       <div id="artistWorks"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Artwork Modal (审美积累) -->
+<div class="art-modal" id="artModal" onclick="if(event.target===this)closeArtModal()">
+  <div class="art-modal-inner">
+    <img id="artModalImg" src="" alt="">
+    <div class="art-modal-body">
+      <h3 id="artModalTitle"></h3>
+      <div class="sub" id="artModalSub"></div>
+      <div class="art-modal-actions">
+        <button class="action-btn" onclick="artPlaceRef()">📐 放入参考层</button>
+        <button class="action-btn" onclick="artSetBg()">🖼️ 设为背景</button>
+        <button class="action-btn" onclick="artDownload()">⬇️ 下载到本地</button>
+        <button class="action-btn" id="artFavBtn" onclick="artToggleFav()">☆ 收藏</button>
+        <button class="action-btn secondary" onclick="closeArtModal()">关闭</button>
+      </div>
     </div>
   </div>
 </div>
@@ -387,6 +428,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
       <div class="tab" data-tab="complib" onclick="switchTab('complib')">构图库</div>
+      <div class="tab" data-tab="aesthetic" onclick="switchTab('aesthetic')">审美积累</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
       <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
     </div>
@@ -520,6 +562,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           </div>
           <input type="file" id="complibImport" accept="application/json,.json" style="display:none" onchange="importCompositionLibrary(event)">
           <button class="action-btn secondary" style="margin-top:6px;width:100%" onclick="clearCompositionLibrary()">🗑️ 清空草稿库</button>
+        </div>
+      </div>
+
+      <!-- Aesthetic Accumulation Tab -->
+      <div class="tab-content" id="tab-aesthetic" style="display:none">
+        <div class="panel-section">
+          <h3>🖼️ 审美积累</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">精选艺术史名作（素描 + 绘画）。点开可放大并「放入参考层 / 设为背景 / 下载到本地 / 收藏」。优先读取本地 <code>static/art-collection/</code>，离线也能用。</p>
+          <div class="aesthetic-toolbar">
+            <select id="aesFilterMovement"><option value="">全部流派</option></select>
+            <select id="aesFilterType">
+              <option value="">全部类型</option>
+              <option value="painting">绘画</option>
+              <option value="sketch">素描</option>
+            </select>
+            <select id="aesFilterFav">
+              <option value="">全部</option>
+              <option value="1">★ 我的收藏</option>
+            </select>
+            <input id="aesSearch" placeholder="搜索作品 / 艺术家…">
+          </div>
+          <div class="aesthetic-grid" id="aesGrid"></div>
         </div>
       </div>
 
@@ -677,6 +741,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initDragToolbar();
   loadGallery();
   loadVersions();
+  initAesthetic();
   showToast('草稿生成器已就绪 ✨');
 });
 
@@ -2608,6 +2673,179 @@ function importCompositionLibrary(event) {
   };
   reader.readAsText(file);
   event.target.value = '';
+}
+
+// ============ 审美积累 (Aesthetic Accumulation) ============
+// 精选艺术史公共领域名作（素描+绘画）。wm = Wikimedia Commons 文件名。
+const aestheticCollection = [
+  { id:'mona-lisa', title:'蒙娜丽莎', artist:'列奥纳多·达·芬奇', year:1503, movement:'文艺复兴', type:'painting', wm:'Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg' },
+  { id:'birth-of-venus', title:'维纳斯的诞生', artist:'桑德罗·波提切利', year:1485, movement:'文艺复兴', type:'painting', wm:'Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg' },
+  { id:'school-of-athens', title:'雅典学院', artist:'拉斐尔', year:1511, movement:'文艺复兴', type:'painting', wm:'Raffael_058.jpg' },
+  { id:'sistine-madonna', title:'西斯廷圣母', artist:'拉斐尔', year:1512, movement:'文艺复兴', type:'painting', wm:'Raphael_-_Sistine_Madonna_-_Google_Art_Project.jpg' },
+  { id:'creation-adam', title:'创造亚当', artist:'米开朗基罗', year:1512, movement:'文艺复兴', type:'painting', wm:'Michelangelo_-_Creation_of_Adam_(cropped).jpg' },
+  { id:'arnolfini', title:'阿尔诺非尼夫妇肖像', artist:'扬·凡·艾克', year:1434, movement:'北方文艺复兴', type:'painting', wm:'Van_Eyck_-_Arnolfini_Portrait.jpg' },
+  { id:'garden-delights', title:'人间乐园', artist:'希罗尼穆斯·博斯', year:1505, movement:'北方文艺复兴', type:'painting', wm:'The_Garden_of_earthly_delights.jpg' },
+  { id:'tower-babel', title:'巴别塔', artist:'老彼得·勃鲁盖尔', year:1563, movement:'北方文艺复兴', type:'painting', wm:'Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_(Vienna)_-_Google_Art_Project_-_edited.jpg' },
+  { id:'durer-self', title:'自画像', artist:'阿尔布雷希特·丢勒', year:1500, movement:'北方文艺复兴', type:'painting', wm:'Albrecht_Dürer_-_1500_self-portrait_-_Google_Art_Project.jpg' },
+  { id:'melencolia', title:'忧郁症 I', artist:'阿尔布雷希特·丢勒', year:1514, movement:'北方文艺复兴', type:'painting', wm:'Melencolia_I.jpg' },
+  { id:'night-watch', title:'夜巡', artist:'伦勃朗', year:1642, movement:'巴洛克', type:'painting', wm:'Rembrandt_van_Rijn-De_Nachtwacht-1642.jpg' },
+  { id:'rembrandt-self', title:'自画像', artist:'伦勃朗', year:1640, movement:'巴洛克', type:'painting', wm:'Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg' },
+  { id:'las-meninas', title:'宫娥', artist:'迭戈·委拉斯开兹', year:1656, movement:'巴洛克', type:'painting', wm:'Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg' },
+  { id:'girl-pearl', title:'戴珍珠耳环的少女', artist:'约翰内斯·维米尔', year:1665, movement:'荷兰黄金时代', type:'painting', wm:'1665_Girl_with_a_Pearl_Earring.jpg' },
+  { id:'liberty', title:'自由引导人民', artist:'欧仁·德拉克罗瓦', year:1830, movement:'浪漫主义', type:'painting', wm:'Eugène_Delacroix_-_Le_28_Juillet._La_Liberté_guidant_le_peuple.jpg' },
+  { id:'wanderer-fog', title:'雾海上的旅人', artist:'卡斯帕·大卫·弗里德里希', year:1818, movement:'浪漫主义', type:'painting', wm:'Wanderer_above_the_sea_of_fog.jpg' },
+  { id:'third-may', title:'1808年5月3日', artist:'弗朗西斯科·戈雅', year:1814, movement:'浪漫主义', type:'painting', wm:'Francisco_de_Goya_y_Lucientes_-_El_tres_de_mayo_en_Madrid_o_Los_fusilamientos_-_Google_Art_Project.jpg' },
+  { id:'hay-wain', title:'干草车', artist:'约翰·康斯太勃尔', year:1821, movement:'浪漫主义', type:'painting', wm:'John_Constable_The_Hay_Wain.jpg' },
+  { id:'fighting-temeraire', title:'被拖去解体的战舰无畏号', artist:'约瑟夫·透纳', year:1839, movement:'浪漫主义', type:'painting', wm:'Joseph_Mallord_William_Turner_-_The_Fighting_Temeraire_-_Google_Art_Project.jpg' },
+  { id:'ophelia', title:'奥菲莉亚', artist:'约翰·埃弗里特·米莱', year:1852, movement:'拉斐尔前派', type:'painting', wm:'John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg' },
+  { id:'impression-sunrise', title:'印象·日出', artist:'克劳德·莫奈', year:1872, movement:'印象派', type:'painting', wm:'Monet_-_Impression,_Sunrise.jpg' },
+  { id:'water-lilies', title:'睡莲', artist:'克劳德·莫奈', year:1906, movement:'印象派', type:'painting', wm:'Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg' },
+  { id:'starry-night', title:'星月夜', artist:'文森特·梵高', year:1889, movement:'后印象派', type:'painting', wm:'Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg' },
+  { id:'sunflowers', title:'向日葵', artist:'文森特·梵高', year:1888, movement:'后印象派', type:'painting', wm:'Vincent_Willem_van_Gogh_127.jpg' },
+  { id:'moulin-rouge', title:'红磨坊', artist:'亨利·德·图卢兹-劳特累克', year:1895, movement:'后印象派', type:'painting', wm:'Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_Google_Art_Project.jpg' },
+  { id:'kiss-klimt', title:'吻', artist:'古斯塔夫·克里姆特', year:1908, movement:'维也纳分离派', type:'painting', wm:'The_Kiss_-_Gustav_Klimt_-_Google_Art_Project.jpg' },
+  { id:'scream', title:'呐喊', artist:'爱德华·蒙克', year:1893, movement:'表现主义', type:'painting', wm:'Edvard_Munch,_1893,_The_Scream,_oil,_tempera_and_pastel_on_cardboard,_91_x_73_cm,_National_Gallery_of_Norway.jpg' },
+  { id:'schiele-self', title:'带光环的自画像', artist:'埃贡·席勒', year:1912, movement:'表现主义', type:'painting', wm:'Egon_Schiele_-_Self-Portrait_with_Halo.jpg' },
+  { id:'persistence-memory', title:'记忆的永恒', artist:'萨尔瓦多·达利', year:1931, movement:'超现实主义', type:'painting', wm:'The_Persistence_of_Memory.jpg' },
+  { id:'american-gothic', title:'美国哥特式', artist:'格兰特·伍德', year:1930, movement:'地方主义', type:'painting', wm:'Grant_Wood_-_American_Gothic_-_Google_Art_Project.jpg' },
+  { id:'sleeping-gypsy', title:'沉睡的吉普赛人', artist:'亨利·卢梭', year:1897, movement:'朴素艺术', type:'painting', wm:'Henri_Rousseau_-_The_Sleeping_Gypsy_-_Google_Art_Project.jpg' },
+  { id:'mondrian-comp', title:'红黄蓝构成', artist:'皮特·蒙德里安', year:1930, movement:'新造型主义', type:'painting', wm:'Piet_Mondrian,_Composition_with_Red,_Blue_and_Yellow,_1930.jpg' },
+  { id:'black-square', title:'黑方块', artist:'卡济米尔·马列维奇', year:1915, movement:'至上主义', type:'painting', wm:'Kazimir_Malevich_-_Black_Square.jpg' },
+  { id:'whistler-mother', title:'惠斯勒的母亲', artist:'詹姆斯·惠斯勒', year:1871, movement:'现实主义', type:'painting', wm:'James_McNeill_Whistler_-_Arrangement_in_Grey_and_Black_No._1_-_Google_Art_Project.jpg' },
+  { id:'olympia', title:'奥林匹亚', artist:'爱德华·马奈', year:1863, movement:'现实主义', type:'painting', wm:'Édouard_Manet_-_Olympia_-_Google_Art_Project.jpg' },
+  { id:'great-wave', title:'神奈川冲浪里', artist:'葛饰北斋', year:1831, movement:'浮世绘', type:'painting', wm:'Tsunami_by_hokusai_19th_century.jpg' },
+  { id:'vitruvian', title:'维特鲁威人', artist:'列奥纳多·达·芬奇', year:1490, movement:'文艺复兴', type:'sketch', wm:'Da_Vinci_Vitruvian_Man.jpg' },
+  { id:'libyan-sibyl', title:'利比亚女巫研究', artist:'米开朗基罗', year:1511, movement:'文艺复兴', type:'sketch', wm:'Michelangelo_-_Studies_for_the_Libyan_Sibyl_-_Google_Art_Project.jpg' },
+  { id:'anatomical-shoulder', title:'肩部解剖研究', artist:'列奥纳多·达·芬奇', year:1510, movement:'文艺复兴', type:'sketch', wm:'Leonardo_da_Vinci_-_Anatomical_studies_of_a_male_shoulder.jpg' },
+  { id:'study-hands', title:'手的研究', artist:'列奥纳多·达·芬奇', year:1474, movement:'文艺复兴', type:'sketch', wm:'Leonardo_da_Vinci_-_Study_of_hands.jpg' },
+  { id:'draftsman-nude', title:'素描者画裸体', artist:'阿尔布雷希特·丢勒', year:1538, movement:'北方文艺复兴', type:'sketch', wm:'Albrecht_Dürer_-_Draftsman_drawing_a_recumbent_nude_-_WGA7027.jpg' },
+  { id:'woman-toilette', title:'梳妆的女子', artist:'埃德加·德加', year:1885, movement:'印象派', type:'sketch', wm:'Edgar_Degas_-_Woman_at_her_Toilette_-_Google_Art_Project.jpg' },
+  { id:'rembrandt-draw', title:'窗边自画像（素描）', artist:'伦勃朗', year:1648, movement:'巴洛克', type:'sketch', wm:'Rembrandt_-_Self-portrait_drawing_at_a_window_-_WGA19016.jpg' },
+  { id:'hokusai-manga', title:'北斋漫画', artist:'葛饰北斋', year:1814, movement:'浮世绘', type:'sketch', wm:'Hokusai_manga_-_vol_03_-_012.jpg' }
+];
+
+function aesLocalUrl(item) { return 'static/art-collection/' + item.id + '.jpg'; }
+function aesWikiUrl(item, size) { return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(item.wm) + '?width=' + size; }
+
+function getArtFavs() { try { return JSON.parse(localStorage.getItem('draftgen_art_favs') || '[]'); } catch (e) { return []; } }
+function setArtFavs(arr) { localStorage.setItem('draftgen_art_favs', JSON.stringify(arr)); }
+
+function initAesthetic() {
+  const mv = document.getElementById('aesFilterMovement');
+  [...new Set(aestheticCollection.map(a => a.movement))].forEach(m => {
+    const o = document.createElement('option'); o.value = m; o.textContent = m; mv.appendChild(o);
+  });
+  ['aesFilterMovement', 'aesFilterType', 'aesFilterFav', 'aesSearch'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('change', renderAestheticGrid);
+    el.addEventListener('input', renderAestheticGrid);
+  });
+  renderAestheticGrid();
+}
+
+function renderAestheticGrid() {
+  const mv = document.getElementById('aesFilterMovement').value;
+  const tp = document.getElementById('aesFilterType').value;
+  const fav = document.getElementById('aesFilterFav').value;
+  const q = document.getElementById('aesSearch').value.trim().toLowerCase();
+  const favs = getArtFavs();
+  const grid = document.getElementById('aesGrid');
+  grid.innerHTML = '';
+  const list = aestheticCollection.filter(a => {
+    if (mv && a.movement !== mv) return false;
+    if (tp && a.type !== tp) return false;
+    if (fav && !favs.includes(a.id)) return false;
+    if (q && !(a.title.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  if (list.length === 0) { grid.innerHTML = '<div class="art-empty">没有匹配的作品，试试调整筛选或搜索。</div>'; return; }
+  list.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'art-card' + (favs.includes(a.id) ? ' fav' : '');
+    const isFav = favs.includes(a.id);
+    card.innerHTML =
+      (isFav ? '<div class="star">★</div>' : '') +
+      `<img src="${aesLocalUrl(a)}" onerror="this.onerror=null;this.src='${aesWikiUrl(a, 300)}'" alt="${a.title}" loading="lazy">` +
+      `<div class="meta"><div class="t">${a.title}</div><div class="a">${a.artist} · ${a.year}</div>` +
+      `<span class="badge ${a.type}">${a.type === 'sketch' ? '素描' : '绘画'}</span></div>`;
+    card.onclick = () => openArtModal(a.id);
+    grid.appendChild(card);
+  });
+}
+
+let currentArtId = null;
+function openArtModal(id) {
+  const a = aestheticCollection.find(x => x.id === id); if (!a) return;
+  currentArtId = id;
+  const img = document.getElementById('artModalImg');
+  img.onerror = () => { img.onerror = null; img.src = aesWikiUrl(a, 1000); };
+  img.src = aesLocalUrl(a);
+  document.getElementById('artModalTitle').textContent = a.title;
+  document.getElementById('artModalSub').textContent = `${a.artist} · ${a.year} · ${a.movement} · ${a.type === 'sketch' ? '素描' : '绘画'}`;
+  const favs = getArtFavs();
+  document.getElementById('artFavBtn').textContent = favs.includes(id) ? '★ 已收藏' : '☆ 收藏';
+  document.getElementById('artModal').style.display = 'flex';
+}
+function closeArtModal() { document.getElementById('artModal').style.display = 'none'; currentArtId = null; }
+function currentArt() { return aestheticCollection.find(x => x.id === currentArtId); }
+
+function loadArtImage(item, cb) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => cb(img);
+  img.onerror = () => { img.onerror = null; img.src = aesWikiUrl(item, 1400); img.onload = () => cb(img); };
+  img.src = aesLocalUrl(item);
+}
+
+function artPlaceRef() {
+  const a = currentArt(); if (!a) return;
+  loadArtImage(a, (img) => {
+    addLayer('参考·' + a.title);
+    const ctx = layers[activeLayerIdx].ctx;
+    const fit = Math.min(canvasW / img.width, canvasH / img.height);
+    const w = img.width * fit, h = img.height * fit;
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(img, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    ctx.globalAlpha = 1;
+    compositeToMain(); renderLayerList();
+    showToast('已放入参考层 ✓');
+  });
+}
+function artSetBg() {
+  const a = currentArt(); if (!a) return;
+  loadArtImage(a, (img) => {
+    addLayer('背景·' + a.title);
+    const ctx = layers[activeLayerIdx].ctx;
+    const fit = Math.min(canvasW / img.width, canvasH / img.height);
+    const w = img.width * fit, h = img.height * fit;
+    ctx.drawImage(img, (canvasW - w) / 2, (canvasH - h) / 2, w, h);
+    while (activeLayerIdx > 1) moveLayerDown();
+    compositeToMain(); renderLayerList();
+    showToast('已设为背景 ✓');
+  });
+}
+async function artDownload() {
+  const a = currentArt(); if (!a) return;
+  const tryUrl = (u) => fetch(u, { mode: 'cors' }).then(r => { if (!r.ok) throw 0; return r.blob(); });
+  let blob;
+  try { blob = await tryUrl(aesLocalUrl(a)); }
+  catch (e) { blob = await tryUrl(aesWikiUrl(a, 1400)); }
+  const obj = URL.createObjectURL(blob);
+  const a2 = document.createElement('a');
+  a2.href = obj; a2.download = a.id + '.jpg';
+  document.body.appendChild(a2); a2.click(); a2.remove();
+  setTimeout(() => URL.revokeObjectURL(obj), 3000);
+  showToast('已下载到本地 ✓');
+}
+function artToggleFav() {
+  const id = currentArtId; if (!id) return;
+  const favs = getArtFavs();
+  const i = favs.indexOf(id);
+  if (i >= 0) favs.splice(i, 1); else favs.push(id);
+  setArtFavs(favs);
+  document.getElementById('artFavBtn').textContent = favs.includes(id) ? '★ 已收藏' : '☆ 收藏';
+  renderAestheticGrid();
+  showToast(favs.includes(id) ? '已收藏，可在「★ 我的收藏」随时调取 ✓' : '已取消收藏');
 }
 
 // ============ IMAGE TO SKETCH ============
