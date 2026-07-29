@@ -308,6 +308,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .art-modal-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .art-empty { text-align:center; color:var(--text-light); font-size:12px; padding:30px 10px; }
 
+/* 美术馆子标签 */
+.gallery-subtabs { display:flex; gap:6px; margin-bottom:12px; }
+.g-sub { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:12px; cursor:pointer; transition:all .15s; }
+.g-sub:hover { border-color:var(--accent); }
+.g-sub.active { border-color:var(--accent); background:var(--card); color:var(--accent); font-weight:600; }
+
 /* Oil-Frame Viewer (油画框展厅) */
 .art-frame-modal {
   position:fixed; inset:0; z-index:300;
@@ -490,8 +496,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
       <div class="tab" data-tab="complib" onclick="switchTab('complib')">构图库</div>
-      <div class="tab" data-tab="aesthetic" onclick="switchTab('aesthetic')">审美积累</div>
-      <div class="tab" data-tab="imgdraft" onclick="switchTab('imgdraft')">图片库</div>
+      <div class="tab" data-tab="gallery" onclick="switchTab('gallery')">美术馆</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
       <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
     </div>
@@ -616,50 +621,50 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
 
       <!-- Aesthetic Accumulation Tab -->
-      <div class="tab-content" id="tab-aesthetic" style="display:none">
+      <div class="tab-content" id="tab-gallery" style="display:none">
         <div class="panel-section">
-          <h3>🖼️ 审美积累</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">精选艺术史名作（素描 + 绘画）。点开可放大并「放入参考层 / 设为背景 / 下载到本地 / 收藏」。优先读取本地 <code>static/art-collection/</code>，离线也能用。</p>
-          <div class="aesthetic-toolbar">
-            <select id="aesFilterMovement"><option value="">全部流派</option></select>
-            <select id="aesFilterType">
-              <option value="">全部类型</option>
-              <option value="painting">绘画</option>
-              <option value="sketch">素描</option>
-            </select>
-            <select id="aesFilterFav">
-              <option value="">全部</option>
-              <option value="1">★ 我的收藏</option>
-            </select>
-            <input id="aesSearch" placeholder="搜索作品 / 艺术家…">
+          <h3>🖼️ 美术馆</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">这里汇集了「名作展厅」与「我的素材」：名作可放大翻页、放入参考层、设为背景或下载；你上传 / 导入 / 训练的图片会自动收集进「我的素材」，存在浏览器本地、随时调取。</p>
+          <div class="gallery-subtabs">
+            <button class="g-sub active" data-g="master" onclick="switchGallery('master')">名作展厅</button>
+            <button class="g-sub" data-g="mine" onclick="switchGallery('mine')">我的素材</button>
           </div>
-          <div class="aesthetic-grid" id="aesGrid"></div>
-        </div>
-      </div>
-
-      <!-- Image Draft Library Tab -->
-      <div class="tab-content" id="tab-imgdraft" style="display:none">
-        <div class="panel-section">
-          <h3>🖼️ 图片草稿库</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">所有经过网站的图片（上传训练、转草图、URL导入、审美作品）都会自动收集到这里，存在你浏览器本地，随时调取、不丢失。</p>
-          <div class="aesthetic-toolbar">
-            <select id="imgdraftFilter" onchange="renderImgDraftLibrary()">
-              <option value="">全部来源</option>
-              <option value="训练·原图">训练·原图</option>
-              <option value="训练·草图">训练·草图</option>
-              <option value="转草图·原图">转草图·原图</option>
-              <option value="URL导入">URL导入</option>
-              <option value="审美作品">审美作品</option>
-            </select>
-            <input id="imgdraftSearch" placeholder="搜索来源 / 名称…" oninput="renderImgDraftLibrary()">
+          <div id="gallery-master">
+            <div class="aesthetic-toolbar">
+              <select id="aesFilterMovement"><option value="">全部流派</option></select>
+              <select id="aesFilterType">
+                <option value="">全部类型</option>
+                <option value="painting">绘画</option>
+                <option value="sketch">素描</option>
+              </select>
+              <select id="aesFilterFav">
+                <option value="">全部</option>
+                <option value="1">★ 我的收藏</option>
+              </select>
+              <input id="aesSearch" placeholder="搜索作品 / 艺术家…">
+            </div>
+            <div class="aesthetic-grid" id="aesGrid"></div>
           </div>
-          <div class="aesthetic-grid" id="imgdraftGrid"></div>
-          <div class="aes-actions">
-            <button class="action-btn secondary" style="flex:1" onclick="exportImgDrafts()">📦 导出</button>
-            <button class="action-btn secondary" style="flex:1" onclick="document.getElementById('imgdraftImport').click()">📥 导入</button>
-            <button class="action-btn secondary" style="flex:1" onclick="clearImgDraftsConfirm()">🗑️ 清空</button>
+          <div id="gallery-mine" style="display:none">
+            <div class="aesthetic-toolbar">
+              <select id="imgdraftFilter" onchange="renderImgDraftLibrary()">
+                <option value="">全部来源</option>
+                <option value="训练·原图">训练·原图</option>
+                <option value="训练·草图">训练·草图</option>
+                <option value="转草图·原图">转草图·原图</option>
+                <option value="URL导入">URL导入</option>
+                <option value="审美作品">审美作品</option>
+              </select>
+              <input id="imgdraftSearch" placeholder="搜索来源 / 名称…" oninput="renderImgDraftLibrary()">
+            </div>
+            <div class="aesthetic-grid" id="imgdraftGrid"></div>
+            <div class="aes-actions">
+              <button class="action-btn secondary" style="flex:1" onclick="exportImgDrafts()">📦 导出</button>
+              <button class="action-btn secondary" style="flex:1" onclick="document.getElementById('imgdraftImport').click()">📥 导入</button>
+              <button class="action-btn secondary" style="flex:1" onclick="clearImgDraftsConfirm()">🗑️ 清空</button>
+            </div>
+            <input type="file" id="imgdraftImport" accept="application/json,.json" style="display:none" onchange="importImgDrafts(event)">
           </div>
-          <input type="file" id="imgdraftImport" accept="application/json,.json" style="display:none" onchange="importImgDrafts(event)">
         </div>
       </div>
 
@@ -3572,7 +3577,17 @@ function switchTab(tabName) {
   const el = document.getElementById('tab-' + tabName);
   if (el) el.style.display = 'block';
   if (tabName === 'complib') loadCompositionLibrary();
-  if (tabName === 'imgdraft') renderImgDraftLibrary();
+  if (tabName === 'gallery') switchGallery('master');
+}
+
+let currentGallerySub = 'master';
+function switchGallery(sub) {
+  currentGallerySub = sub;
+  document.querySelectorAll('.g-sub').forEach(b => b.classList.toggle('active', b.dataset.g === sub));
+  document.getElementById('gallery-master').style.display = (sub === 'master') ? 'block' : 'none';
+  document.getElementById('gallery-mine').style.display = (sub === 'mine') ? 'block' : 'none';
+  if (sub === 'master') renderAestheticGrid();
+  else renderImgDraftLibrary();
 }
 
 // ============ SLIDERS ============
