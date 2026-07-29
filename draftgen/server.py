@@ -184,11 +184,14 @@ async def index():
 # 并在 Special:FilePath 双源（Commons / en.wikipedia）失效时回退到 imageinfo 规范 URL。
 # 个别超大原图在 Wikimedia 的 Special:FilePath?width= 缩略图会因新版权限/体积限制而 404：
 # 丢勒自画像取 Wikimedia 原图直链（非 /thumb/ 路径，不受缩略图限制）；
-# 宫娥(266MB)/忧郁症(17.9MB)改取 Web Gallery of Art 直链（小图、无缩略图限制）。
+# 宫娥(266MB)/忧郁症(17.9MB)改取 Web Gallery of Art 直链（小图、无缩略图限制）；
+# 记忆的永恒仅存英文维基本地仓库，取其 upload 直链（37KB 小图）。
 _WM_ALT = {
     "durer-self": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Albrecht_D%C3%BCrer_-_1500_self-portrait_%28High_resolution_and_detail%29.jpg",
     "melencolia": "https://www.wga.hu/art/d/durer/2/13/4/079.jpg",
     "las-meninas": "https://www.wga.hu/art/v/velazque/08/0804vela.jpg",
+    # 记忆的永恒仅存于英文维基本地仓库（非 Commons），用其 upload 直链（37KB 小图）
+    "persistence-memory": "https://upload.wikimedia.org/wikipedia/en/d/dd/The_Persistence_of_Memory.jpg",
 }
 _WM_MAP = dict(ART_COLLECTION)
 ART_SEM = asyncio.Semaphore(2)
