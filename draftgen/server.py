@@ -33,7 +33,7 @@ ART_COLLECTION = [
     ("rembrandt-self", "Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg"),
     ("las-meninas", "Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg"),
     ("girl-pearl", "1665_Girl_with_a_Pearl_Earring.jpg"),
-    ("liberty", "Eugène_Delacroix_-_Le_28_Juillet._La_Liberté_guidant_le_peuple.jpg"),
+    ("liberty", "Eugène_Delacroix_-_La_liberté_guidant_le_peuple.jpg"),
     ("wanderer-fog", "Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg"),
     ("third-may", "El_Tres_de_Mayo,_by_Francisco_de_Goya,_from_Prado_in_Google_Earth.jpg"),
     ("hay-wain", "John_Constable_The_Hay_Wain.jpg"),
@@ -179,10 +179,70 @@ async def deepseek_proxy(req: DeepSeekRequest):
 async def index():
     return FileResponse("./draftgen/static/index.html")
 
-# 名作图片按需代理：文件不存在时实时从 Wikimedia 拉取并缓存到本地，
-# 由浏览器自然分散请求（同域并发有限），避免一次性批量请求被限流
+# 名作图片按需代理：文件不存在时实时从 Wikimedia 拉取并缓存到本地。
+# 由 Render 服务端代取，规避国内 GFW 对维基的封锁；尊重 429 的 Retry-After 退避重试，
+# 并在 Special:FilePath 双源（Commons / en.wikipedia）失效时回退到 imageinfo 规范 URL。
 _WM_MAP = dict(ART_COLLECTION)
 ART_SEM = asyncio.Semaphore(2)
+
+async def _wm_fetch(wm: str):
+    """拉取维基图片字节；成功返回 bytes，失败返回 None。"""
+    ua = {"User-Agent": "DraftGen/1.0 (art prefetch)"}
+    bases = (
+        "https://commons.wikimedia.org/wiki/Special:FilePath/",
+        "https://en.wikipedia.org/wiki/Special:FilePath/",
+    )
+    last = None
+    for attempt in range(8):
+        retried = False
+        for base in bases:
+            try:
+                async with ART_SEM:
+                    async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
+                        r = await client.get(
+                            base + urllib.parse.quote(wm) + "?width=800", headers=ua)
+                if r.status_code == 200 and len(r.content) > 1000:
+                    return r.content
+                last = r.status_code
+                if r.status_code == 429:
+                    ra = r.headers.get("Retry-After")
+                    try:
+                        wait = min(int(float(ra)), 60)
+                    except (TypeError, ValueError):
+                        wait = 4 * (attempt + 1)
+                    await asyncio.sleep(wait)
+                    retried = True
+                    continue
+                if r.status_code in (500, 502, 503, 504):
+                    await asyncio.sleep(3 * (attempt + 1))
+                    retried = True
+                    continue
+            except Exception as e:
+                last = str(e)[:40]
+                await asyncio.sleep(2 * (attempt + 1))
+                retried = True
+        if not retried:  # 两源都确定性失败（如 404 文件名错），不再重试
+            break
+    # 回退：用 imageinfo 取规范 upload URL 再拉一次
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
+            api = ("https://commons.wikimedia.org/w/api.php?action=query&format=json"
+                   "&prop=imageinfo&iiprop=url&titles=File:" + urllib.parse.quote(wm))
+            r = await client.get(api, headers=ua)
+            if r.status_code == 200:
+                pages = r.json().get("query", {}).get("pages", {})
+                for p in pages.values():
+                    ii = p.get("imageinfo")
+                    if ii:
+                        url = ii[0]["url"]
+                        rr = await client.get(url, headers=ua)
+                        if rr.status_code == 200 and len(rr.content) > 1000:
+                            return rr.content
+    except Exception as e:
+        print("[art-proxy] imageinfo fallback error:", e)
+    print("[art-proxy] fetch failed for", wm, "last=", last)
+    return None
+
 @app.get("/static/art-collection/{filename}")
 async def art_collection_proxy(filename: str):
     if not re.match(r"^[a-z0-9-]+\.jpg$", filename):
@@ -196,30 +256,7 @@ async def art_collection_proxy(filename: str):
     wm = _WM_MAP.get(aid)
     if not wm:
         raise HTTPException(status_code=404, detail="not found")
-    data = None
-    last_status = None
-    for attempt in range(5):
-        for base in ("https://commons.wikimedia.org/wiki/Special:FilePath/",
-                     "https://en.wikipedia.org/wiki/Special:FilePath/"):
-            try:
-                async with ART_SEM:
-                    async with httpx.AsyncClient(follow_redirects=True, timeout=60) as client:
-                        r = await client.get(
-                            base + urllib.parse.quote(wm) + "?width=800",
-                            headers={"User-Agent": "DraftGen/1.0 (art prefetch)"})
-                if r.status_code == 200 and len(r.content) > 1000:
-                    data = r.content
-                    break
-                last_status = r.status_code
-            except Exception as e:
-                last_status = str(e)[:40]
-        if data:
-            break
-        # 两源都失败：限流类退避重试；404 类（文件名仍错）直接放弃
-        if last_status in (429, 500, 502, 503, 504):
-            await asyncio.sleep(1.5 * (attempt + 1))
-        else:
-            break
+    data = await _wm_fetch(wm)
     if data:
         with open(dest, "wb") as f:
             f.write(data)

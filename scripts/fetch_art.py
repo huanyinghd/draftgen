@@ -35,7 +35,7 @@ ART = [
     ("rembrandt-self", "Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg"),
     ("las-meninas", "Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg"),
     ("girl-pearl", "1665_Girl_with_a_Pearl_Earring.jpg"),
-    ("liberty", "Eugène_Delacroix_-_Le_28_Juillet._La_Liberté_guidant_le_peuple.jpg"),
+    ("liberty", "Eugène_Delacroix_-_La_liberté_guidant_le_peuple.jpg"),
     ("wanderer-fog", "Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg"),
     ("third-may", "El_Tres_de_Mayo,_by_Francisco_de_Goya,_from_Prado_in_Google_Earth.jpg"),
     ("hay-wain", "John_Constable_The_Hay_Wain.jpg"),
