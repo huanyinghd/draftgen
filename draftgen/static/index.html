@@ -378,7 +378,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </div>
 </div>
 
-<!-- Artwork Modal (审美积累) -->
+<!-- 美术馆·名作展厅 Modal (油画框) -->
 <!-- Oil-Frame Viewer Modal -->
 <div class="art-frame-modal" id="artFrameModal" onclick="if(event.target===this)closeArtModal()">
   <button class="frame-nav frame-prev" onclick="event.stopPropagation();artFramePrev()" title="上一张 (←)">‹</button>
@@ -2564,7 +2564,7 @@ function importCompositionLibrary(event) {
   event.target.value = '';
 }
 
-// ============ 审美积累 (Aesthetic Accumulation) ============
+// ============ 美术馆·名作展厅 (Aesthetic / Oil-Frame Viewer) ============
 // 精选艺术史公共领域名作（素描+绘画）。wm = Wikimedia Commons 文件名。
 const aestheticCollection = [
   { id:'mona-lisa', title:'蒙娜丽莎', artist:'列奥纳多·达·芬奇', year:1503, movement:'文艺复兴', type:'painting', wm:'Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg' },
@@ -2789,7 +2789,7 @@ function artToggleFav() {
   showToast(favs.includes(id) ? '已收藏，可在「★ 我的收藏」随时调取 ✓' : '已取消收藏');
 }
 
-// ============ 图片草稿库（所有经过网站的图片自动收集 / IndexedDB 本地） ============
+// ============ 美术馆·我的素材（所有经过网站的图片自动收集 / IndexedDB 本地） ============
 let _imgdraftSeq = 0;
 let currentImgDraftRec = null;
 
@@ -2964,7 +2964,7 @@ async function imgDraftDelete() {
   showToast('已删除 ✓');
 }
 async function clearImgDraftsConfirm() {
-  if (!confirm('确定清空图片草稿库？此操作不可恢复。')) return;
+  if (!confirm('确定清空美术馆·我的素材？此操作不可恢复。')) return;
   await clearImgDrafts();
   renderImgDraftLibrary();
   showToast('已清空 ✓');
