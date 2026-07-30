@@ -1,0 +1,4712 @@
+[
+ {
+  "id": "mona-lisa",
+  "title": "蒙娜丽莎",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1503,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Mona Lisa Leonardo da Vinci",
+  "wm": "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg"
+ },
+ {
+  "id": "birth-of-venus",
+  "title": "维纳斯的诞生",
+  "artist": "桑德罗·波提切利",
+  "year": 1485,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Birth of Venus Botticelli",
+  "wm": "Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg"
+ },
+ {
+  "id": "school-of-athens",
+  "title": "雅典学院",
+  "artist": "拉斐尔",
+  "year": 1511,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The School of Athens Raphael",
+  "wm": "Raffael_058.jpg"
+ },
+ {
+  "id": "sistine-madonna",
+  "title": "西斯廷圣母",
+  "artist": "拉斐尔",
+  "year": 1512,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Sistine Madonna Raphael",
+  "wm": "Sistine_Madonna_(original)_FXD.jpg"
+ },
+ {
+  "id": "creation-adam",
+  "title": "创造亚当",
+  "artist": "米开朗基罗",
+  "year": 1512,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Creation of Adam Michelangelo",
+  "wm": "Michelangelo_-_Creation_of_Adam_(cropped).jpg"
+ },
+ {
+  "id": "last-supper",
+  "title": "最后的晚餐",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1498,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Last Supper Leonardo da Vinci",
+  "wm": null
+ },
+ {
+  "id": "annunciation-leonardo",
+  "title": "天使报喜",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1472,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Annunciation Leonardo da Vinci",
+  "wm": null
+ },
+ {
+  "id": "primavera",
+  "title": "春",
+  "artist": "桑德罗·波提切利",
+  "year": 1480,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Primavera Botticelli",
+  "wm": null
+ },
+ {
+  "id": "venus-of-urbino",
+  "title": "乌尔比诺的维纳斯",
+  "artist": "提香",
+  "year": 1538,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Venus of Urbino Titian",
+  "wm": null
+ },
+ {
+  "id": "bacchus-ariadne",
+  "title": "酒神与阿里阿德涅",
+  "artist": "提香",
+  "year": 1523,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Bacchus and Ariadne Titian",
+  "wm": null
+ },
+ {
+  "id": "assumption-virgin",
+  "title": "圣母升天",
+  "artist": "提香",
+  "year": 1518,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Assumption of the Virgin Titian",
+  "wm": null
+ },
+ {
+  "id": "pesaro-madonna",
+  "title": "佩萨罗圣母",
+  "artist": "拉斐尔",
+  "year": 1526,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Pesaro Madonna Raphael",
+  "wm": null
+ },
+ {
+  "id": "pieta-michelangelo",
+  "title": "圣殇",
+  "artist": "米开朗基罗",
+  "year": 1499,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Pietà Michelangelo",
+  "wm": null
+ },
+ {
+  "id": "doni-tondo",
+  "title": "多尼圆形画",
+  "artist": "米开朗基罗",
+  "year": 1507,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Doni Tondo Michelangelo",
+  "wm": null
+ },
+ {
+  "id": "tempest",
+  "title": "暴风雨",
+  "artist": "乔尔乔内",
+  "year": 1508,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Tempest Giorgione",
+  "wm": null
+ },
+ {
+  "id": "sleeping-venus",
+  "title": "沉睡的维纳斯",
+  "artist": "乔尔乔内",
+  "year": 1510,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Sleeping Venus Giorgione",
+  "wm": null
+ },
+ {
+  "id": "flagellation-piero",
+  "title": "鞭笞基督",
+  "artist": "皮耶罗·德拉·弗朗切斯卡",
+  "year": 1460,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Flagellation of Christ Piero della Francesca",
+  "wm": null
+ },
+ {
+  "id": "baptism-christ-piero",
+  "title": "基督受洗",
+  "artist": "皮耶罗·德拉·弗朗切斯卡",
+  "year": 1450,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Baptism of Christ Piero della Francesca",
+  "wm": null
+ },
+ {
+  "id": "ideal-city",
+  "title": "理想城",
+  "artist": "匿名",
+  "year": 1480,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Ideal City Urbino",
+  "wm": null
+ },
+ {
+  "id": "delivery-of-keys",
+  "title": "交钥匙",
+  "artist": "佩鲁吉诺",
+  "year": 1481,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Delivery of the Keys Perugino",
+  "wm": null
+ },
+ {
+  "id": "annunciation-angelico",
+  "title": "天使报喜",
+  "artist": "弗拉·安杰利科",
+  "year": 1440,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Annunciation Fra Angelico",
+  "wm": null
+ },
+ {
+  "id": "madonna-meadow",
+  "title": "草地上的圣母",
+  "artist": "拉斐尔",
+  "year": 1506,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Madonna of the Meadow Raphael",
+  "wm": null
+ },
+ {
+  "id": "sacred-profane-love",
+  "title": "神圣与世俗之爱",
+  "artist": "提香",
+  "year": 1514,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Sacred and Profane Love Titian",
+  "wm": null
+ },
+ {
+  "id": "diana-actaeon",
+  "title": "戴安娜与阿克泰翁",
+  "artist": "提香",
+  "year": 1556,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Diana and Actaeon Titian",
+  "wm": null
+ },
+ {
+  "id": "diana-callisto",
+  "title": "戴安娜与卡利斯托",
+  "artist": "提香",
+  "year": 1559,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Diana and Callisto Titian",
+  "wm": null
+ },
+ {
+  "id": "flaying-marsyas",
+  "title": "玛耳绪阿斯的剥皮",
+  "artist": "提香",
+  "year": 1570,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Flaying of Marsyas Titian",
+  "wm": null
+ },
+ {
+  "id": "dead-christ-mantegna",
+  "title": "哀悼死去的基督",
+  "artist": "安德烈亚·曼特尼亚",
+  "year": 1480,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Lamentation of Christ Mantegna",
+  "wm": null
+ },
+ {
+  "id": "venus-mars",
+  "title": "维纳斯与战神",
+  "artist": "桑德罗·波提切利",
+  "year": 1483,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Venus and Mars Botticelli",
+  "wm": null
+ },
+ {
+  "id": "la-bella",
+  "title": "美人",
+  "artist": "提香",
+  "year": 1536,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "La Bella Titian",
+  "wm": null
+ },
+ {
+  "id": "presentation-virgin-titian",
+  "title": "圣母进殿",
+  "artist": "提香",
+  "year": 1538,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Presentation of the Virgin Titian",
+  "wm": null
+ },
+ {
+  "id": "rape-europa-titian",
+  "title": "欧罗巴的掠夺",
+  "artist": "提香",
+  "year": 1562,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Rape of Europa Titian",
+  "wm": null
+ },
+ {
+  "id": "madonna-chair",
+  "title": "椅中圣母",
+  "artist": "拉斐尔",
+  "year": 1514,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Madonna of the Chair Raphael",
+  "wm": null
+ },
+ {
+  "id": "transfiguration-raphael",
+  "title": "基督显圣容",
+  "artist": "拉斐尔",
+  "year": 1520,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Transfiguration Raphael",
+  "wm": null
+ },
+ {
+  "id": "tribute-money",
+  "title": "纳税银",
+  "artist": "马萨乔",
+  "year": 1427,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Tribute Money Masaccio",
+  "wm": null
+ },
+ {
+  "id": "expulsion-eden",
+  "title": "逐出伊甸园",
+  "artist": "马萨乔",
+  "year": 1427,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Expulsion from the Garden of Eden Masaccio",
+  "wm": null
+ },
+ {
+  "id": "holy-trinity-masaccio",
+  "title": "圣三位一体",
+  "artist": "马萨乔",
+  "year": 1427,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Holy Trinity Masaccio",
+  "wm": null
+ },
+ {
+  "id": "annunciation-martini",
+  "title": "天使报喜",
+  "artist": "西蒙内·马丁尼",
+  "year": 1333,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Annunciation Simone Martini",
+  "wm": null
+ },
+ {
+  "id": "good-government",
+  "title": "好政府的效果",
+  "artist": "安布罗焦·洛伦泽蒂",
+  "year": 1340,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Effects of Good Government Lorenzetti",
+  "wm": null
+ },
+ {
+  "id": "mystic-nativity",
+  "title": "神秘诞生",
+  "artist": "桑德罗·波提切利",
+  "year": 1500,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Mystic Nativity Botticelli",
+  "wm": null
+ },
+ {
+  "id": "battle-san-romano",
+  "title": "圣罗马诺之战",
+  "artist": "保罗·乌切洛",
+  "year": 1440,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Battle of San Romano Uccello",
+  "wm": null
+ },
+ {
+  "id": "marriage-virgin",
+  "title": "圣母的婚礼",
+  "artist": "拉斐尔",
+  "year": 1504,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Marriage of the Virgin Raphael",
+  "wm": null
+ },
+ {
+  "id": "parnassus",
+  "title": "帕纳塞斯山",
+  "artist": "拉斐尔",
+  "year": 1511,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Parnassus Raphael",
+  "wm": null
+ },
+ {
+  "id": "disputation",
+  "title": "圣礼之争",
+  "artist": "拉斐尔",
+  "year": 1510,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Disputation of the Holy Sacrament Raphael",
+  "wm": null
+ },
+ {
+  "id": "castiglione",
+  "title": "巴尔达萨雷·卡斯蒂廖内肖像",
+  "artist": "拉斐尔",
+  "year": 1519,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Portrait of Baldassare Castiglione Raphael",
+  "wm": null
+ },
+ {
+  "id": "fornarina",
+  "title": "福尔纳丽娜",
+  "artist": "拉斐尔",
+  "year": 1518,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "La Fornarina Raphael",
+  "wm": null
+ },
+ {
+  "id": "virgin-rocks",
+  "title": "岩间圣母",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1486,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Virgin of the Rocks Leonardo da Vinci",
+  "wm": null
+ },
+ {
+  "id": "st-john-leonardo",
+  "title": "施洗者圣约翰",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1513,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "St. John the Baptist Leonardo da Vinci",
+  "wm": null
+ },
+ {
+  "id": "ginevra",
+  "title": "吉内薇拉·德·本奇",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1474,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Ginevra de' Benci Leonardo da Vinci",
+  "wm": null
+ },
+ {
+  "id": "primavera-done",
+  "title": "春（细节）",
+  "artist": "桑德罗·波提切利",
+  "year": 1480,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "La Primavera Botticelli",
+  "wm": null
+ },
+ {
+  "id": "venus-courtesans",
+  "title": "维纳斯与武尔坎努斯",
+  "artist": "桑德罗·波提切利",
+  "year": 1485,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Venus and Vulcan Botticelli",
+  "wm": null
+ },
+ {
+  "id": "cappella",
+  "title": "签署厅天顶",
+  "artist": "拉斐尔",
+  "year": 1511,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "Stanza della Segnatura Raphael",
+  "wm": null
+ },
+ {
+  "id": "pieta-van-der-weyden",
+  "title": "下十字架",
+  "artist": "罗希尔·范·德·维登",
+  "year": 1435,
+  "movement": "文艺复兴",
+  "type": "painting",
+  "en": "The Descent from the Cross van der Weyden",
+  "wm": null
+ },
+ {
+  "id": "arnolfini",
+  "title": "阿尔诺非尼夫妇肖像",
+  "artist": "扬·凡·艾克",
+  "year": 1434,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Arnolfini Portrait Jan van Eyck",
+  "wm": "Van_Eyck_-_Arnolfini_Portrait.jpg"
+ },
+ {
+  "id": "garden-delights",
+  "title": "人间乐园",
+  "artist": "希罗尼穆斯·博斯",
+  "year": 1505,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Garden of Earthly Delights Bosch",
+  "wm": "The_Garden_of_earthly_delights.jpg"
+ },
+ {
+  "id": "tower-babel",
+  "title": "巴别塔",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1563,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Tower of Babel Bruegel",
+  "wm": "Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_(Vienna)_-_Google_Art_Project_-_edited.jpg"
+ },
+ {
+  "id": "durer-self",
+  "title": "自画像",
+  "artist": "阿尔布雷希特·丢勒",
+  "year": 1500,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Albrecht Dürer self-portrait 1500",
+  "wm": "Albrecht_Dürer_-_1500_self-portrait_(High_resolution_and_detail).jpg"
+ },
+ {
+  "id": "melencolia",
+  "title": "忧郁症 I",
+  "artist": "阿尔布雷希特·丢勒",
+  "year": 1514,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Melencolia I Dürer",
+  "wm": "Albrecht_Dürer_-_Melencolia_I_-_Google_Art_Project_(427760).jpg"
+ },
+ {
+  "id": "draftsman-nude",
+  "title": "素描者画裸体",
+  "artist": "阿尔布雷希特·丢勒",
+  "year": 1538,
+  "movement": "北方文艺复兴",
+  "type": "sketch",
+  "en": "Dürer draftsman drawing nude",
+  "wm": "Dürer_-_Zeichner_und_Akt.jpg"
+ },
+ {
+  "id": "hunters-snow",
+  "title": "雪中猎人",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1565,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Hunters in the Snow Bruegel",
+  "wm": null
+ },
+ {
+  "id": "peasant-wedding",
+  "title": "农民婚礼",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1567,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Peasant Wedding Bruegel",
+  "wm": null
+ },
+ {
+  "id": "tower-babel2",
+  "title": "巴别塔（小）",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1563,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Tower of Babel Rotterdam Bruegel",
+  "wm": null
+ },
+ {
+  "id": "dead-bird",
+  "title": "死鸟",
+  "artist": "阿尔布雷希特·丢勒",
+  "year": 1500,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "A Dead Bird Dürer",
+  "wm": null
+ },
+ {
+  "id": "four-apostles",
+  "title": "四使徒",
+  "artist": "阿尔布雷希特·丢勒",
+  "year": 1526,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Four Apostles Dürer",
+  "wm": null
+ },
+ {
+  "id": "adam-eve-durer",
+  "title": "亚当与夏娃",
+  "artist": "阿尔布雷希特·丢勒",
+  "year": 1507,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Adam and Eve Dürer",
+  "wm": null
+ },
+ {
+  "id": "arnolfini-detail",
+  "title": "阿尔诺非尼肖像",
+  "artist": "扬·凡·艾克",
+  "year": 1434,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Portrait of Giovanni Arnolfini van Eyck",
+  "wm": null
+ },
+ {
+  "id": "lucca-madonna",
+  "title": "卢卡圣母",
+  "artist": "扬·凡·艾克",
+  "year": 1437,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Lucca Madonna van Eyck",
+  "wm": null
+ },
+ {
+  "id": "ghent-altarpiece",
+  "title": "根特祭坛画",
+  "artist": "扬·凡·艾克",
+  "year": 1432,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Ghent Altarpiece van Eyck",
+  "wm": null
+ },
+ {
+  "id": "windmill",
+  "title": "有风车的风景",
+  "artist": "扬·范·戈因",
+  "year": 1640,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Windmill at Wijk du Gardin",
+  "wm": null
+ },
+ {
+  "id": "massacre-innocents",
+  "title": "无辜者的大屠杀",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1565,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Massacre of the Innocents Bruegel",
+  "wm": null
+ },
+ {
+  "id": "fall-icarus",
+  "title": "伊卡洛斯的坠落",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1558,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "Landscape with the Fall of Icarus Bruegel",
+  "wm": null
+ },
+ {
+  "id": "haywain-bruegel",
+  "title": "干草车",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1565,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Haywain Bruegel",
+  "wm": null
+ },
+ {
+  "id": "census-bethlehem",
+  "title": "伯利恒户口调查",
+  "artist": "老彼得·勃鲁盖尔",
+  "year": 1566,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Census at Bethlehem Bruegel",
+  "wm": null
+ },
+ {
+  "id": "madonna-cannon",
+  "title": "班纳主教圣母",
+  "artist": "小汉斯·霍尔拜因",
+  "year": 1523,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Canon's Virgin Holbein",
+  "wm": null
+ },
+ {
+  "id": "ambassadors",
+  "title": "大使们",
+  "artist": "小汉斯·霍尔拜因",
+  "year": 1533,
+  "movement": "北方文艺复兴",
+  "type": "painting",
+  "en": "The Ambassadors Holbein",
+  "wm": null
+ },
+ {
+  "id": "night-watch",
+  "title": "夜巡",
+  "artist": "伦勃朗",
+  "year": 1642,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Night Watch Rembrandt",
+  "wm": "Rembrandt_van_Rijn-De_Nachtwacht-1642.jpg"
+ },
+ {
+  "id": "rembrandt-self",
+  "title": "自画像",
+  "artist": "伦勃朗",
+  "year": 1640,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Rembrandt self-portrait",
+  "wm": "Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg"
+ },
+ {
+  "id": "las-meninas",
+  "title": "宫娥",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1656,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Las Meninas Velázquez",
+  "wm": "Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg"
+ },
+ {
+  "id": "rembrandt-draw",
+  "title": "窗边自画像（素描）",
+  "artist": "伦勃朗",
+  "year": 1648,
+  "movement": "巴洛克",
+  "type": "sketch",
+  "en": "Rembrandt self-portrait drawing at a window",
+  "wm": "Rembrandt_van_Rijn,_Self-Portrait_Drawing_at_a_Window,_1648,_NGA_9930.jpg"
+ },
+ {
+  "id": "call-girl",
+  "title": "夜巡（细节）",
+  "artist": "伦勃朗",
+  "year": 1642,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Night Watch detail Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "anatomy-lesson",
+  "title": "杜普教授的解剖课",
+  "artist": "伦勃朗",
+  "year": 1632,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Anatomy Lesson of Dr. Nicolaes Tulp Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "syndics",
+  "title": "纺织公会理事",
+  "artist": "伦勃朗",
+  "year": 1662,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Syndics of the Drapers' Guild Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "bethlehem-rembrandt",
+  "title": "伯利恒的婴儿屠杀",
+  "artist": "伦勃朗",
+  "year": 1635,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Massacre of the Innocents Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "return-prodigal",
+  "title": "浪子回头",
+  "artist": "伦勃朗",
+  "year": 1669,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Return of the Prodigal Son Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "blinding-samson",
+  "title": "参孙被弄瞎",
+  "artist": "伦勃朗",
+  "year": 1636,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Blinding of Samson Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "jewish-bride",
+  "title": "犹太新娘",
+  "artist": "伦勃朗",
+  "year": 1667,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Jewish Bride Rembrandt",
+  "wm": null
+ },
+ {
+  "id": "las-meninas2",
+  "title": "宫娥（镜像）",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1656,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Las Meninas detail Velázquez",
+  "wm": null
+ },
+ {
+  "id": "surrender-breda",
+  "title": "布雷达的投降",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1635,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Surrender of Breda Velázquez",
+  "wm": null
+ },
+ {
+  "id": "venus-mirror",
+  "title": "镜前的维纳斯",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1651,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Venus at her Mirror Velázquez",
+  "wm": null
+ },
+ {
+  "id": "waterseller",
+  "title": "喝水者",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1620,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Waterseller of Seville Velázquez",
+  "wm": null
+ },
+ {
+  "id": "judith-beheading",
+  "title": "朱迪斯斩首荷罗孚尼",
+  "artist": "阿特米西娅·真蒂莱斯基",
+  "year": 1614,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Judith Beheading Holofernes Artemisia",
+  "wm": null
+ },
+ {
+  "id": "self-artemisia",
+  "title": "自画像（弹鲁特琴）",
+  "artist": "阿特米西娅·真蒂莱斯基",
+  "year": 1638,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Self-Portrait as the Allegory of Painting Artemisia",
+  "wm": null
+ },
+ {
+  "id": "callisto",
+  "title": "卡利斯托的捕获",
+  "artist": "提香",
+  "year": 1559,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Capture of Callisto Titian",
+  "wm": null
+ },
+ {
+  "id": "caravaggio-bacchus",
+  "title": "酒神巴克斯",
+  "artist": "卡拉瓦乔",
+  "year": 1596,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Bacchus Caravaggio",
+  "wm": null
+ },
+ {
+  "id": "caravaggio-supper",
+  "title": "以马忤斯的晚餐",
+  "artist": "卡拉瓦乔",
+  "year": 1601,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Supper at Emmaus Caravaggio",
+  "wm": null
+ },
+ {
+  "id": "caravaggio-calling",
+  "title": "圣马太蒙召",
+  "artist": "卡拉瓦乔",
+  "year": 1600,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Calling of St Matthew Caravaggio",
+  "wm": null
+ },
+ {
+  "id": "caravaggio-medusa",
+  "title": "美杜莎",
+  "artist": "卡拉瓦乔",
+  "year": 1597,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Medusa Caravaggio",
+  "wm": null
+ },
+ {
+  "id": "caravaggio-david",
+  "title": "大卫与歌利亚",
+  "artist": "卡拉瓦乔",
+  "year": 1610,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "David with the Head of Goliath Caravaggio",
+  "wm": null
+ },
+ {
+  "id": "rubens-descent",
+  "title": "下十字架",
+  "artist": "彼得·保罗·鲁本斯",
+  "year": 1612,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Descent from the Cross Rubens",
+  "wm": null
+ },
+ {
+  "id": "rubens-kermis",
+  "title": "乡村舞会",
+  "artist": "彼得·保罗·鲁本斯",
+  "year": 1635,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Village Fête Rubens",
+  "wm": null
+ },
+ {
+  "id": "rubens-helene",
+  "title": "海伦·芙尔曼与儿女",
+  "artist": "彼得·保罗·鲁本斯",
+  "year": 1636,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Helene Fourment with Children Rubens",
+  "wm": null
+ },
+ {
+  "id": "rubens-leucippus",
+  "title": "劫夺留西帕斯的女儿",
+  "artist": "彼得·保罗·鲁本斯",
+  "year": 1618,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Rape of the Daughters of Leucippus Rubens",
+  "wm": null
+ },
+ {
+  "id": "rubens-self",
+  "title": "自画像",
+  "artist": "彼得·保罗·鲁本斯",
+  "year": 1623,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Self-portrait Rubens",
+  "wm": null
+ },
+ {
+  "id": "judith-rubens",
+  "title": "朱迪斯与荷罗孚尼的头",
+  "artist": "彼得·保罗·鲁本斯",
+  "year": 1610,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Judith with the Head of Holofernes Rubens",
+  "wm": null
+ },
+ {
+  "id": "teniers-fair",
+  "title": "乡村集市",
+  "artist": "大卫·特尼尔斯",
+  "year": 1650,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Village Fair Teniers",
+  "wm": null
+ },
+ {
+  "id": "velazquez-infanta",
+  "title": "穿裙装的小公主",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1659,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Infanta Margarita Teresa Velázquez",
+  "wm": null
+ },
+ {
+  "id": "murillo-helen",
+  "title": "圣母无染原罪",
+  "artist": "巴托洛梅·埃斯特万·穆里略",
+  "year": 1678,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Immaculate Conception Murillo",
+  "wm": null
+ },
+ {
+  "id": "preterite",
+  "title": "阿波罗与达芙妮",
+  "artist": "济安·洛伦佐·贝尼尼",
+  "year": 1625,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Apollo and Daphne Bernini",
+  "wm": null
+ },
+ {
+  "id": "ecstasy-teresa",
+  "title": "圣特雷莎的沉迷",
+  "artist": "济安·洛伦佐·贝尼尼",
+  "year": 1651,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Ecstasy of Saint Teresa Bernini",
+  "wm": null
+ },
+ {
+  "id": "las-meninas3",
+  "title": "纺纱女",
+  "artist": "迭戈·委拉斯开兹",
+  "year": 1657,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "The Spinners Velázquez",
+  "wm": null
+ },
+ {
+  "id": "caravaggio-fruit",
+  "title": "水果篮",
+  "artist": "卡拉瓦乔",
+  "year": 1599,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Basket of Fruit Caravaggio",
+  "wm": null
+ },
+ {
+  "id": "gentileschi-lucretia",
+  "title": "卢克蕾提亚",
+  "artist": "阿特米西娅·真蒂莱斯基",
+  "year": 1621,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Lucretia Artemisia Gentileschi",
+  "wm": null
+ },
+ {
+  "id": "poussin-arcadia",
+  "title": "阿卡迪亚的牧人",
+  "artist": "尼古拉·普桑",
+  "year": 1637,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Et in Arcadia ego Poussin",
+  "wm": null
+ },
+ {
+  "id": "poussin-holy",
+  "title": "圣家庭",
+  "artist": "尼古拉·普桑",
+  "year": 1645,
+  "movement": "巴洛克",
+  "type": "painting",
+  "en": "Holy Family Poussin",
+  "wm": null
+ },
+ {
+  "id": "girl-pearl",
+  "title": "戴珍珠耳环的少女",
+  "artist": "约翰内斯·维米尔",
+  "year": 1665,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Girl with a Pearl Earring Vermeer",
+  "wm": "1665_Girl_with_a_Pearl_Earring.jpg"
+ },
+ {
+  "id": "milkmaid",
+  "title": "倒牛奶的女仆",
+  "artist": "约翰内斯·维米尔",
+  "year": 1658,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Milkmaid Vermeer",
+  "wm": null
+ },
+ {
+  "id": "view-delft",
+  "title": "代尔夫特风景",
+  "artist": "约翰内斯·维米尔",
+  "year": 1661,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "View of Delft Vermeer",
+  "wm": null
+ },
+ {
+  "id": "music-lesson",
+  "title": "音乐课",
+  "artist": "约翰内斯·维米尔",
+  "year": 1662,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Music Lesson Vermeer",
+  "wm": null
+ },
+ {
+  "id": "letter-vermeer",
+  "title": "情书",
+  "artist": "约翰内斯·维米尔",
+  "year": 1669,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Love Letter Vermeer",
+  "wm": null
+ },
+ {
+  "id": "wine-glass",
+  "title": "酒杯",
+  "artist": "约翰内斯·维米尔",
+  "year": 1659,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Wine Glass Vermeer",
+  "wm": null
+ },
+ {
+  "id": "laughing-girl",
+  "title": "微笑的女仆",
+  "artist": "约翰内斯·维米尔",
+  "year": 1659,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Laughing Girl Vermeer",
+  "wm": null
+ },
+ {
+  "id": "allegory-painting",
+  "title": "绘画的艺术",
+  "artist": "约翰内斯·维米尔",
+  "year": 1666,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Art of Painting Vermeer",
+  "wm": null
+ },
+ {
+  "id": "merry-company",
+  "title": "欢乐聚会",
+  "artist": "弗兰斯·哈尔斯",
+  "year": 1620,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Merry Company Hals",
+  "wm": null
+ },
+ {
+  "id": "laughing-cavalier",
+  "title": "微笑的骑士",
+  "artist": "弗兰斯·哈尔斯",
+  "year": 1624,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Laughing Cavalier Hals",
+  "wm": null
+ },
+ {
+  "id": "gypsy-girl",
+  "title": "吉普赛女郎",
+  "artist": "弗兰斯·哈尔斯",
+  "year": 1628,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Gypsy Girl Hals",
+  "wm": null
+ },
+ {
+  "id": "regents-almshouse",
+  "title": "养老院女管理员",
+  "artist": "弗兰斯·哈尔斯",
+  "year": 1664,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Regents of the Old Men's Almshouse Hals",
+  "wm": null
+ },
+ {
+  "id": "stecn-eve",
+  "title": "快乐的酒徒",
+  "artist": "扬·斯特恩",
+  "year": 1660,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Merry Drinker Steen",
+  "wm": null
+ },
+ {
+  "id": "stecn-feast",
+  "title": "圣尼古拉节",
+  "artist": "扬·斯特恩",
+  "year": 1660,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Feast of St. Nicolas Steen",
+  "wm": null
+ },
+ {
+  "id": "terborch-letter",
+  "title": "读信的女子",
+  "artist": "赫拉德·特博赫",
+  "year": 1660,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Letter Ter Borch",
+  "wm": null
+ },
+ {
+  "id": "de-witte-church",
+  "title": "教堂内部",
+  "artist": "伊曼纽·德·维特",
+  "year": 1660,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Interior of a Church de Witte",
+  "wm": null
+ },
+ {
+  "id": "cuyp-cows",
+  "title": "牛群",
+  "artist": "阿尔伯特·克伊普",
+  "year": 1650,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Cattle Cuyp",
+  "wm": null
+ },
+ {
+  "id": "hobbema-avenue",
+  "title": "林荫大道",
+  "artist": "梅因德特·霍贝玛",
+  "year": 1689,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Avenue at Middelharnis Hobbema",
+  "wm": null
+ },
+ {
+  "id": "raucemacher",
+  "title": "静物与乐器",
+  "artist": "威廉·卡尔夫",
+  "year": 1650,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Still Life with Musical Instruments",
+  "wm": null
+ },
+ {
+  "id": "kalf-wine",
+  "title": "酒杯静物",
+  "artist": "威廉·卡尔夫",
+  "year": 1650,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Still Life with a Nautilus Cup Kalf",
+  "wm": null
+ },
+ {
+  "id": "vander-heyden",
+  "title": "街道",
+  "artist": "扬·范·德·海登",
+  "year": 1660,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Straight Canal van der Heyden",
+  "wm": null
+ },
+ {
+  "id": "berchem-herd",
+  "title": "牧群",
+  "artist": "克拉斯·贝尔赫姆",
+  "year": 1650,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "Herdsmen Berchem",
+  "wm": null
+ },
+ {
+  "id": "wouwerman-halt",
+  "title": "驿站",
+  "artist": "菲利普·沃弗曼",
+  "year": 1655,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Halt Wouwerman",
+  "wm": null
+ },
+ {
+  "id": "potter-bull",
+  "title": "公牛",
+  "artist": "保罗·波特",
+  "year": 1647,
+  "movement": "荷兰黄金时代",
+  "type": "painting",
+  "en": "The Young Bull Potter",
+  "wm": null
+ },
+ {
+  "id": "watteau-pilgrimage",
+  "title": "西苔岛朝圣",
+  "artist": "让-安托万·华托",
+  "year": 1717,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "Pilgrimage to Cythera Watteau",
+  "wm": null
+ },
+ {
+  "id": "watteau-gilles",
+  "title": "吉尔",
+  "artist": "让-安托万·华托",
+  "year": 1719,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "Gilles Watteau",
+  "wm": null
+ },
+ {
+  "id": "watteau-fete",
+  "title": "游乐图",
+  "artist": "让-安托万·华托",
+  "year": 1715,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "Fête galante Watteau",
+  "wm": null
+ },
+ {
+  "id": "boucher-brunette",
+  "title": "黑发女仆",
+  "artist": "弗朗索瓦·布歇",
+  "year": 1750,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Brunette Boucher",
+  "wm": null
+ },
+ {
+  "id": "boucher-odalias",
+  "title": "澡后的狄安娜",
+  "artist": "弗朗索瓦·布歇",
+  "year": 1742,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "Diana at the Bath Boucher",
+  "wm": null
+ },
+ {
+  "id": "boucher-milliner",
+  "title": "女帽商",
+  "artist": "弗朗索瓦·布歇",
+  "year": 1746,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Milliner Boucher",
+  "wm": null
+ },
+ {
+  "id": "fragonard-swing",
+  "title": "秋千",
+  "artist": "让-奥诺雷·弗拉戈纳尔",
+  "year": 1767,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Swing Fragonard",
+  "wm": null
+ },
+ {
+  "id": "fragonard-stolen",
+  "title": "偷来的吻",
+  "artist": "让-奥诺雷·弗拉戈纳尔",
+  "year": 1780,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Stolen Kiss Fragonard",
+  "wm": null
+ },
+ {
+  "id": "fragonard-bathers",
+  "title": "沐浴者",
+  "artist": "让-奥诺雷·弗拉戈纳尔",
+  "year": 1765,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Bathers Fragonard",
+  "wm": null
+ },
+ {
+  "id": "lancret-repast",
+  "title": "舞会",
+  "artist": "尼古拉·朗克雷",
+  "year": 1730,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "A Dance in the Country Lancret",
+  "wm": null
+ },
+ {
+  "id": "pater-embarquement",
+  "title": "登船",
+  "artist": "让-巴蒂斯特·帕特",
+  "year": 1720,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "Embarkation Pater",
+  "wm": null
+ },
+ {
+  "id": "nattier-princess",
+  "title": "公主肖像",
+  "artist": "让-马克·纳捷",
+  "year": 1740,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "Portrait of a Princess Nattier",
+  "wm": null
+ },
+ {
+  "id": "vian-bath",
+  "title": "浴女",
+  "artist": "卡尔·范·路",
+  "year": 1750,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Bathers Vian",
+  "wm": null
+ },
+ {
+  "id": "chardin-grace",
+  "title": "餐前祈祷",
+  "artist": "让-巴蒂斯特·西梅翁·夏尔丹",
+  "year": 1740,
+  "movement": "洛可可",
+  "type": "painting",
+  "en": "The Grace Chardin",
+  "wm": null
+ },
+ {
+  "id": "david-oath",
+  "title": "网球场宣誓",
+  "artist": "雅克-路易·大卫",
+  "year": 1791,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Tennis Court Oath David",
+  "wm": null
+ },
+ {
+  "id": "david-horatii",
+  "title": "荷拉斯兄弟之誓",
+  "artist": "雅克-路易·大卫",
+  "year": 1784,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Oath of the Horatii David",
+  "wm": null
+ },
+ {
+  "id": "david-marat",
+  "title": "马拉之死",
+  "artist": "雅克-路易·大卫",
+  "year": 1793,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Death of Marat David",
+  "wm": null
+ },
+ {
+  "id": "david-coronation",
+  "title": "拿破仑加冕",
+  "artist": "雅克-路易·大卫",
+  "year": 1807,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Coronation of Napoleon David",
+  "wm": null
+ },
+ {
+  "id": "david-sabines",
+  "title": "萨宾妇女",
+  "artist": "雅克-路易·大卫",
+  "year": 1799,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Intervention of the Sabine Women David",
+  "wm": null
+ },
+ {
+  "id": "david-psyche",
+  "title": "普赛克与丘比特",
+  "artist": "雅克-路易·大卫",
+  "year": 1817,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Psyché et l'Amour David",
+  "wm": null
+ },
+ {
+  "id": "ingres-bather",
+  "title": "泉",
+  "artist": "让-奥古斯特-多米尼克·安格尔",
+  "year": 1856,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Source Ingres",
+  "wm": null
+ },
+ {
+  "id": "ingres-turkish",
+  "title": "土耳其浴室",
+  "artist": "让-奥古斯特-多米尼克·安格尔",
+  "year": 1862,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Turkish Bath Ingres",
+  "wm": null
+ },
+ {
+  "id": "ingres-apotheosis",
+  "title": "荷马礼赞",
+  "artist": "让-奥古斯特-多米尼克·安格尔",
+  "year": 1827,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Apotheosis of Homer Ingres",
+  "wm": null
+ },
+ {
+  "id": "ingres-odalisque",
+  "title": "大宫女",
+  "artist": "让-奥古斯特-多米尼克·安格尔",
+  "year": 1814,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Grande Odalisque Ingres",
+  "wm": null
+ },
+ {
+  "id": "ingres-vow",
+  "title": "路易十三的誓言",
+  "artist": "让-奥古斯特-多米尼克·安格尔",
+  "year": 1824,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Vow of Louis XIII Ingres",
+  "wm": null
+ },
+ {
+  "id": "gerard-psyche",
+  "title": "普赛克",
+  "artist": "弗朗索瓦·热拉尔",
+  "year": 1798,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Psyche receiving the first kiss of Love Gérard",
+  "wm": null
+ },
+ {
+  "id": "guerin-aeneas",
+  "title": "埃涅阿斯叙述",
+  "artist": "吉罗代",
+  "year": 1812,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Aeneas tells Dido Girodet",
+  "wm": null
+ },
+ {
+  "id": "prudhon-josephine",
+  "title": "约瑟芬皇后",
+  "artist": "皮埃尔-保罗·普吕东",
+  "year": 1805,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Portrait of Empress Josephine Prud'hon",
+  "wm": null
+ },
+ {
+  "id": "benouville-roman",
+  "title": "罗马修道院",
+  "artist": "莱昂·邦维尔",
+  "year": 1860,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Roman Campagna Benouville",
+  "wm": null
+ },
+ {
+  "id": "gerome-moor",
+  "title": "摩尔人沐浴",
+  "artist": "让-莱昂·热罗姆",
+  "year": 1870,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Moorish Bath Gérôme",
+  "wm": null
+ },
+ {
+  "id": "lepage-joan",
+  "title": "圣女贞德",
+  "artist": "巴斯蒂安-勒帕热",
+  "year": 1879,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "Joan of Arc Bastien-Lepage",
+  "wm": null
+ },
+ {
+  "id": "cabanel-venus",
+  "title": "维纳斯的诞生",
+  "artist": "亚历山大·卡巴内尔",
+  "year": 1863,
+  "movement": "新古典主义",
+  "type": "painting",
+  "en": "The Birth of Venus Cabanel",
+  "wm": null
+ },
+ {
+  "id": "liberty",
+  "title": "自由引导人民",
+  "artist": "欧仁·德拉克罗瓦",
+  "year": 1830,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Liberty Leading the People Delacroix",
+  "wm": "Eugène_Delacroix_-_La_liberté_guidant_le_peuple.jpg"
+ },
+ {
+  "id": "wanderer-fog",
+  "title": "雾海上的旅人",
+  "artist": "卡斯帕·大卫·弗里德里希",
+  "year": 1818,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Wanderer above the Sea of Fog Friedrich",
+  "wm": "Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg"
+ },
+ {
+  "id": "third-may",
+  "title": "1808年5月3日",
+  "artist": "弗朗西斯科·戈雅",
+  "year": 1814,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Third of May Goya",
+  "wm": "El_Tres_de_Mayo,_by_Francisco_de_Goya,_from_Prado_in_Google_Earth.jpg"
+ },
+ {
+  "id": "hay-wain",
+  "title": "干草车",
+  "artist": "约翰·康斯太勃尔",
+  "year": 1821,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Hay Wain Constable",
+  "wm": "John_Constable_The_Hay_Wain.jpg"
+ },
+ {
+  "id": "fighting-temeraire",
+  "title": "被拖去解体的战舰无畏号",
+  "artist": "约瑟夫·透纳",
+  "year": 1839,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Fighting Temeraire Turner",
+  "wm": "The_Fighting_Temeraire,_JMW_Turner,_National_Gallery.jpg"
+ },
+ {
+  "id": "friedrich-abel",
+  "title": "山中的十字架",
+  "artist": "卡斯帕·大卫·弗里德里希",
+  "year": 1812,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Cross in the Mountains Friedrich",
+  "wm": null
+ },
+ {
+  "id": "friedrich-seaside",
+  "title": "海边修士",
+  "artist": "卡斯帕·大卫·弗里德里希",
+  "year": 1810,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Monk by the Sea Friedrich",
+  "wm": null
+ },
+ {
+  "id": "friedrich-snow",
+  "title": "雪中的修道院",
+  "artist": "卡斯帕·大卫·弗里德里希",
+  "year": 1810,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Abbey in the Oakwood Friedrich",
+  "wm": null
+ },
+ {
+  "id": "friedrich-chalk",
+  "title": "白垩崖",
+  "artist": "卡斯帕·大卫·弗里德里希",
+  "year": 1818,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Chalk Cliffs on Rügen Friedrich",
+  "wm": null
+ },
+ {
+  "id": "turner-snowstorm",
+  "title": "雪暴中的海船",
+  "artist": "约瑟夫·透纳",
+  "year": 1812,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Snow Storm Turner",
+  "wm": null
+ },
+ {
+  "id": "turner-rain",
+  "title": "雨、蒸汽与速度",
+  "artist": "约瑟夫·透纳",
+  "year": 1844,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Rain, Steam and Speed Turner",
+  "wm": null
+ },
+ {
+  "id": "turner-slave",
+  "title": "奴隶船",
+  "artist": "约瑟夫·透纳",
+  "year": 1840,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Slave Ship Turner",
+  "wm": null
+ },
+ {
+  "id": "constable-salisbury",
+  "title": "索尔兹伯里教堂",
+  "artist": "约翰·康斯太勃尔",
+  "year": 1823,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Salisbury Cathedral Constable",
+  "wm": null
+ },
+ {
+  "id": "constable-dedham",
+  "title": "代德姆谷",
+  "artist": "约翰·康斯太勃尔",
+  "year": 1802,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Dedham Vale Constable",
+  "wm": null
+ },
+ {
+  "id": "constable-flatford",
+  "title": "弗拉特福德磨坊",
+  "artist": "约翰·康斯太勃尔",
+  "year": 1817,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Flatford Mill Constable",
+  "wm": null
+ },
+ {
+  "id": "goya-naked",
+  "title": "裸体的马哈",
+  "artist": "弗朗西斯科·戈雅",
+  "year": 1797,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "La Maja Desnuda Goya",
+  "wm": null
+ },
+ {
+  "id": "goya-clothed",
+  "title": "着衣的马哈",
+  "artist": "弗朗西斯科·戈雅",
+  "year": 1803,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "La Maja Vestida Goya",
+  "wm": null
+ },
+ {
+  "id": "goya-family",
+  "title": "查理四世一家",
+  "artist": "弗朗西斯科·戈雅",
+  "year": 1800,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Family of Charles IV Goya",
+  "wm": null
+ },
+ {
+  "id": "goya-shootings",
+  "title": "5月2日",
+  "artist": "弗朗西斯科·戈雅",
+  "year": 1814,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Second of May Goya",
+  "wm": null
+ },
+ {
+  "id": "goya-dogs",
+  "title": "吞食儿子的农神",
+  "artist": "弗朗西斯科·戈雅",
+  "year": 1823,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Saturn Devouring His Son Goya",
+  "wm": null
+ },
+ {
+  "id": "delacroix-dante",
+  "title": "但丁之筏",
+  "artist": "欧仁·德拉克罗瓦",
+  "year": 1822,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Barque of Dante Delacroix",
+  "wm": null
+ },
+ {
+  "id": "delacroix-massacre",
+  "title": "希俄斯大屠杀",
+  "artist": "欧仁·德拉克罗瓦",
+  "year": 1824,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Massacre at Chios Delacroix",
+  "wm": null
+ },
+ {
+  "id": "delacroix-mlacz",
+  "title": "阿尔及尔妇女",
+  "artist": "欧仁·德拉克罗瓦",
+  "year": 1834,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Women of Algiers Delacroix",
+  "wm": null
+ },
+ {
+  "id": "delacroix-lion",
+  "title": "狮猎",
+  "artist": "欧仁·德拉克罗瓦",
+  "year": 1861,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Lion Hunt Delacroix",
+  "wm": null
+ },
+ {
+  "id": "delacroix-ork",
+  "title": "花园里的犹太新娘",
+  "artist": "欧仁·德拉克罗瓦",
+  "year": 1839,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Jewish Wedding Delacroix",
+  "wm": null
+ },
+ {
+  "id": "gericault-raft",
+  "title": "梅杜萨之筏",
+  "artist": "泰奥多尔·席里科",
+  "year": 1819,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Raft of the Medusa Géricault",
+  "wm": null
+ },
+ {
+  "id": "gericault-crazy",
+  "title": "疯女",
+  "artist": "泰奥多尔·席里科",
+  "year": 1822,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Portrait of a Woman Suffering from Obsession Géricault",
+  "wm": null
+ },
+ {
+  "id": "blake-great",
+  "title": "伟大的红色龙",
+  "artist": "威廉·布莱克",
+  "year": 1805,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Great Red Dragon Blake",
+  "wm": null
+ },
+ {
+  "id": "blake-ancients",
+  "title": "古代",
+  "artist": "威廉·布莱克",
+  "year": 1794,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Ancient of Days Blake",
+  "wm": null
+ },
+ {
+  "id": "palmer-harvest",
+  "title": "月下收获",
+  "artist": "塞缪尔·帕尔默",
+  "year": 1830,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "The Harvest Moon Palmer",
+  "wm": null
+ },
+ {
+  "id": "friedrich-grief",
+  "title": "孤树",
+  "artist": "卡斯帕·大卫·弗里德里希",
+  "year": 1822,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Solitary Tree Friedrich",
+  "wm": null
+ },
+ {
+  "id": "martin-pandaemonium",
+  "title": "潘得蒙尼乌姆",
+  "artist": "约翰·马丁",
+  "year": 1841,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Pandæmonium Martin",
+  "wm": null
+ },
+ {
+  "id": "turner-calais",
+  "title": "加莱码头",
+  "artist": "约瑟夫·透纳",
+  "year": 1803,
+  "movement": "浪漫主义",
+  "type": "painting",
+  "en": "Calais Pier Turner",
+  "wm": null
+ },
+ {
+  "id": "ophelia",
+  "title": "奥菲莉亚",
+  "artist": "约翰·埃弗里特·米莱",
+  "year": 1852,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "Ophelia Millais",
+  "wm": "John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg"
+ },
+ {
+  "id": "woman-toilette",
+  "title": "梳妆的女子",
+  "artist": "埃德加·德加",
+  "year": 1885,
+  "movement": "印象派",
+  "type": "sketch",
+  "en": "Woman at her Toilette Degas",
+  "wm": "Degas_-_Woman-At-Her-Toilette-I.jpg"
+ },
+ {
+  "id": "millais-huguenot",
+  "title": "被赦免的胡格诺教徒",
+  "artist": "约翰·埃弗里特·米莱",
+  "year": 1852,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "A Huguenot Millais",
+  "wm": null
+ },
+ {
+  "id": "hunt-light",
+  "title": "世界之光",
+  "artist": "威廉·霍尔曼·亨特",
+  "year": 1853,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "The Light of the World Hunt",
+  "wm": null
+ },
+ {
+  "id": "hunt-shadow",
+  "title": "替罪羊",
+  "artist": "威廉·霍尔曼·亨特",
+  "year": 1856,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "The Scapegoat Hunt",
+  "wm": null
+ },
+ {
+  "id": "rossetti-beata",
+  "title": "贝亚特丽切",
+  "artist": "但丁·加布里埃尔·罗塞蒂",
+  "year": 1872,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "Beata Beatrix Rossetti",
+  "wm": null
+ },
+ {
+  "id": "rossetti-daydream",
+  "title": "白日梦",
+  "artist": "但丁·加布里埃尔·罗塞蒂",
+  "year": 1880,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "The Day Dream Rossetti",
+  "wm": null
+ },
+ {
+  "id": "burne-jones-golden",
+  "title": "金色的阶梯",
+  "artist": "爱德华·伯恩-琼斯",
+  "year": 1880,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "The Golden Stairs Burne-Jones",
+  "wm": null
+ },
+ {
+  "id": "burne-jones-king",
+  "title": "考费杜阿王与乞丐女",
+  "artist": "爱德华·伯恩-琼斯",
+  "year": 1884,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "King Cophetua and the Beggar Maid Burne-Jones",
+  "wm": null
+ },
+ {
+  "id": "waterhouse-shalott",
+  "title": "夏洛特夫人",
+  "artist": "约翰·威廉·沃特豪斯",
+  "year": 1888,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "The Lady of Shalott Waterhouse",
+  "wm": null
+ },
+ {
+  "id": "waterhouse-narcissus",
+  "title": "厄科与那喀索斯",
+  "artist": "约翰·威廉·沃特豪斯",
+  "year": 1903,
+  "movement": "拉斐尔前派",
+  "type": "painting",
+  "en": "Echo and Narcissus Waterhouse",
+  "wm": null
+ },
+ {
+  "id": "whistler-mother",
+  "title": "惠斯勒的母亲",
+  "artist": "詹姆斯·惠斯勒",
+  "year": 1871,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "Whistler's Mother",
+  "wm": "Whistlers_Mother_high_res.jpg"
+ },
+ {
+  "id": "olympia",
+  "title": "奥林匹亚",
+  "artist": "爱德华·马奈",
+  "year": 1863,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "Olympia Manet",
+  "wm": "Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg"
+ },
+ {
+  "id": "manet-lunch",
+  "title": "草地上的午餐",
+  "artist": "爱德华·马奈",
+  "year": 1863,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "Le Déjeuner sur l'herbe Manet",
+  "wm": null
+ },
+ {
+  "id": "manet-folies",
+  "title": "女神游乐厅的吧台",
+  "artist": "爱德华·马奈",
+  "year": 1882,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "A Bar at the Folies-Bergère Manet",
+  "wm": null
+ },
+ {
+  "id": "manet-emperor",
+  "title": "处决马克西米利安",
+  "artist": "爱德华·马奈",
+  "year": 1868,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Execution of Emperor Maximilian Manet",
+  "wm": null
+ },
+ {
+  "id": "manet-fifer",
+  "title": "吹笛少年",
+  "artist": "爱德华·马奈",
+  "year": 1866,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Fifer Manet",
+  "wm": null
+ },
+ {
+  "id": "courbet-stone",
+  "title": "采石工",
+  "artist": "古斯塔夫·库尔贝",
+  "year": 1849,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Stone Breakers Courbet",
+  "wm": null
+ },
+ {
+  "id": "courbet-origin",
+  "title": "奥尔南的葬礼",
+  "artist": "古斯塔夫·库尔贝",
+  "year": 1850,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "A Burial at Ornans Courbet",
+  "wm": null
+ },
+ {
+  "id": "courbet-studio",
+  "title": "画室",
+  "artist": "古斯塔夫·库尔贝",
+  "year": 1855,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Painter's Studio Courbet",
+  "wm": null
+ },
+ {
+  "id": "courbet-wave",
+  "title": "海浪",
+  "artist": "古斯塔夫·库尔贝",
+  "year": 1870,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Wave Courbet",
+  "wm": null
+ },
+ {
+  "id": "millet-gleaners",
+  "title": "拾穗者",
+  "artist": "让-弗朗索瓦·米勒",
+  "year": 1857,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Gleaners Millet",
+  "wm": null
+ },
+ {
+  "id": "millet-angelus",
+  "title": "晚祷",
+  "artist": "让-弗朗索瓦·米勒",
+  "year": 1859,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Angelus Millet",
+  "wm": null
+ },
+ {
+  "id": "millet-sower",
+  "title": "播种者",
+  "artist": "让-弗朗索瓦·米勒",
+  "year": 1850,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Sower Millet",
+  "wm": null
+ },
+ {
+  "id": "daumier-third",
+  "title": "三等车厢",
+  "artist": "奥诺雷·杜米埃",
+  "year": 1864,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Third-Class Carriage Daumier",
+  "wm": null
+ },
+ {
+  "id": "daumier-crispin",
+  "title": " Crispin 与 Scapin",
+  "artist": "奥诺雷·杜米埃",
+  "year": 1860,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "Crispin and Scapin Daumier",
+  "wm": null
+ },
+ {
+  "id": "tissot-parisienne",
+  "title": "巴黎女郎",
+  "artist": "詹姆斯·提索",
+  "year": 1870,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Parisian Tissot",
+  "wm": null
+ },
+ {
+  "id": "steer-bathers",
+  "title": " bathing",
+  "artist": "菲利普·威尔逊·斯蒂尔",
+  "year": 1890,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "Bathers at Bridport Steer",
+  "wm": null
+ },
+ {
+  "id": "homer-breezing",
+  "title": "微风",
+  "artist": "温斯洛·霍默",
+  "year": 1876,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "Breezing Up Homer",
+  "wm": null
+ },
+ {
+  "id": "homer-gulf",
+  "title": "墨西哥湾流",
+  "artist": "温斯洛·霍默",
+  "year": 1899,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Gulf Stream Homer",
+  "wm": null
+ },
+ {
+  "id": "eakins-clinic",
+  "title": "格罗斯诊所",
+  "artist": "托马斯·埃金斯",
+  "year": 1875,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Gross Clinic Eakins",
+  "wm": null
+ },
+ {
+  "id": "eakins-rowing",
+  "title": "单人划艇",
+  "artist": "托马斯·埃金斯",
+  "year": 1871,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Champion Single Sculls Eakins",
+  "wm": null
+ },
+ {
+  "id": "breton-angelus",
+  "title": "罢工",
+  "artist": "朱尔·布雷东",
+  "year": 1890,
+  "movement": "现实主义",
+  "type": "painting",
+  "en": "The Strike Breton",
+  "wm": null
+ },
+ {
+  "id": "impression-sunrise",
+  "title": "印象·日出",
+  "artist": "克劳德·莫奈",
+  "year": 1872,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Impression Sunrise Monet",
+  "wm": "Monet_-_Impression,_Sunrise.jpg"
+ },
+ {
+  "id": "water-lilies",
+  "title": "睡莲",
+  "artist": "克劳德·莫奈",
+  "year": 1906,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Water Lilies Monet",
+  "wm": "Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg"
+ },
+ {
+  "id": "monet-poppies",
+  "title": "罂粟花田",
+  "artist": "克劳德·莫奈",
+  "year": 1873,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Poppies Monet",
+  "wm": null
+ },
+ {
+  "id": "monet-rouen",
+  "title": "鲁昂大教堂",
+  "artist": "克劳德·莫奈",
+  "year": 1894,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Rouen Cathedral Monet",
+  "wm": null
+ },
+ {
+  "id": "monet-woman",
+  "title": "绿衣女人",
+  "artist": "克劳德·莫奈",
+  "year": 1866,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Woman in the Green Dress Monet",
+  "wm": null
+ },
+ {
+  "id": "monet-garden",
+  "title": "吉维尼花园",
+  "artist": "克劳德·莫奈",
+  "year": 1900,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Artist's Garden at Giverny Monet",
+  "wm": null
+ },
+ {
+  "id": "monet-japanese",
+  "title": "日本桥",
+  "artist": "克劳德·莫奈",
+  "year": 1899,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Japanese Footbridge Monet",
+  "wm": null
+ },
+ {
+  "id": "monet-londres",
+  "title": "伦敦议会大厦",
+  "artist": "克劳德·莫奈",
+  "year": 1904,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Houses of Parliament Monet",
+  "wm": null
+ },
+ {
+  "id": "renoir-moulin",
+  "title": "煎饼磨坊的舞会",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1876,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Bal du moulin de la Galette Renoir",
+  "wm": null
+ },
+ {
+  "id": "renoir-lunch",
+  "title": "船上的午宴",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1881,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Luncheon of the Boating Party Renoir",
+  "wm": null
+ },
+ {
+  "id": "renoir-umbrellas",
+  "title": "雨伞",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1885,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Umbrellas Renoir",
+  "wm": null
+ },
+ {
+  "id": "renoir-gabrielle",
+  "title": "加布里埃尔",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1900,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Gabrielle Renoir",
+  "wm": null
+ },
+ {
+  "id": "degas-rehearsal",
+  "title": "舞蹈课",
+  "artist": "埃德加·德加",
+  "year": 1874,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Ballet Class Degas",
+  "wm": null
+ },
+ {
+  "id": "degas-star",
+  "title": "明星",
+  "artist": "埃德加·德加",
+  "year": 1878,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Star Degas",
+  "wm": null
+ },
+ {
+  "id": "degas-absinthe",
+  "title": "苦艾酒",
+  "artist": "埃德加·德加",
+  "year": 1876,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "L'Absinthe Degas",
+  "wm": null
+ },
+ {
+  "id": "degas-bath",
+  "title": "盆浴",
+  "artist": "埃德加·德加",
+  "year": 1886,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Tub Degas",
+  "wm": null
+ },
+ {
+  "id": "degas-jockeys",
+  "title": "赛马",
+  "artist": "埃德加·德加",
+  "year": 1880,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Racehorses Degas",
+  "wm": null
+ },
+ {
+  "id": "pissarro-boulevard",
+  "title": "蒙马特大道",
+  "artist": "卡米耶·毕沙罗",
+  "year": 1897,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Boulevard Montmartre Pissarro",
+  "wm": null
+ },
+ {
+  "id": "pissarro-harvest",
+  "title": "收获",
+  "artist": "卡米耶·毕沙罗",
+  "year": 1882,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Harvest Pissarro",
+  "wm": null
+ },
+ {
+  "id": "morisot-cradle",
+  "title": "摇篮",
+  "artist": "贝尔特·莫里索",
+  "year": 1872,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Cradle Morisot",
+  "wm": null
+ },
+ {
+  "id": "morisot-sister",
+  "title": "妹妹",
+  "artist": "贝尔特·莫里索",
+  "year": 1870,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Sister Morisot",
+  "wm": null
+ },
+ {
+  "id": "caillebotte-floor",
+  "title": "刨地板的人",
+  "artist": "古斯塔夫·卡耶博特",
+  "year": 1875,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Floor Scrapers Caillebotte",
+  "wm": null
+ },
+ {
+  "id": "caillebotte-pont",
+  "title": "欧洲桥",
+  "artist": "古斯塔夫·卡耶博特",
+  "year": 1876,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Le Pont de l'Europe Caillebotte",
+  "wm": null
+ },
+ {
+  "id": "sisley-flood",
+  "title": "洪水",
+  "artist": "阿尔弗雷德·西斯莱",
+  "year": 1876,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Flood at Port-Marly Sisley",
+  "wm": null
+ },
+ {
+  "id": "sisley-lane",
+  "title": "小路",
+  "artist": "阿尔弗雷德·西斯莱",
+  "year": 1880,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Lane Sisley",
+  "wm": null
+ },
+ {
+  "id": "monet-woman2",
+  "title": "撑阳伞的女人",
+  "artist": "克劳德·莫奈",
+  "year": 1875,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Woman with a Parasol Monet",
+  "wm": null
+ },
+ {
+  "id": "renoir-swing",
+  "title": "秋千",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1876,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Swing Renoir",
+  "wm": null
+ },
+ {
+  "id": "monet-wild",
+  "title": "野生虞美人",
+  "artist": "克劳德·莫奈",
+  "year": 1873,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Wild Poppies Monet",
+  "wm": null
+ },
+ {
+  "id": "bazille-bathers",
+  "title": "浴者",
+  "artist": "弗雷德里克·巴齐耶",
+  "year": 1870,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Bathers Bazille",
+  "wm": null
+ },
+ {
+  "id": "guillaumin-rails",
+  "title": "铁轨",
+  "artist": "阿尔芒·吉约曼",
+  "year": 1870,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Rails Guillaumin",
+  "wm": null
+ },
+ {
+  "id": "liebermann-parrot",
+  "title": "鹦鹉女子",
+  "artist": "马克斯·利伯曼",
+  "year": 1873,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Woman with Parrots Liebermann",
+  "wm": null
+ },
+ {
+  "id": "cassatt-mother",
+  "title": "母与子",
+  "artist": "玛丽·卡萨特",
+  "year": 1890,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Mother and Child Cassatt",
+  "wm": null
+ },
+ {
+  "id": "monet-ice",
+  "title": "阿让特伊之冬",
+  "artist": "克劳德·莫奈",
+  "year": 1869,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Magpie Monet",
+  "wm": null
+ },
+ {
+  "id": "renoir-concert",
+  "title": "音乐会",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1880,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Concert Renoir",
+  "wm": null
+ },
+ {
+  "id": "monet-gare",
+  "title": "圣拉扎尔车站",
+  "artist": "克劳德·莫奈",
+  "year": 1877,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "La Gare Saint-Lazare Monet",
+  "wm": null
+ },
+ {
+  "id": "morisot-butterfly",
+  "title": "蝴蝶",
+  "artist": "贝尔特·莫里索",
+  "year": 1874,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Butterfly Hunt Morisot",
+  "wm": null
+ },
+ {
+  "id": "pissarro-place",
+  "title": "广场",
+  "artist": "卡米耶·毕沙罗",
+  "year": 1898,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Place du Théâtre Français Pissarro",
+  "wm": null
+ },
+ {
+  "id": "sisley-marly",
+  "title": "马尔港的洪水",
+  "artist": "阿尔弗雷德·西斯莱",
+  "year": 1875,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "The Marly-le-Roi Sisley",
+  "wm": null
+ },
+ {
+  "id": "degas-cafe",
+  "title": "咖啡馆音乐会",
+  "artist": "埃德加·德加",
+  "year": 1877,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Café Concert Degas",
+  "wm": null
+ },
+ {
+  "id": "renoir-bather",
+  "title": "浴女",
+  "artist": "皮埃尔-奥古斯特·雷诺阿",
+  "year": 1887,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Blonde Bather Renoir",
+  "wm": null
+ },
+ {
+  "id": "monet-etoile",
+  "title": "帆船",
+  "artist": "克劳德·莫奈",
+  "year": 1874,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Sailboats Monet",
+  "wm": null
+ },
+ {
+  "id": "pissarro-ile",
+  "title": "红色屋顶",
+  "artist": "卡米耶·毕沙罗",
+  "year": 1877,
+  "movement": "印象派",
+  "type": "painting",
+  "en": "Red Roofs Pissarro",
+  "wm": null
+ },
+ {
+  "id": "starry-night",
+  "title": "星月夜",
+  "artist": "文森特·梵高",
+  "year": 1889,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Starry Night Van Gogh",
+  "wm": "Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"
+ },
+ {
+  "id": "sunflowers",
+  "title": "向日葵",
+  "artist": "文森特·梵高",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Sunflowers Van Gogh",
+  "wm": "Vincent_Willem_van_Gogh_127.jpg"
+ },
+ {
+  "id": "moulin-rouge",
+  "title": "红磨坊",
+  "artist": "亨利·德·图卢兹-劳特累克",
+  "year": 1895,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "At the Moulin Rouge Lautrec",
+  "wm": "Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_Google_Art_Project.jpg"
+ },
+ {
+  "id": "vangogh-bedroom",
+  "title": "阿尔勒的卧室",
+  "artist": "文森特·梵高",
+  "year": 1889,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Bedroom in Arles Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-cafe",
+  "title": "夜间露天咖啡馆",
+  "artist": "文森特·梵高",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Café Terrace on the Place du Forum Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-irises",
+  "title": "鸢尾花",
+  "artist": "文森特·梵高",
+  "year": 1889,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Irises Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-self",
+  "title": "自画像",
+  "artist": "文森特·梵高",
+  "year": 1889,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Self-Portrait Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-crows",
+  "title": "麦田群鸦",
+  "artist": "文森特·梵高",
+  "year": 1890,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Wheatfield with Crows Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-shoes",
+  "title": "旧鞋",
+  "artist": "文森特·梵高",
+  "year": 1887,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "A Pair of Shoes Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "cezanne-cardplayers",
+  "title": "玩纸牌者",
+  "artist": "保罗·塞尚",
+  "year": 1895,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Card Players Cézanne",
+  "wm": null
+ },
+ {
+  "id": "cezanne-mountains",
+  "title": "圣维克多山",
+  "artist": "保罗·塞尚",
+  "year": 1900,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Mont Sainte-Victoire Cézanne",
+  "wm": null
+ },
+ {
+  "id": "cezanne-apples",
+  "title": "苹果篮",
+  "artist": "保罗·塞尚",
+  "year": 1894,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Basket of Apples Cézanne",
+  "wm": null
+ },
+ {
+  "id": "cezanne-bather",
+  "title": "浴者",
+  "artist": "保罗·塞尚",
+  "year": 1900,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Bathers Cézanne",
+  "wm": null
+ },
+ {
+  "id": "cezanne-madame",
+  "title": "夫人肖像",
+  "artist": "保罗·塞尚",
+  "year": 1885,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Madame Cézanne Cézanne",
+  "wm": null
+ },
+ {
+  "id": "gauguin-vision",
+  "title": "黄色基督",
+  "artist": "保罗·高更",
+  "year": 1889,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Yellow Christ Gauguin",
+  "wm": null
+ },
+ {
+  "id": "gauguin-spirit",
+  "title": "精灵在注视",
+  "artist": "保罗·高更",
+  "year": 1892,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Spirit of the Dead Watching Gauguin",
+  "wm": null
+ },
+ {
+  "id": "gauguin-tahiti",
+  "title": "我们来自何方",
+  "artist": "保罗·高更",
+  "year": 1897,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Where Do We Come From Gauguin",
+  "wm": null
+ },
+ {
+  "id": "gauguin-arearea",
+  "title": "欢乐",
+  "artist": "保罗·高更",
+  "year": 1892,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Arearea Gauguin",
+  "wm": null
+ },
+ {
+  "id": "seurat-bathers",
+  "title": "大碗岛的星期天",
+  "artist": "乔治·修拉",
+  "year": 1886,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "A Sunday Afternoon on the Island of La Grande Jatte Seurat",
+  "wm": null
+ },
+ {
+  "id": "seurat-circus",
+  "title": "马戏团",
+  "artist": "乔治·修拉",
+  "year": 1891,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Circus Seurat",
+  "wm": null
+ },
+ {
+  "id": "seurat-models",
+  "title": "模特",
+  "artist": "乔治·修拉",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Models Seurat",
+  "wm": null
+ },
+ {
+  "id": "signac-port",
+  "title": "港口",
+  "artist": "保罗·西涅克",
+  "year": 1901,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Port of Saint-Tropez Signac",
+  "wm": null
+ },
+ {
+  "id": "lautrec-divan",
+  "title": "沙发床",
+  "artist": "亨利·德·图卢兹-劳特累克",
+  "year": 1894,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Sofa Lautrec",
+  "wm": null
+ },
+ {
+  "id": "lautrec-salon",
+  "title": "沙龙",
+  "artist": "亨利·德·图卢兹-劳特累克",
+  "year": 1890,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "In the Salon Lautrec",
+  "wm": null
+ },
+ {
+  "id": "lautrec-ambassadeurs",
+  "title": "大使酒馆",
+  "artist": "亨利·德·图卢兹-劳特累克",
+  "year": 1877,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "At the Ambassadeurs Lautrec",
+  "wm": null
+ },
+ {
+  "id": "lautrec-troupe",
+  "title": "拉古吕",
+  "artist": "亨利·德·图卢兹-劳特累克",
+  "year": 1891,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "La Goulue Lautrec",
+  "wm": null
+ },
+ {
+  "id": "vangogh-postman",
+  "title": "邮差鲁兰",
+  "artist": "文森特·梵高",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Portrait of Armand Roulin Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-zouave",
+  "title": "阿尔勒姑娘",
+  "artist": "文森特·梵高",
+  "year": 1890,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "L'Arlésienne Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "vangogh-sunset",
+  "title": "夕阳下的柳树",
+  "artist": "文森特·梵高",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Willows at Sunset Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "cezanne-still",
+  "title": "静物与窗帘",
+  "artist": "保罗·塞尚",
+  "year": 1895,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Still Life with Curtain Cézanne",
+  "wm": null
+ },
+ {
+  "id": "gauguin-bonjour",
+  "title": "布道后的幻象",
+  "artist": "保罗·高更",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Vision After the Sermon Gauguin",
+  "wm": null
+ },
+ {
+  "id": "seurat-channel",
+  "title": "格兰德·让特角的黄昏",
+  "artist": "乔治·修拉",
+  "year": 1890,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Channel of Gravelines Seurat",
+  "wm": null
+ },
+ {
+  "id": "redon-cyclops",
+  "title": "独眼巨人",
+  "artist": "奥迪隆·雷东",
+  "year": 1898,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Cyclops Redon",
+  "wm": null
+ },
+ {
+  "id": "redon-buddha",
+  "title": " Buddha",
+  "artist": "奥迪隆·雷东",
+  "year": 1904,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Buddha Redon",
+  "wm": null
+ },
+ {
+  "id": "vangogh-roots",
+  "title": "树根",
+  "artist": "文森特·梵高",
+  "year": 1890,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Tree Roots Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "cezanne-jardin",
+  "title": "花园",
+  "artist": "保罗·塞尚",
+  "year": 1900,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Garden Cézanne",
+  "wm": null
+ },
+ {
+  "id": "gauguin-nevermore",
+  "title": "不再",
+  "artist": "保罗·高更",
+  "year": 1897,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Nevermore Gauguin",
+  "wm": null
+ },
+ {
+  "id": "lautrec-woman",
+  "title": "梳头的女人",
+  "artist": "亨利·德·图卢兹-劳特累克",
+  "year": 1896,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Toilette Lautrec",
+  "wm": null
+ },
+ {
+  "id": "vangogh-harvest",
+  "title": "丰收",
+  "artist": "文森特·梵高",
+  "year": 1888,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "The Harvest Van Gogh",
+  "wm": null
+ },
+ {
+  "id": "cezanne-boy",
+  "title": "戴帽男孩",
+  "artist": "保罗·塞尚",
+  "year": 1890,
+  "movement": "后印象派",
+  "type": "painting",
+  "en": "Boy with a Straw Hat Cézanne",
+  "wm": null
+ },
+ {
+  "id": "moreau-galatea",
+  "title": "伽拉忒亚",
+  "artist": "古斯塔夫·莫罗",
+  "year": 1880,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "Galatea Moreau",
+  "wm": null
+ },
+ {
+  "id": "moreau-apparition",
+  "title": "显现",
+  "artist": "古斯塔夫·莫罗",
+  "year": 1876,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "The Apparition Moreau",
+  "wm": null
+ },
+ {
+  "id": "khnopff-caress",
+  "title": "抚爱",
+  "artist": "费尔南德·克诺普夫",
+  "year": 1896,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "Caress of the Sphinx Khnopff",
+  "wm": null
+ },
+ {
+  "id": "khnopff-belgique",
+  "title": "比利时",
+  "artist": "费尔南德·克诺普夫",
+  "year": 1888,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "Belgium Khnopff",
+  "wm": null
+ },
+ {
+  "id": "redon-closed",
+  "title": "闭上的眼睛",
+  "artist": "奥迪隆·雷东",
+  "year": 1890,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "The Closed Eyes Redon",
+  "wm": null
+ },
+ {
+  "id": "toorop-three",
+  "title": "三种信仰",
+  "artist": "扬·托罗普",
+  "year": 1893,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "The Three Brides Toorop",
+  "wm": null
+ },
+ {
+  "id": "vallotton-bath",
+  "title": "浴女",
+  "artist": "费利克斯·瓦洛东",
+  "year": 1893,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "The Bath Vallotton",
+  "wm": null
+ },
+ {
+  "id": "klimt-symbol",
+  "title": "音乐 II",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1915,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "Music II Klimt",
+  "wm": null
+ },
+ {
+  "id": "carriere-family",
+  "title": "家庭",
+  "artist": "欧仁·卡里埃",
+  "year": 1890,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "The Family Carrière",
+  "wm": null
+ },
+ {
+  "id": "serusier-talisman",
+  "title": "护符",
+  "artist": "保罗·塞吕西耶",
+  "year": 1888,
+  "movement": "象征主义",
+  "type": "painting",
+  "en": "The Talisman Sérusier",
+  "wm": null
+ },
+ {
+  "id": "kiss-klimt",
+  "title": "吻",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1908,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "The Kiss Klimt",
+  "wm": "The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg"
+ },
+ {
+  "id": "klimt-portrait-adele",
+  "title": "阿黛尔·布洛赫-鲍尔肖像",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1907,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "Portrait of Adele Bloch-Bauer Klimt",
+  "wm": null
+ },
+ {
+  "id": "klimt-judith",
+  "title": "犹滴",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1901,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "Judith Klimt",
+  "wm": null
+ },
+ {
+  "id": "klimt-tree",
+  "title": "生命之树",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1909,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "Tree of Life Klimt",
+  "wm": null
+ },
+ {
+  "id": "klimt-beethoven",
+  "title": "贝多芬横饰带",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1902,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "The Beethoven Frieze Klimt",
+  "wm": null
+ },
+ {
+  "id": "klimt-danae",
+  "title": "达那厄",
+  "artist": "古斯塔夫·克里姆特",
+  "year": 1907,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "Danae Klimt",
+  "wm": null
+ },
+ {
+  "id": "kokoschka-bride",
+  "title": "风的新娘",
+  "artist": "奥斯卡·柯克西卡",
+  "year": 1914,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "The Bride of the Wind Kokoschka",
+  "wm": null
+ },
+ {
+  "id": "moser-woman",
+  "title": "女性肖像",
+  "artist": "科尔曼·莫泽",
+  "year": 1910,
+  "movement": "维也纳分离派",
+  "type": "painting",
+  "en": "Portrait of a Woman Moser",
+  "wm": null
+ },
+ {
+  "id": "scream",
+  "title": "呐喊",
+  "artist": "爱德华·蒙克",
+  "year": 1893,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Scream Munch",
+  "wm": "Edvard_Munch,_1893,_The_Scream,_oil,_tempera_and_pastel_on_cardboard,_91_x_73_cm,_National_Gallery_of_Norway.jpg"
+ },
+ {
+  "id": "schiele-self",
+  "title": "带光环的自画像",
+  "artist": "埃贡·席勒",
+  "year": 1912,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Egon Schiele self-portrait",
+  "wm": "Egon_Schiele_-_Self-Portrait_with_Lowered_Head_-_Google_Art_Project.jpg"
+ },
+ {
+  "id": "munch-madonna",
+  "title": "圣母",
+  "artist": "爱德华·蒙克",
+  "year": 1894,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Madonna Munch",
+  "wm": null
+ },
+ {
+  "id": "munch-vampire",
+  "title": "吸血鬼",
+  "artist": "爱德华·蒙克",
+  "year": 1895,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Love and Pain Munch",
+  "wm": null
+ },
+ {
+  "id": "munch-dance",
+  "title": "生命之舞",
+  "artist": "爱德华·蒙克",
+  "year": 1900,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Dance of Life Munch",
+  "wm": null
+ },
+ {
+  "id": "munch-sick",
+  "title": "病孩",
+  "artist": "爱德华·蒙克",
+  "year": 1885,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Sick Child Munch",
+  "wm": null
+ },
+ {
+  "id": "kirchner-street",
+  "title": "柏林街景",
+  "artist": "恩斯特·路德维希·基希纳",
+  "year": 1913,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Berlin Street Scene Kirchner",
+  "wm": null
+ },
+ {
+  "id": "kirchner-bathers",
+  "title": "浴者",
+  "artist": "恩斯特·路德维希·基希纳",
+  "year": 1909,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Bathers Kirchner",
+  "wm": null
+ },
+ {
+  "id": "nolde-last-supper",
+  "title": "最后的晚餐",
+  "artist": "埃米尔·诺尔德",
+  "year": 1909,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Last Supper Nolde",
+  "wm": null
+ },
+ {
+  "id": "nolde-masks",
+  "title": "面具",
+  "artist": "埃米尔·诺尔德",
+  "year": 1911,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Masks Nolde",
+  "wm": null
+ },
+ {
+  "id": "dix-metropolis",
+  "title": "大都会",
+  "artist": "奥托·迪克斯",
+  "year": 1928,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Metropolis Dix",
+  "wm": null
+ },
+ {
+  "id": "dix-trench",
+  "title": "战壕",
+  "artist": "奥托·迪克斯",
+  "year": 1923,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Trench Dix",
+  "wm": null
+ },
+ {
+  "id": "grosz-pillars",
+  "title": " pillars of society",
+  "artist": "乔治·格罗兹",
+  "year": 1926,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Pillars of Society Grosz",
+  "wm": null
+ },
+ {
+  "id": "beckmann-night",
+  "title": "夜",
+  "artist": "马克斯·贝克曼",
+  "year": 1918,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Night Beckmann",
+  "wm": null
+ },
+ {
+  "id": "marc-blue",
+  "title": "蓝马",
+  "artist": "弗朗茨·马尔克",
+  "year": 1911,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Blue Horse Marc",
+  "wm": null
+ },
+ {
+  "id": "marc-tower",
+  "title": "塔楼中的红牛",
+  "artist": "弗朗茨·马尔克",
+  "year": 1912,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Red Bull Marc",
+  "wm": null
+ },
+ {
+  "id": "jawlensky-spanish",
+  "title": "西班牙女子",
+  "artist": "阿列克谢·冯·亚夫伦斯基",
+  "year": 1913,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Spanish Woman Jawlensky",
+  "wm": null
+ },
+ {
+  "id": "schmidt-rotluff-house",
+  "title": "房屋",
+  "artist": "卡尔·施密特-罗特卢夫",
+  "year": 1910,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "House Schmidt-Rottluff",
+  "wm": null
+ },
+ {
+  "id": "heimann-circus",
+  "title": "马戏团",
+  "artist": "爱达·海曼",
+  "year": 1920,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Circus Heymann",
+  "wm": null
+ },
+ {
+  "id": "pechstein-fishing",
+  "title": "渔民",
+  "artist": "马克斯·佩希斯坦",
+  "year": 1910,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Fishermen Pechstein",
+  "wm": null
+ },
+ {
+  "id": "muybridge",
+  "title": "运动中的人体",
+  "artist": "爱德华·迈布里奇",
+  "year": 1887,
+  "movement": "表现主义",
+  "type": "sketch",
+  "en": "Human Figure in Motion",
+  "wm": null
+ },
+ {
+  "id": "schiele-city",
+  "title": "小镇",
+  "artist": "埃贡·席勒",
+  "year": 1913,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "The Small City Schiele",
+  "wm": null
+ },
+ {
+  "id": "schiele-card",
+  "title": "（手）",
+  "artist": "埃贡·席勒",
+  "year": 1917,
+  "movement": "表现主义",
+  "type": "sketch",
+  "en": "Hands Schiele",
+  "wm": null
+ },
+ {
+  "id": "munch-ash",
+  "title": "灰烬",
+  "artist": "爱德华·蒙克",
+  "year": 1894,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Ashes Munch",
+  "wm": null
+ },
+ {
+  "id": "kirchner-self",
+  "title": "自画像",
+  "artist": "恩斯特·路德维希·基希纳",
+  "year": 1915,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Self-Portrait as a Soldier Kirchner",
+  "wm": null
+ },
+ {
+  "id": "nolde-garden",
+  "title": "鲜花花园",
+  "artist": "埃米尔·诺尔德",
+  "year": 1908,
+  "movement": "表现主义",
+  "type": "painting",
+  "en": "Flowering Garden Nolde",
+  "wm": null
+ },
+ {
+  "id": "matisse-dance",
+  "title": "舞蹈",
+  "artist": "亨利·马蒂斯",
+  "year": 1910,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Dance Matisse",
+  "wm": null
+ },
+ {
+  "id": "matisse-music",
+  "title": "音乐",
+  "artist": "亨利·马蒂斯",
+  "year": 1910,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Music Matisse",
+  "wm": null
+ },
+ {
+  "id": "matisse-red",
+  "title": "红色画室",
+  "artist": "亨利·马蒂斯",
+  "year": 1911,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Red Studio Matisse",
+  "wm": null
+ },
+ {
+  "id": "matisse-joy",
+  "title": "生活的欢乐",
+  "artist": "亨利·马蒂斯",
+  "year": 1906,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Le Bonheur de vivre Matisse",
+  "wm": null
+ },
+ {
+  "id": "matisse-woman",
+  "title": "戴帽子的女人",
+  "artist": "亨利·马蒂斯",
+  "year": 1905,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Woman with a Hat Matisse",
+  "wm": null
+ },
+ {
+  "id": "matisse-snail",
+  "title": "蜗牛",
+  "artist": "亨利·马蒂斯",
+  "year": 1953,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Snail Matisse",
+  "wm": null
+ },
+ {
+  "id": "matisse-goldfish",
+  "title": "金鱼",
+  "artist": "亨利·马蒂斯",
+  "year": 1912,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Goldfish Matisse",
+  "wm": null
+ },
+ {
+  "id": "derain-london",
+  "title": "伦敦桥",
+  "artist": "安德烈·德兰",
+  "year": 1906,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Charing Cross Bridge Derain",
+  "wm": null
+ },
+ {
+  "id": "derain-collioure",
+  "title": "科利乌尔港",
+  "artist": "安德烈·德兰",
+  "year": 1905,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Port of Collioure Derain",
+  "wm": null
+ },
+ {
+  "id": "vlaminck-restaurant",
+  "title": "餐厅",
+  "artist": "莫里斯·德·弗拉芒克",
+  "year": 1905,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Restaurant Vlaminck",
+  "wm": null
+ },
+ {
+  "id": "marquet-port",
+  "title": "海边港口",
+  "artist": "阿尔贝·马尔凯",
+  "year": 1908,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Port Marquet",
+  "wm": null
+ },
+ {
+  "id": "friesz-harbor",
+  "title": "勒阿弗尔港",
+  "artist": "奥顿·弗里斯",
+  "year": 1906,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "The Harbor Friesz",
+  "wm": null
+ },
+ {
+  "id": "braque-large",
+  "title": "大裸女",
+  "artist": "乔治·布拉克",
+  "year": 1908,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Grand Nu Braque",
+  "wm": null
+ },
+ {
+  "id": "valtat-poppy",
+  "title": "罂粟",
+  "artist": "路易·瓦尔塔",
+  "year": 1900,
+  "movement": "野兽派",
+  "type": "painting",
+  "en": "Poppy Field Valtat",
+  "wm": null
+ },
+ {
+  "id": "picasso-avignon",
+  "title": "亚维农的少女",
+  "artist": "巴勃罗·毕加索",
+  "year": 1907,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Les Demoiselles d'Avignon Picasso",
+  "wm": null
+ },
+ {
+  "id": "picasso-guitar",
+  "title": "吉他",
+  "artist": "巴勃罗·毕加索",
+  "year": 1912,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Guitar Picasso",
+  "wm": null
+ },
+ {
+  "id": "picasso-bottle",
+  "title": "瓶子与酒杯",
+  "artist": "巴勃罗·毕加索",
+  "year": 1912,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Bottle and Wine Glass Picasso",
+  "wm": null
+ },
+ {
+  "id": "picasso-three",
+  "title": "三个音乐家",
+  "artist": "巴勃罗·毕加索",
+  "year": 1921,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Three Musicians Picasso",
+  "wm": null
+ },
+ {
+  "id": "picasso-war",
+  "title": "格尔尼卡",
+  "artist": "巴勃罗·毕加索",
+  "year": 1937,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Guernica Picasso",
+  "wm": null
+ },
+ {
+  "id": "picasso-dryad",
+  "title": "林中精灵",
+  "artist": "巴勃罗·毕加索",
+  "year": 1908,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "The Dryad Picasso",
+  "wm": null
+ },
+ {
+  "id": "braque-violin",
+  "title": "小提琴与烛台",
+  "artist": "乔治·布拉克",
+  "year": 1910,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Violin and Candlestick Braque",
+  "wm": null
+ },
+ {
+  "id": "braque-mandora",
+  "title": "曼陀林",
+  "artist": "乔治·布拉克",
+  "year": 1909,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Mandora Braque",
+  "wm": null
+ },
+ {
+  "id": "gris-breakfast",
+  "title": "早餐",
+  "artist": "胡安·格里斯",
+  "year": 1914,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "The Breakfast Gris",
+  "wm": null
+ },
+ {
+  "id": "gris-portrait",
+  "title": "毕加索肖像",
+  "artist": "胡安·格里斯",
+  "year": 1912,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Portrait of Pablo Picasso Gris",
+  "wm": null
+ },
+ {
+  "id": "lec-fruit",
+  "title": "水果盘",
+  "artist": "费尔南·莱热",
+  "year": 1910,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "The Fruit Dish Léger",
+  "wm": null
+ },
+ {
+  "id": "lec-city",
+  "title": "城市",
+  "artist": "费尔南·莱热",
+  "year": 1919,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "The City Léger",
+  "wm": null
+ },
+ {
+  "id": "picasso-cry",
+  "title": "哭泣的女人",
+  "artist": "巴勃罗·毕加索",
+  "year": 1937,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Weeping Woman Picasso",
+  "wm": null
+ },
+ {
+  "id": "picasso-self",
+  "title": "自画像",
+  "artist": "巴勃罗·毕加索",
+  "year": 1907,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Self-Portrait Picasso",
+  "wm": null
+ },
+ {
+  "id": "braque-still",
+  "title": "静物与酒瓶",
+  "artist": "乔治·布拉克",
+  "year": 1913,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Still Life with Bottles Braque",
+  "wm": null
+ },
+ {
+  "id": "picasso-rails",
+  "title": "藤椅",
+  "artist": "巴勃罗·毕加索",
+  "year": 1912,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Still Life with Chair Caning Picasso",
+  "wm": null
+ },
+ {
+  "id": "gris-glass",
+  "title": "玻璃",
+  "artist": "胡安·格里斯",
+  "year": 1915,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "Glass Gris",
+  "wm": null
+ },
+ {
+  "id": "lec-mechanic",
+  "title": "机械师",
+  "artist": "费尔南·莱热",
+  "year": 1920,
+  "movement": "立体主义",
+  "type": "painting",
+  "en": "The Mechanic Léger",
+  "wm": null
+ },
+ {
+  "id": "boccioni-street",
+  "title": "街头噪声侵入房屋",
+  "artist": "翁贝托·波丘尼",
+  "year": 1911,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "The Street Enters the House Boccioni",
+  "wm": null
+ },
+ {
+  "id": "boccioni-movement",
+  "title": "空间中连续的独特形式",
+  "artist": "翁贝托·波丘尼",
+  "year": 1913,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "Unique Forms of Continuity in Space Boccioni",
+  "wm": null
+ },
+ {
+  "id": "boccioni-city",
+  "title": "城市的兴起",
+  "artist": "翁贝托·波丘尼",
+  "year": 1910,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "The City Rises Boccioni",
+  "wm": null
+ },
+ {
+  "id": "balla-dinamism",
+  "title": "系狗皮带的运动",
+  "artist": "贾科莫·巴拉",
+  "year": 1912,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "Dynamism of a Dog on a Leash Balla",
+  "wm": null
+ },
+ {
+  "id": "balla-child",
+  "title": "阳台上奔跑的孩子",
+  "artist": "贾科莫·巴拉",
+  "year": 1913,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "Abstract Speed Baller",
+  "wm": null
+ },
+ {
+  "id": "severini-pan",
+  "title": "潘潘舞",
+  "artist": "吉诺·塞韦里尼",
+  "year": 1911,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "The Pan-Pan Séverini",
+  "wm": null
+ },
+ {
+  "id": "carra-funeral",
+  "title": "葬礼",
+  "artist": "卡罗·卡拉",
+  "year": 1911,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "The Funeral of the Anarchist Galli Carrà",
+  "wm": null
+ },
+ {
+  "id": "russolo-revolt",
+  "title": "叛乱",
+  "artist": "路易吉·鲁索洛",
+  "year": 1911,
+  "movement": "未来主义",
+  "type": "painting",
+  "en": "Revolt Russolo",
+  "wm": null
+ },
+ {
+  "id": "black-square",
+  "title": "黑方块",
+  "artist": "卡济米尔·马列维奇",
+  "year": 1915,
+  "movement": "至上主义",
+  "type": "painting",
+  "en": "Black Square Malevich",
+  "wm": "Malevich.black-square.jpg"
+ },
+ {
+  "id": "malevich-red",
+  "title": "红方块",
+  "artist": "卡济米尔·马列维奇",
+  "year": 1915,
+  "movement": "至上主义",
+  "type": "painting",
+  "en": "Red Square Malevich",
+  "wm": null
+ },
+ {
+  "id": "malevich-white",
+  "title": "白上白",
+  "artist": "卡济米尔·马列维奇",
+  "year": 1918,
+  "movement": "至上主义",
+  "type": "painting",
+  "en": "Suprematist Composition White on White Malevich",
+  "wm": null
+ },
+ {
+  "id": "malevich-grain",
+  "title": "收获",
+  "artist": "卡济米尔·马列维奇",
+  "year": 1911,
+  "movement": "至上主义",
+  "type": "painting",
+  "en": "The Grain Harvests Malevich",
+  "wm": null
+ },
+ {
+  "id": "lissitzky-proun",
+  "title": "Proun",
+  "artist": "埃尔·利西茨基",
+  "year": 1920,
+  "movement": "构成主义",
+  "type": "painting",
+  "en": "Proun Lissitzky",
+  "wm": null
+ },
+ {
+  "id": "lissitzky-story",
+  "title": "用声音讲故事的人",
+  "artist": "埃尔·利西茨基",
+  "year": 1922,
+  "movement": "构成主义",
+  "type": "painting",
+  "en": "The Story of Two Squares Lissitzky",
+  "wm": null
+ },
+ {
+  "id": "tatlin-tower",
+  "title": "第三国际纪念碑",
+  "artist": "弗拉基米尔·塔特林",
+  "year": 1920,
+  "movement": "构成主义",
+  "type": "painting",
+  "en": "Tatlin's Tower Tatlin",
+  "wm": null
+ },
+ {
+  "id": "rodchenko-circles",
+  "title": "圆规",
+  "artist": "亚历山大·罗琴科",
+  "year": 1921,
+  "movement": "构成主义",
+  "type": "painting",
+  "en": "Circles Rodchenko",
+  "wm": null
+ },
+ {
+  "id": "popova-architectonic",
+  "title": "建筑构成",
+  "artist": "柳博芙·波波娃",
+  "year": 1918,
+  "movement": "构成主义",
+  "type": "painting",
+  "en": "Architectonic Composition Popova",
+  "wm": null
+ },
+ {
+  "id": "stepanova-figure",
+  "title": "人物构成",
+  "artist": "瓦尔瓦拉·斯捷潘诺娃",
+  "year": 1920,
+  "movement": "构成主义",
+  "type": "painting",
+  "en": "Figure Composition Stepanova",
+  "wm": null
+ },
+ {
+  "id": "mondrian-comp",
+  "title": "红黄蓝构成",
+  "artist": "皮特·蒙德里安",
+  "year": 1930,
+  "movement": "新造型主义",
+  "type": "painting",
+  "en": "Composition with Red Blue and Yellow Mondrian",
+  "wm": "Composition-with-red-yellow-and-blue.jpg"
+ },
+ {
+  "id": "mondrian-broadway",
+  "title": "百老汇爵士乐",
+  "artist": "皮特·蒙德里安",
+  "year": 1943,
+  "movement": "新造型主义",
+  "type": "painting",
+  "en": "Broadway Boogie-Woogie Mondrian",
+  "wm": null
+ },
+ {
+  "id": "mondrian-red",
+  "title": "红、蓝、黄构成",
+  "artist": "皮特·蒙德里安",
+  "year": 1930,
+  "movement": "新造型主义",
+  "type": "painting",
+  "en": "Composition II with Red Blue and Yellow Mondrian",
+  "wm": null
+ },
+ {
+  "id": "mondrian-gray",
+  "title": "灰树",
+  "artist": "皮特·蒙德里安",
+  "year": 1911,
+  "movement": "新造型主义",
+  "type": "painting",
+  "en": "The Gray Tree Mondrian",
+  "wm": null
+ },
+ {
+  "id": "kandinsky-archer",
+  "title": "几个圆圈",
+  "artist": "瓦西里·康定斯基",
+  "year": 1926,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Several Circles Kandinsky",
+  "wm": null
+ },
+ {
+  "id": "kandinsky-composition8",
+  "title": "第八号构成",
+  "artist": "瓦西里·康定斯基",
+  "year": 1923,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Composition VIII Kandinsky",
+  "wm": null
+ },
+ {
+  "id": "kandinsky-yellow",
+  "title": "黄·红·蓝",
+  "artist": "瓦西里·康定斯基",
+  "year": 1925,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Yellow Red Blue Kandinsky",
+  "wm": null
+ },
+ {
+  "id": "klee-senecio",
+  "title": "喜剧演员",
+  "artist": "保罗·克利",
+  "year": 1922,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Senecio Klee",
+  "wm": null
+ },
+ {
+  "id": "klee-fish",
+  "title": "鱼类魔术",
+  "artist": "保罗·克利",
+  "year": 1925,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Fish Magic Klee",
+  "wm": null
+ },
+ {
+  "id": "klee-castle",
+  "title": "城堡与太阳",
+  "artist": "保罗·克利",
+  "year": 1928,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Castle and Sun Klee",
+  "wm": null
+ },
+ {
+  "id": "miro-harlequin",
+  "title": "丑角的狂欢",
+  "artist": "胡安·米罗",
+  "year": 1925,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Harlequin's Carnival Miró",
+  "wm": null
+ },
+ {
+  "id": "miro-birth",
+  "title": "世界的诞生",
+  "artist": "胡安·米罗",
+  "year": 1925,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "The Birth of the World Miró",
+  "wm": null
+ },
+ {
+  "id": "miro-construction",
+  "title": "耕作",
+  "artist": "胡安·米罗",
+  "year": 1923,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "The Tilled Field Miró",
+  "wm": null
+ },
+ {
+  "id": "delaunay-paris",
+  "title": "巴黎城",
+  "artist": "罗伯特·德劳内",
+  "year": 1910,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "The City of Paris Delaunay",
+  "wm": null
+ },
+ {
+  "id": "delaunay-windows",
+  "title": "同时的窗",
+  "artist": "罗伯特·德劳内",
+  "year": 1912,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Simultaneous Windows Delaunay",
+  "wm": null
+ },
+ {
+  "id": "macke-hat",
+  "title": "黄帽女子",
+  "artist": "奥古斯特·马克",
+  "year": 1913,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Woman in a Yellow Hat Macke",
+  "wm": null
+ },
+ {
+  "id": "jawlensky-spanish2",
+  "title": "西班牙女子肖像",
+  "artist": "阿列克谢·冯·亚夫伦斯基",
+  "year": 1913,
+  "movement": "抽象艺术",
+  "type": "painting",
+  "en": "Spanish Woman Jawlensky",
+  "wm": null
+ },
+ {
+  "id": "persistence-memory",
+  "title": "记忆的永恒",
+  "artist": "萨尔瓦多·达利",
+  "year": 1931,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Persistence of Memory Dalí",
+  "wm": "The_Persistence_of_Memory.jpg"
+ },
+ {
+  "id": "dali-metamorphosis",
+  "title": "那喀索斯的变形",
+  "artist": "萨尔瓦多·达利",
+  "year": 1937,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "Metamorphosis of Narcissus Dalí",
+  "wm": null
+ },
+ {
+  "id": "dali-dream",
+  "title": "梦境",
+  "artist": "萨尔瓦多·达利",
+  "year": 1937,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Dream Dalí",
+  "wm": null
+ },
+ {
+  "id": "dali-masturbator",
+  "title": "伟大的自慰者",
+  "artist": "萨尔瓦多·达利",
+  "year": 1929,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Great Masturbator Dalí",
+  "wm": null
+ },
+ {
+  "id": "magritte-son",
+  "title": "人类之子",
+  "artist": "勒内·马格利特",
+  "year": 1964,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Son of Man Magritte",
+  "wm": null
+ },
+ {
+  "id": "magritte-treachery",
+  "title": "形象的叛逆",
+  "artist": "勒内·马格利特",
+  "year": 1929,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Treachery of Images Magritte",
+  "wm": null
+ },
+ {
+  "id": "magritte-mirror",
+  "title": "假镜子",
+  "artist": "勒内·马格利特",
+  "year": 1928,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The False Mirror Magritte",
+  "wm": null
+ },
+ {
+  "id": "ernst-celebes",
+  "title": "大象西里伯斯",
+  "artist": "马克斯·恩斯特",
+  "year": 1921,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Elephant Celebes Ernst",
+  "wm": null
+ },
+ {
+  "id": "ernst-robes",
+  "title": "新娘的修饰",
+  "artist": "马克斯·恩斯特",
+  "year": 1940,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Robing of the Bride Ernst",
+  "wm": null
+ },
+ {
+  "id": "tanguy-mama",
+  "title": "妈妈，爸爸受伤了",
+  "artist": "伊夫·唐吉",
+  "year": 1927,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "Mama, Papa is Wounded!",
+  "wm": null
+ },
+ {
+  "id": "delvaux-train",
+  "title": "夜车",
+  "artist": "保罗·德尔沃",
+  "year": 1947,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "The Night Train Delvaux",
+  "wm": null
+ },
+ {
+  "id": "carrington-self",
+  "title": "自画像",
+  "artist": "利奥诺拉·卡林顿",
+  "year": 1938,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "Self-Portrait Carrington",
+  "wm": null
+ },
+ {
+  "id": "tanning-night",
+  "title": "小夜曲",
+  "artist": "多萝西娅·坦宁",
+  "year": 1943,
+  "movement": "超现实主义",
+  "type": "painting",
+  "en": "Eine kleine Nachtmusik Tanning",
+  "wm": null
+ },
+ {
+  "id": "hopper-nighthawks",
+  "title": "夜游者",
+  "artist": "爱德华·霍普",
+  "year": 1942,
+  "movement": "美国绘画",
+  "type": "painting",
+  "en": "Nighthawks Hopper",
+  "wm": null
+ },
+ {
+  "id": "hopper-office",
+  "title": "小城办公室",
+  "artist": "爱德华·霍普",
+  "year": 1953,
+  "movement": "美国绘画",
+  "type": "painting",
+  "en": "Office in a Small City Hopper",
+  "wm": null
+ },
+ {
+  "id": "okeeffe-canna",
+  "title": "红色美人蕉",
+  "artist": "乔治亚·奥基芙",
+  "year": 1924,
+  "movement": "美国绘画",
+  "type": "painting",
+  "en": "Red Canna O'Keeffe",
+  "wm": null
+ },
+ {
+  "id": "okeeffe-skull",
+  "title": "鹿头骨与白玫瑰",
+  "artist": "乔治亚·奥基芙",
+  "year": 1931,
+  "movement": "美国绘画",
+  "type": "painting",
+  "en": "Cow's Skull O'Keeffe",
+  "wm": null
+ },
+ {
+  "id": "pollock-one",
+  "title": "一号（1950）",
+  "artist": "杰克逊·波洛克",
+  "year": 1950,
+  "movement": "抽象表现主义",
+  "type": "painting",
+  "en": "Number 1 Pollock",
+  "wm": null
+ },
+ {
+  "id": "pollock-lavender",
+  "title": "薰衣草之雾",
+  "artist": "杰克逊·波洛克",
+  "year": 1950,
+  "movement": "抽象表现主义",
+  "type": "painting",
+  "en": "Lavender Mist Pollock",
+  "wm": null
+ },
+ {
+  "id": "rothko-maroon",
+  "title": "栗与黑",
+  "artist": "马克·罗斯科",
+  "year": 1958,
+  "movement": "抽象表现主义",
+  "type": "painting",
+  "en": "Maroon Rothko",
+  "wm": null
+ },
+ {
+  "id": "rothko-orange",
+  "title": "橙、红、黄",
+  "artist": "马克·罗斯科",
+  "year": 1961,
+  "movement": "抽象表现主义",
+  "type": "painting",
+  "en": "Orange Red Yellow Rothko",
+  "wm": null
+ },
+ {
+  "id": "dekooning-woman",
+  "title": "女人 I",
+  "artist": "威廉·德·库宁",
+  "year": 1952,
+  "movement": "抽象表现主义",
+  "type": "painting",
+  "en": "Woman I de Kooning",
+  "wm": null
+ },
+ {
+  "id": "kline-chief",
+  "title": "首领",
+  "artist": "弗朗茨·克莱恩",
+  "year": 1950,
+  "movement": "抽象表现主义",
+  "type": "painting",
+  "en": "Chief Kline",
+  "wm": null
+ },
+ {
+  "id": "johns-flag",
+  "title": "国旗",
+  "artist": "贾斯珀·约翰斯",
+  "year": 1955,
+  "movement": "新达达",
+  "type": "painting",
+  "en": "Flag Johns",
+  "wm": null
+ },
+ {
+  "id": "rauschenberg-bed",
+  "title": "床",
+  "artist": "罗伯特·劳森伯格",
+  "year": 1955,
+  "movement": "新达达",
+  "type": "painting",
+  "en": "Bed Rauschenberg",
+  "wm": null
+ },
+ {
+  "id": "wood-american",
+  "title": "美国哥特式",
+  "artist": "格兰特·伍德",
+  "year": 1930,
+  "movement": "地方主义",
+  "type": "painting",
+  "en": "American Gothic Wood",
+  "wm": null
+ },
+ {
+  "id": "wyeth-christina",
+  "title": "克里斯蒂娜的世界",
+  "artist": "安德鲁·怀斯",
+  "year": 1948,
+  "movement": "地方主义",
+  "type": "painting",
+  "en": "Christina's World Wyeth",
+  "wm": null
+ },
+ {
+  "id": "sargent-madame",
+  "title": "X 夫人",
+  "artist": "约翰·辛格·萨金特",
+  "year": 1884,
+  "movement": "美国绘画",
+  "type": "painting",
+  "en": "Madame X Sargent",
+  "wm": null
+ },
+ {
+  "id": "whistler-nocturne",
+  "title": "夜曲：蓝与金",
+  "artist": "詹姆斯·惠斯勒",
+  "year": 1875,
+  "movement": "美国绘画",
+  "type": "painting",
+  "en": "Nocturne Whistler",
+  "wm": null
+ },
+ {
+  "id": "great-wave",
+  "title": "神奈川冲浪里",
+  "artist": "葛饰北斋",
+  "year": 1831,
+  "movement": "浮世绘",
+  "type": "painting",
+  "en": "The Great Wave Hokusai",
+  "wm": "Tsunami_by_hokusai_19th_century.jpg"
+ },
+ {
+  "id": "hokusai-fuji",
+  "title": "凯风快晴",
+  "artist": "葛饰北斋",
+  "year": 1832,
+  "movement": "浮世绘",
+  "type": "painting",
+  "en": "Fine Wind Hokusai",
+  "wm": null
+ },
+ {
+  "id": "hokusai-waterfall",
+  "title": "瀑布",
+  "artist": "葛饰北斋",
+  "year": 1832,
+  "movement": "浮世绘",
+  "type": "painting",
+  "en": "Hokusai Waterfall",
+  "wm": null
+ },
+ {
+  "id": "hiroshige-rain",
+  "title": "大桥骤雨",
+  "artist": "歌川广重",
+  "year": 1857,
+  "movement": "浮世绘",
+  "type": "painting",
+  "en": "Sudden Shower Hiroshige",
+  "wm": null
+ },
+ {
+  "id": "hiroshige-tokaido",
+  "title": "东海道五十三次",
+  "artist": "歌川广重",
+  "year": 1833,
+  "movement": "浮世绘",
+  "type": "painting",
+  "en": "The Fifty-three Stations Hiroshige",
+  "wm": null
+ },
+ {
+  "id": "utamaro-beauty",
+  "title": "宽政三美人",
+  "artist": "喜多川歌麿",
+  "year": 1790,
+  "movement": "浮世绘",
+  "type": "painting",
+  "en": "Utamaro Beauty",
+  "wm": null
+ },
+ {
+  "id": "sleeping-gypsy",
+  "title": "沉睡的吉普赛人",
+  "artist": "亨利·卢梭",
+  "year": 1897,
+  "movement": "朴素艺术",
+  "type": "painting",
+  "en": "The Sleeping Gypsy Rousseau",
+  "wm": "La_Bohémienne_endormie.jpg"
+ },
+ {
+  "id": "rousseau-snake",
+  "title": "蛇之诱惑",
+  "artist": "亨利·卢梭",
+  "year": 1907,
+  "movement": "朴素艺术",
+  "type": "painting",
+  "en": "The Snake Charmer Rousseau",
+  "wm": null
+ },
+ {
+  "id": "rousseau-dream",
+  "title": "梦",
+  "artist": "亨利·卢梭",
+  "year": 1910,
+  "movement": "朴素艺术",
+  "type": "painting",
+  "en": "The Dream Rousseau",
+  "wm": null
+ },
+ {
+  "id": "vitruvian",
+  "title": "维特鲁威人",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1490,
+  "movement": "文艺复兴",
+  "type": "sketch",
+  "en": "Vitruvian Man",
+  "wm": "Da_Vinci_Vitruve_Luc_Viatour.jpg"
+ },
+ {
+  "id": "libyan-sibyl",
+  "title": "利比亚女巫研究",
+  "artist": "米开朗基罗",
+  "year": 1511,
+  "movement": "文艺复兴",
+  "type": "sketch",
+  "en": "Libyan Sibyl",
+  "wm": "LibyanSibyl_SistineChapel.jpg"
+ },
+ {
+  "id": "anatomical-shoulder",
+  "title": "肩部解剖研究",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1510,
+  "movement": "文艺复兴",
+  "type": "sketch",
+  "en": "Anatomical studies of the shoulder",
+  "wm": "Leonardo_da_Vinci_-_Anatomical_studies_of_the_shoulder_-_WGA12824.jpg"
+ },
+ {
+  "id": "study-hands",
+  "title": "手的研究",
+  "artist": "列奥纳多·达·芬奇",
+  "year": 1474,
+  "movement": "文艺复兴",
+  "type": "sketch",
+  "en": "Studies of hands",
+  "wm": "Leonardo_da_Vinci_-_Study_of_hands_-_WGA12812.jpg"
+ },
+ {
+  "id": "american-gothic2",
+  "title": "美国哥特式（素描）",
+  "artist": "格兰特·伍德",
+  "year": 1930,
+  "movement": "地方主义",
+  "type": "sketch",
+  "en": "American Gothic study",
+  "wm": null
+ }
+]

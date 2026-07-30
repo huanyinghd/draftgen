@@ -2566,60 +2566,29 @@ function importCompositionLibrary(event) {
 
 // ============ 美术馆·名作展厅 (Aesthetic / Oil-Frame Viewer) ============
 // 精选艺术史公共领域名作（素描+绘画）。wm = Wikimedia Commons 文件名。
-const aestheticCollection = [
-  { id:'mona-lisa', title:'蒙娜丽莎', artist:'列奥纳多·达·芬奇', year:1503, movement:'文艺复兴', type:'painting', wm:'Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg' },
-  { id:'birth-of-venus', title:'维纳斯的诞生', artist:'桑德罗·波提切利', year:1485, movement:'文艺复兴', type:'painting', wm:'Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg' },
-  { id:'school-of-athens', title:'雅典学院', artist:'拉斐尔', year:1511, movement:'文艺复兴', type:'painting', wm:'Raffael_058.jpg' },
-  { id:'sistine-madonna', title:'西斯廷圣母', artist:'拉斐尔', year:1512, movement:'文艺复兴', type:'painting', wm:'Sistine_Madonna_(original)_FXD.jpg' },
-  { id:'creation-adam', title:'创造亚当', artist:'米开朗基罗', year:1512, movement:'文艺复兴', type:'painting', wm:'Michelangelo_-_Creation_of_Adam_(cropped).jpg' },
-  { id:'arnolfini', title:'阿尔诺非尼夫妇肖像', artist:'扬·凡·艾克', year:1434, movement:'北方文艺复兴', type:'painting', wm:'Van_Eyck_-_Arnolfini_Portrait.jpg' },
-  { id:'garden-delights', title:'人间乐园', artist:'希罗尼穆斯·博斯', year:1505, movement:'北方文艺复兴', type:'painting', wm:'The_Garden_of_earthly_delights.jpg' },
-  { id:'tower-babel', title:'巴别塔', artist:'老彼得·勃鲁盖尔', year:1563, movement:'北方文艺复兴', type:'painting', wm:'Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_(Vienna)_-_Google_Art_Project_-_edited.jpg' },
-  { id:'durer-self', title:'自画像', artist:'阿尔布雷希特·丢勒', year:1500, movement:'北方文艺复兴', type:'painting', wm:'Albrecht_Dürer_-_1500_self-portrait_(High_resolution_and_detail).jpg' },
-  { id:'melencolia', title:'忧郁症 I', artist:'阿尔布雷希特·丢勒', year:1514, movement:'北方文艺复兴', type:'painting', wm:'Albrecht_Dürer_-_Melencolia_I_-_Google_Art_Project_(427760).jpg' },
-  { id:'night-watch', title:'夜巡', artist:'伦勃朗', year:1642, movement:'巴洛克', type:'painting', wm:'Rembrandt_van_Rijn-De_Nachtwacht-1642.jpg' },
-  { id:'rembrandt-self', title:'自画像', artist:'伦勃朗', year:1640, movement:'巴洛克', type:'painting', wm:'Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg' },
-  { id:'las-meninas', title:'宫娥', artist:'迭戈·委拉斯开兹', year:1656, movement:'巴洛克', type:'painting', wm:'Las_Meninas,_by_Diego_Velázquez,_from_Prado_in_Google_Earth.jpg' },
-  { id:'girl-pearl', title:'戴珍珠耳环的少女', artist:'约翰内斯·维米尔', year:1665, movement:'荷兰黄金时代', type:'painting', wm:'1665_Girl_with_a_Pearl_Earring.jpg' },
-  { id:'liberty', title:'自由引导人民', artist:'欧仁·德拉克罗瓦', year:1830, movement:'浪漫主义', type:'painting', wm:'Eugène_Delacroix_-_La_liberté_guidant_le_peuple.jpg' },
-  { id:'wanderer-fog', title:'雾海上的旅人', artist:'卡斯帕·大卫·弗里德里希', year:1818, movement:'浪漫主义', type:'painting', wm:'Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg' },
-  { id:'third-may', title:'1808年5月3日', artist:'弗朗西斯科·戈雅', year:1814, movement:'浪漫主义', type:'painting', wm:'El_Tres_de_Mayo,_by_Francisco_de_Goya,_from_Prado_in_Google_Earth.jpg' },
-  { id:'hay-wain', title:'干草车', artist:'约翰·康斯太勃尔', year:1821, movement:'浪漫主义', type:'painting', wm:'John_Constable_The_Hay_Wain.jpg' },
-  { id:'fighting-temeraire', title:'被拖去解体的战舰无畏号', artist:'约瑟夫·透纳', year:1839, movement:'浪漫主义', type:'painting', wm:'The_Fighting_Temeraire,_JMW_Turner,_National_Gallery.jpg' },
-  { id:'ophelia', title:'奥菲莉亚', artist:'约翰·埃弗里特·米莱', year:1852, movement:'拉斐尔前派', type:'painting', wm:'John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg' },
-  { id:'impression-sunrise', title:'印象·日出', artist:'克劳德·莫奈', year:1872, movement:'印象派', type:'painting', wm:'Monet_-_Impression,_Sunrise.jpg' },
-  { id:'water-lilies', title:'睡莲', artist:'克劳德·莫奈', year:1906, movement:'印象派', type:'painting', wm:'Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg' },
-  { id:'starry-night', title:'星月夜', artist:'文森特·梵高', year:1889, movement:'后印象派', type:'painting', wm:'Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg' },
-  { id:'sunflowers', title:'向日葵', artist:'文森特·梵高', year:1888, movement:'后印象派', type:'painting', wm:'Vincent_Willem_van_Gogh_127.jpg' },
-  { id:'moulin-rouge', title:'红磨坊', artist:'亨利·德·图卢兹-劳特累克', year:1895, movement:'后印象派', type:'painting', wm:'Henri_de_Toulouse-Lautrec_-_At_the_Moulin_Rouge_-_Google_Art_Project.jpg' },
-  { id:'kiss-klimt', title:'吻', artist:'古斯塔夫·克里姆特', year:1908, movement:'维也纳分离派', type:'painting', wm:'The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg' },
-  { id:'scream', title:'呐喊', artist:'爱德华·蒙克', year:1893, movement:'表现主义', type:'painting', wm:'Edvard_Munch,_1893,_The_Scream,_oil,_tempera_and_pastel_on_cardboard,_91_x_73_cm,_National_Gallery_of_Norway.jpg' },
-  { id:'schiele-self', title:'带光环的自画像', artist:'埃贡·席勒', year:1912, movement:'表现主义', type:'painting', wm:'Egon_Schiele_-_Self-Portrait_with_Lowered_Head_-_Google_Art_Project.jpg' },
-  { id:'persistence-memory', title:'记忆的永恒', artist:'萨尔瓦多·达利', year:1931, movement:'超现实主义', type:'painting', wm:'The_Persistence_of_Memory.jpg' },
-  { id:'american-gothic', title:'美国哥特式', artist:'格兰特·伍德', year:1930, movement:'地方主义', type:'painting', wm:'Grant_Wood_-_American_Gothic_-_Google_Art_Project.jpg' },
-  { id:'sleeping-gypsy', title:'沉睡的吉普赛人', artist:'亨利·卢梭', year:1897, movement:'朴素艺术', type:'painting', wm:'La_Bohémienne_endormie.jpg' },
-  { id:'mondrian-comp', title:'红黄蓝构成', artist:'皮特·蒙德里安', year:1930, movement:'新造型主义', type:'painting', wm:'Composition-with-red-yellow-and-blue.jpg' },
-  { id:'black-square', title:'黑方块', artist:'卡济米尔·马列维奇', year:1915, movement:'至上主义', type:'painting', wm:'Malevich.black-square.jpg' },
-  { id:'whistler-mother', title:'惠斯勒的母亲', artist:'詹姆斯·惠斯勒', year:1871, movement:'现实主义', type:'painting', wm:'Whistlers_Mother_high_res.jpg' },
-  { id:'olympia', title:'奥林匹亚', artist:'爱德华·马奈', year:1863, movement:'现实主义', type:'painting', wm:'Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg' },
-  { id:'great-wave', title:'神奈川冲浪里', artist:'葛饰北斋', year:1831, movement:'浮世绘', type:'painting', wm:'Tsunami_by_hokusai_19th_century.jpg' },
-  { id:'vitruvian', title:'维特鲁威人', artist:'列奥纳多·达·芬奇', year:1490, movement:'文艺复兴', type:'sketch', wm:'Da_Vinci_Vitruve_Luc_Viatour.jpg' },
-  { id:'libyan-sibyl', title:'利比亚女巫研究', artist:'米开朗基罗', year:1511, movement:'文艺复兴', type:'sketch', wm:'LibyanSibyl_SistineChapel.jpg' },
-  { id:'anatomical-shoulder', title:'肩部解剖研究', artist:'列奥纳多·达·芬奇', year:1510, movement:'文艺复兴', type:'sketch', wm:'Leonardo_da_Vinci_-_Anatomical_studies_of_the_shoulder_-_WGA12824.jpg' },
-  { id:'study-hands', title:'手的研究', artist:'列奥纳多·达·芬奇', year:1474, movement:'文艺复兴', type:'sketch', wm:'Leonardo_da_Vinci_-_Study_of_hands_-_WGA12812.jpg' },
-  { id:'draftsman-nude', title:'素描者画裸体', artist:'阿尔布雷希特·丢勒', year:1538, movement:'北方文艺复兴', type:'sketch', wm:'Dürer_-_Zeichner_und_Akt.jpg' },
-  { id:'woman-toilette', title:'梳妆的女子', artist:'埃德加·德加', year:1885, movement:'印象派', type:'sketch', wm:'Degas_-_Woman-At-Her-Toilette-I.jpg' },
-  { id:'rembrandt-draw', title:'窗边自画像（素描）', artist:'伦勃朗', year:1648, movement:'巴洛克', type:'sketch', wm:'Rembrandt_van_Rijn,_Self-Portrait_Drawing_at_a_Window,_1648,_NGA_9930.jpg' },
-  { id:'hokusai-manga', title:'北斋漫画', artist:'葛饰北斋', year:1814, movement:'浮世绘', type:'sketch', wm:'Manga_Hokusai.jpg' }
-];
+let aestheticCollection = [];
 
 function aesLocalUrl(item) { return 'static/art-collection/' + item.id + '.jpg'; }
-function aesWikiUrl(item, size) { return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(item.wm) + '?width=' + size; }
+function aesWikiUrl(item, size) {
+  if (!item.wm) return '';
+  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(item.wm) + '?width=' + size;
+}
+const AES_PLACEHOLDER = "data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23e3e8ee'/%3E%3C/svg%3E";
+function aesImgError(img, item) {
+  img.onerror = null;
+  img.src = AES_PLACEHOLDER;
+  img.classList.add('img-fallback');
+}
 
 function getArtFavs() { try { return JSON.parse(localStorage.getItem('draftgen_art_favs') || '[]'); } catch (e) { return []; } }
 function setArtFavs(arr) { localStorage.setItem('draftgen_art_favs', JSON.stringify(arr)); }
 
-function initAesthetic() {
+async function initAesthetic() {
+  try {
+    const resp = await fetch('/static/art-manifest.json');
+    if (resp.ok) { aestheticCollection = await resp.json(); }
+  } catch (e) { console.warn('art manifest load failed', e); }
+  if (!aestheticCollection.length) { return; }
   const mv = document.getElementById('aesFilterMovement');
   [...new Set(aestheticCollection.map(a => a.movement))].forEach(m => {
     const o = document.createElement('option'); o.value = m; o.textContent = m; mv.appendChild(o);
@@ -2655,7 +2624,7 @@ function renderAestheticGrid() {
     const isFav = favs.includes(a.id);
     card.innerHTML =
       (isFav ? '<div class="star">★</div>' : '') +
-      `<img src="${aesLocalUrl(a)}" onerror="this.onerror=null;this.src='${aesWikiUrl(a, 300)}'" alt="${a.title}" loading="lazy">` +
+      `<img src="${aesLocalUrl(a)}" onerror="aesImgError(this, a)" alt="${a.title}" loading="lazy">` +
       `<div class="meta"><div class="t">${a.title}</div><div class="a">${a.artist} · ${a.year}</div>` +
       `<span class="badge ${a.type}">${a.type === 'sketch' ? '素描' : '绘画'}</span></div>`;
     card.onclick = () => openArtModal(a.id);

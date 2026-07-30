@@ -1,6 +1,7 @@
 """DraftGen Backend Server - FastAPI with DeepSeek API proxy"""
 import os
 import re
+import json
 import asyncio
 import httpx
 from fastapi import FastAPI, HTTPException, Request
@@ -193,8 +194,26 @@ _WM_ALT = {
     # 记忆的永恒仅存于英文维基本地仓库（非 Commons），用其 upload 直链（37KB 小图）
     "persistence-memory": "https://upload.wikimedia.org/wikipedia/en/d/dd/The_Persistence_of_Memory.jpg",
 }
-_WM_MAP = dict(ART_COLLECTION)
+# 单一数据源：static/art-manifest.json（由 scripts/gen_art.py 生成）
+# 元素: {id, title, artist, year, movement, type, en(英文搜索名), wm(已知Wikimedia文件名或None)}
+_ART_MANIFEST = os.path.join(os.path.dirname(__file__), "static", "art-manifest.json")
+_WM_MAP = {}
+try:
+    with open(_ART_MANIFEST, "r", encoding="utf-8") as _mf:
+        for _m in json.load(_mf):
+            _WM_MAP[_m["id"]] = {"en": _m.get("en", ""), "wm": _m.get("wm")}
+    print(f"[art-proxy] loaded {len(_WM_MAP)} artworks from manifest")
+except Exception as e:
+    print("[art-proxy] manifest load failed:", e)
 ART_SEM = asyncio.Semaphore(2)
+# 已解析文件名缓存（持久化到磁盘，重启后保留，避免重复查询维基 API）
+_RESOLVED_PATH = os.path.join(os.path.dirname(__file__), "static", "art-collection", "_resolved.json")
+_WM_RESOLVED = {}
+try:
+    with open(_RESOLVED_PATH, "r", encoding="utf-8") as _f:
+        _WM_RESOLVED = json.load(_f)
+except Exception:
+    _WM_RESOLVED = {}
 
 async def _wm_fetch(wm: str, aid: str = None):
     """拉取名作图片字节；成功返回 bytes，失败返回 None。"""
@@ -270,6 +289,54 @@ async def _wm_fetch(wm: str, aid: str = None):
     print("[art-proxy] fetch failed for", wm, "last=", last)
     return None
 
+async def _search_commons(query: str, api_base: str):
+    """在指定 wiki 的 File 命名空间搜索，返回最佳文件名(不含 File: 前缀)或 None。"""
+    ua = {"User-Agent": "DraftGen/1.0 (art prefetch)"}
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
+            api = (api_base + "/w/api.php?action=query&format=json"
+                   "&list=search&srnamespace=6&srlimit=8&srsearch=" + urllib.parse.quote(query))
+            r = await client.get(api, headers=ua)
+            if r.status_code != 200:
+                return None
+            hits = r.json().get("query", {}).get("search", [])
+            if not hits:
+                return None
+            qwords = [w for w in re.split(r"[^a-z0-9]+", query.lower()) if len(w) > 2]
+            best, best_score = None, 0
+            for h in hits:
+                t = h["title"]
+                name = t[5:] if t.startswith("File:") else t
+                if not re.search(r"\.(jpe?g|png|gif|tif?f|webp)$", name.lower()):
+                    continue
+                score = sum(1 for w in qwords if w in name.lower())
+                if score > best_score:
+                    best, best_score = name, score
+            return best if best_score >= 1 else None
+    except Exception as e:
+        print("[art-proxy] search error:", e)
+        return None
+
+
+async def resolve_wm(aid: str, en: str, wm):
+    """已知 wm 直接用；否则按 en 在 Commons / en.wikipedia 搜索解析文件名并缓存。"""
+    if wm:
+        return wm
+    if aid in _WM_RESOLVED:
+        return _WM_RESOLVED[aid]
+    name = await _search_commons(en, "https://commons.wikimedia.org")
+    if not name:
+        name = await _search_commons(en, "https://en.wikipedia.org")
+    if name:
+        _WM_RESOLVED[aid] = name
+        try:
+            with open(_RESOLVED_PATH, "w", encoding="utf-8") as f:
+                json.dump(_WM_RESOLVED, f, ensure_ascii=False)
+        except Exception:
+            pass
+    return name
+
+
 @app.get("/static/art-collection/{filename}")
 async def art_collection_proxy(filename: str):
     if not re.match(r"^[a-z0-9-]+\.jpg$", filename):
@@ -280,9 +347,12 @@ async def art_collection_proxy(filename: str):
     if os.path.exists(dest) and os.path.getsize(dest) > 1000:
         return FileResponse(dest, media_type="image/jpeg")
     aid = filename[:-4]
-    wm = _WM_MAP.get(aid)
-    if not wm:
+    info = _WM_MAP.get(aid)
+    if not info:
         raise HTTPException(status_code=404, detail="not found")
+    wm = await resolve_wm(aid, info["en"], info["wm"])
+    if not wm:
+        raise HTTPException(status_code=404, detail="resolve failed")
     data = await _wm_fetch(wm, aid)
     if data:
         with open(dest, "wb") as f:
