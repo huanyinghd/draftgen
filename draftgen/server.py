@@ -290,32 +290,42 @@ async def _wm_fetch(wm: str, aid: str = None):
     return None
 
 async def _search_commons(query: str, api_base: str):
-    """在指定 wiki 的 File 命名空间搜索，返回最佳文件名(不含 File: 前缀)或 None。"""
+    """在指定 wiki 的 File 命名空间搜索，返回最佳文件名(不含 File: 前缀)或 None。
+    遇 429/5xx 退避重试；分词无命中时回退到搜索结果中相关度最高的第一个图片文件。"""
     ua = {"User-Agent": "DraftGen/1.0 (art prefetch)"}
-    try:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
-            api = (api_base + "/w/api.php?action=query&format=json"
-                   "&list=search&srnamespace=6&srlimit=8&srsearch=" + urllib.parse.quote(query))
-            r = await client.get(api, headers=ua)
-            if r.status_code != 200:
-                return None
-            hits = r.json().get("query", {}).get("search", [])
-            if not hits:
-                return None
-            qwords = [w for w in re.split(r"[^a-z0-9]+", query.lower()) if len(w) > 2]
-            best, best_score = None, 0
-            for h in hits:
-                t = h["title"]
-                name = t[5:] if t.startswith("File:") else t
-                if not re.search(r"\.(jpe?g|png|gif|tif?f|webp)$", name.lower()):
-                    continue
-                score = sum(1 for w in qwords if w in name.lower())
-                if score > best_score:
-                    best, best_score = name, score
-            return best if best_score >= 1 else None
-    except Exception as e:
-        print("[art-proxy] search error:", e)
-        return None
+    api = (api_base + "/w/api.php?action=query&format=json"
+           "&list=search&srnamespace=6&srlimit=8&srsearch=" + urllib.parse.quote(query))
+    for attempt in range(4):
+        try:
+            async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
+                r = await client.get(api, headers=ua)
+            if r.status_code == 200:
+                hits = r.json().get("query", {}).get("search", [])
+                if not hits:
+                    return None
+                qwords = [w for w in re.split(r"[^a-z0-9]+", query.lower()) if len(w) > 2]
+                best, best_score = None, 0
+                first_file = None
+                for h in hits:
+                    t = h["title"]
+                    name = t[5:] if t.startswith("File:") else t
+                    if not re.search(r"\.(jpe?g|png|gif|tif?f|webp)$", name.lower()):
+                        continue
+                    if first_file is None:
+                        first_file = name
+                    score = sum(1 for w in qwords if w in name.lower())
+                    if score > best_score:
+                        best, best_score = name, score
+                # 优先分词命中；否则回退到相关度最高的第一个图片文件
+                return best if best_score >= 1 else first_file
+            if r.status_code in (429, 500, 502, 503, 504):
+                await asyncio.sleep(2 * (attempt + 1))
+                continue
+            return None
+        except Exception as e:
+            print("[art-proxy] search error:", e)
+            await asyncio.sleep(2 * (attempt + 1))
+    return None
 
 
 async def resolve_wm(aid: str, en: str, wm):

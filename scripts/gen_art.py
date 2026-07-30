@@ -54,6 +54,10 @@ KNOWN_WM = {
     "woman-toilette": "Degas_-_Woman-At-Her-Toilette-I.jpg",
     "rembrandt-draw": "Rembrandt_van_Rijn,_Self-Portrait_Drawing_at_a_Window,_1648,_NGA_9930.jpg",
     "hokusai-manga": "Manga_Hokusai.jpg",
+    "miro-harlequin": "Joan_Miró_-_Carnaval_d'Arlequí.jpg",
+    "gauguin-tahiti": "Paul_Gauguin_-_Where_Do_We_Come_From_What_Are_We_What_Are_We_Going_To.jpg",
+    "klimt-portrait-adele": "Gustav_Klimt_-_Adele_Bloch-Bauer_I.jpg",
+
 }
 
 # (id, 中文名, 英文搜索名, 艺术家, 年代, 流派, 类型)
