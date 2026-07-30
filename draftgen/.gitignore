@@ -1,0 +1,13 @@
+# ---- 运行时按需代理缓存：471 张名画由服务端代理 Wikimedia 抓取后临时缓存于此 ----
+# 切勿提交进 git（否则仓库会膨胀上百 MB）；44 张原始图已跟踪，不受影响。
+# 若日后决定"批量入库"，用 `git add -f static/art-collection/` 显式覆盖本规则。
+/static/art-collection/
+
+# ---- Python 运行/构建产物（保持仓库干净，非必需） ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- Node（本仓库基本用不到，保险） ----
+node_modules/
