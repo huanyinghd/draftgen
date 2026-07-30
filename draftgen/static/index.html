@@ -200,6 +200,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .palette-strip .ps-close { margin-left: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); border: none; background: none; }
 .palette-card.selected { border-color: var(--accent); background: #FFF9F0; box-shadow: 0 0 0 2px var(--accent) inset; }
 
+/* 画布内快速取色（16色，贴在画布左上角，点一下即选色并进入画布） */
+.canvas-palette {
+  position: absolute; top: 12px; left: 12px; z-index: 70;
+  background: rgba(255,255,255,0.94); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+  padding: 10px; user-select: none; max-width: calc(100% - 24px);
+}
+.canvas-palette .cp-title { font-size: 11px; color: var(--accent-dark); font-weight: 600; margin-bottom: 8px; }
+.canvas-palette .cp-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+.canvas-palette .cp-swatch {
+  width: 40px; height: 40px; border-radius: 8px; cursor: pointer;
+  border: 2px solid rgba(0,0,0,0.12); transition: transform .12s, box-shadow .12s;
+}
+.canvas-palette .cp-swatch:hover { transform: scale(1.12); }
+.canvas-palette .cp-swatch.active { border-color: var(--accent-dark); box-shadow: 0 0 0 3px #fff inset, 0 0 0 5px var(--accent); }
+
 /* Floating Layer Panel (常驻右下角) */
 .layer-floating {
   position: absolute; right: 12px; bottom: 12px; width: 210px;
@@ -441,6 +457,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <canvas id="drawCanvas" class="draw-canvas"></canvas>
     </div>
 
+    <!-- Canvas quick palette (16色，贴在画布左上角) -->
+    <div class="canvas-palette" id="canvasPalette">
+      <div class="cp-title">🎨 快速取色 · 16色</div>
+      <div class="cp-grid" id="canvasPaletteGrid"></div>
+    </div>
+
     <!-- Floating Toolbar -->
     <div class="float-toolbar" id="floatToolbar">
       <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')" title="画笔 (B)">✏️</button>
@@ -526,8 +548,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <!-- Color Tab -->
       <div class="tab-content" id="tab-color" style="display:none">
         <div class="panel-section">
-          <h3>情绪调色板</h3>
-          <div class="palette-grid" id="paletteGrid"></div>
+          <h3>调色板已搬到画布</h3>
+          <p style="font-size:11px;color:var(--text-light)">16 色快速取色已贴在画布左上角，点一下即选色并直接作画；下方「艺术家油画配色」可把名画配色铺到画布。</p>
         </div>
         <div class="panel-section">
           <h3>🎨 艺术家油画配色</h3>
@@ -815,6 +837,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initCanvas();
   initLayers();
   initPalettes();
+  initQuickPalette();
   initSliders();
   initDrawing();
   initKeyboard();
@@ -1572,25 +1595,35 @@ const artists = [
 let selectedPaletteIdx = -1;
 
 function initPalettes() {
-  const grid = document.getElementById('paletteGrid');
-  grid.innerHTML = '';
-  palettes.forEach((p, idx) => {
-    const card = document.createElement('div');
-    card.className = 'palette-card';
-    card.dataset.pidx = idx;
-    card.innerHTML = `
-      <div class="colors">${p.colors.map(c => `<div class="swatch" style="background:${c}" onclick="event.stopPropagation();setBrushColor('${c}');document.getElementById('colorPicker').value='${c}'"></div>`).join('')}</div>
-      <div class="name">${p.name}</div>
-      <div class="palette-actions">
-        <button onclick="event.stopPropagation();applyPaletteToBg(${idx})">设为背景</button>
-        <button onclick="event.stopPropagation();applyPaletteToRef(${idx})">参考层</button>
-        <button onclick="event.stopPropagation();selectPalette(${idx})">选为调色板</button>
-      </div>
-    `;
-    card.onclick = () => selectPalette(idx);
-    grid.appendChild(card);
-  });
   initArtistList();
+}
+
+// ===== 画布内快速取色（16色，点击即选色并进入画布） =====
+const quickColors = ['#E63946','#F3722C','#F9C74F','#90BE6D','#43AA8B','#4D908E','#577590','#277DA1','#9B5DE5','#F15BB5','#FEE440','#00BBF9','#FFFFFF','#9AA0A6','#212529','#8B5E3C'];
+
+function initQuickPalette() {
+  const grid = document.getElementById('canvasPaletteGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  quickColors.forEach((c) => {
+    const s = document.createElement('div');
+    s.className = 'cp-swatch' + (c.toLowerCase() === brushColor.toLowerCase() ? ' active' : '');
+    s.style.background = c;
+    s.title = c;
+    s.onclick = () => pickQuickColor(c, s);
+    grid.appendChild(s);
+  });
+}
+
+function pickQuickColor(c, el) {
+  setBrushColor(c);
+  const cp = document.getElementById('colorPicker');
+  if (cp) cp.value = c;
+  setTool('brush');                 // 直接进入画布：切到画笔工具
+  document.querySelectorAll('.cp-swatch').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (drawCanvas && drawCanvas.focus) drawCanvas.focus();
+  showToast('已选 ' + c.toUpperCase() + ' · 开始作画');
 }
 
 // ===== 艺术家油画配色：名单 + 对话框 + 作品配色 =====
