@@ -806,6 +806,7 @@ let brushSize = 4;
 let brushOpacity = 1;
 let isDrawing = false;
 let lastX = 0, lastY = 0;
+let lastPointerPos = null;   // 最近一次在画布上悬停的坐标，用于色块盖章定位
 let pressure = 0.5;
 let activeGuide = null;
 let draftType = 'sunflower';
@@ -1016,6 +1017,7 @@ function onPointerDown(e) {
   const pos = getCanvasPos(e);
   lastX = pos.x;
   lastY = pos.y;
+  lastPointerPos = pos;
   // 吸管：取画布颜色
   if (currentTool === 'eyedropper') {
     pickColor(pos);
@@ -1035,6 +1037,7 @@ function onPointerMove(e) {
   if (!isDrawing) return;
   pressure = e.pressure || 0.5;
   const pos = getCanvasPos(e);
+  lastPointerPos = pos;
   // 调色板模式：沿途继续印出整组颜色
   if (currentTool === 'brush' && selectedPaletteIdx >= 0) {
     stampPaletteColors(pos);
@@ -1620,10 +1623,27 @@ function pickQuickColor(c, el) {
   const cp = document.getElementById('colorPicker');
   if (cp) cp.value = c;
   setTool('brush');                 // 直接进入画布：切到画笔工具
+  stampColorBlock(c);               // 落笔盖章：把该色大方块画进画布，大小跟随笔刷
   document.querySelectorAll('.cp-swatch').forEach(x => x.classList.remove('active'));
   if (el) el.classList.add('active');
   if (drawCanvas && drawCanvas.focus) drawCanvas.focus();
-  showToast('已选 ' + c.toUpperCase() + ' · 开始作画');
+  showToast('已盖章 ' + c.toUpperCase() + ' · 色块大小=' + Math.max(2, brushSize) + 'px');
+}
+
+// 落笔盖章：在画布上印一个实心色块，尺寸 = 当前笔刷大小，定位 = 最近悬停处（默认画布中心）
+function stampColorBlock(c) {
+  saveUndoState();
+  const ctx = getActiveLayerCtx();
+  if (!ctx) { showToast('当前图层已锁定，无法盖章'); return; }
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = brushOpacity;
+  ctx.fillStyle = c;
+  const sz = Math.max(2, brushSize);
+  const p = lastPointerPos || { x: canvasW / 2, y: canvasH / 2 };
+  ctx.fillRect(Math.round(p.x - sz / 2), Math.round(p.y - sz / 2), Math.round(sz), Math.round(sz));
+  ctx.restore();
+  compositeToMain();
 }
 
 // ===== 艺术家油画配色：名单 + 对话框 + 作品配色 =====
