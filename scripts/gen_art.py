@@ -54,7 +54,7 @@ KNOWN_WM = {
     "woman-toilette": "Degas_-_Woman-At-Her-Toilette-I.jpg",
     "rembrandt-draw": "Rembrandt_van_Rijn,_Self-Portrait_Drawing_at_a_Window,_1648,_NGA_9930.jpg",
     "hokusai-manga": "Manga_Hokusai.jpg",
-    "miro-harlequin": "Joan_Miró_-_Carnaval_d'Arlequí.jpg",
+    "miro-mere-ubu": "Mère Ubu, Joan Miró.jpg",
     "gauguin-tahiti": "Paul_Gauguin_-_Where_Do_We_Come_From_What_Are_We_What_Are_We_Going_To.jpg",
     "klimt-portrait-adele": "Gustav_Klimt_-_Adele_Bloch-Bauer_I.jpg",
 
@@ -523,7 +523,7 @@ ART = [
     ("klee-senecio", "喜剧演员", "Senecio Klee", "保罗·克利", 1922, "抽象艺术", "painting"),
     ("klee-fish", "鱼类魔术", "Fish Magic Klee", "保罗·克利", 1925, "抽象艺术", "painting"),
     ("klee-castle", "城堡与太阳", "Castle and Sun Klee", "保罗·克利", 1928, "抽象艺术", "painting"),
-    ("miro-harlequin", "丑角的狂欢", "Harlequin's Carnival Miró", "胡安·米罗", 1925, "抽象艺术", "painting"),
+    ("miro-mere-ubu", "乌布王之母", "Mère Ubu Miró", "胡安·米罗", 1929, "抽象艺术", "painting"),
     ("miro-birth", "世界的诞生", "The Birth of the World Miró", "胡安·米罗", 1925, "抽象艺术", "painting"),
     ("miro-construction", "耕作", "The Tilled Field Miró", "胡安·米罗", 1923, "抽象艺术", "painting"),
     ("delaunay-paris", "巴黎城", "The City of Paris Delaunay", "罗伯特·德劳内", 1910, "抽象艺术", "painting"),

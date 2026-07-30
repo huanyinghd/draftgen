@@ -273,14 +273,14 @@ async def _wm_fetch(wm: str, aid: str = None):
     try:
         async with httpx.AsyncClient(follow_redirects=True, timeout=120) as client:
             api = ("https://commons.wikimedia.org/w/api.php?action=query&format=json"
-                   "&prop=imageinfo&iiprop=url&titles=File:" + urllib.parse.quote(wm))
+                   "&prop=imageinfo&iiprop=url&iiurlwidth=800&titles=File:" + urllib.parse.quote(wm))
             r = await client.get(api, headers=ua)
             if r.status_code == 200:
                 pages = r.json().get("query", {}).get("pages", {})
                 for p in pages.values():
                     ii = p.get("imageinfo")
                     if ii:
-                        url = ii[0]["url"]
+                        url = ii[0].get("thumburl") or ii[0]["url"]
                         rr = await client.get(url, headers=ua)
                         if rr.status_code == 200 and len(rr.content) > 1000:
                             return rr.content
