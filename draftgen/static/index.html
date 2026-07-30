@@ -2576,8 +2576,16 @@ function aesWikiUrl(item, size) {
 const AES_PLACEHOLDER = "data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23e3e8ee'/%3E%3C/svg%3E";
 function aesImgError(img, item) {
   img.onerror = null;
-  img.src = AES_PLACEHOLDER;
-  img.classList.add('img-fallback');
+  // 维基偶发限流会导致代理首拉失败；代理成功即落盘缓存，故延迟重试同URL通常必中。
+  var key = 'aes_retry_' + item.id;
+  var n = parseInt(sessionStorage.getItem(key) || '0', 10);
+  if (n < 2) {
+    sessionStorage.setItem(key, String(n + 1));
+    setTimeout(function () { img.src = aesLocalUrl(item); }, 2500);
+  } else {
+    img.src = AES_PLACEHOLDER;
+    img.classList.add('img-fallback');
+  }
 }
 
 function getArtFavs() { try { return JSON.parse(localStorage.getItem('draftgen_art_favs') || '[]'); } catch (e) { return []; } }
