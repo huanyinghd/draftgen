@@ -200,22 +200,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .palette-strip .ps-close { margin-left: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); border: none; background: none; }
 .palette-card.selected { border-color: var(--accent); background: #FFF9F0; box-shadow: 0 0 0 2px var(--accent) inset; }
 
-/* 画布内快速取色（16色，贴在画布左上角，点一下即选色并进入画布） */
-.canvas-palette {
-  position: absolute; top: 12px; left: 12px; z-index: 70;
-  background: rgba(255,255,255,0.94); border: 1px solid var(--border);
-  border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.12);
-  padding: 10px; user-select: none; max-width: calc(100% - 24px);
-}
-.canvas-palette .cp-title { font-size: 11px; color: var(--accent-dark); font-weight: 600; margin-bottom: 8px; }
-.canvas-palette .cp-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
-.canvas-palette .cp-swatch {
-  width: 40px; height: 40px; border-radius: 8px; cursor: pointer;
-  border: 2px solid rgba(0,0,0,0.12); transition: transform .12s, box-shadow .12s;
-}
-.canvas-palette .cp-swatch:hover { transform: scale(1.12); }
-.canvas-palette .cp-swatch.active { border-color: var(--accent-dark); box-shadow: 0 0 0 3px #fff inset, 0 0 0 5px var(--accent); }
-
 /* Floating Layer Panel (常驻右下角) */
 .layer-floating {
   position: absolute; right: 12px; bottom: 12px; width: 210px;
@@ -455,12 +439,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <canvas id="bgCanvas"></canvas>
       <canvas id="guideCanvas" class="guide-canvas"></canvas>
       <canvas id="drawCanvas" class="draw-canvas"></canvas>
-    </div>
-
-    <!-- Canvas quick palette (16色，贴在画布左上角) -->
-    <div class="canvas-palette" id="canvasPalette">
-      <div class="cp-title">🎨 快速取色 · 16色</div>
-      <div class="cp-grid" id="canvasPaletteGrid"></div>
     </div>
 
     <!-- Floating Toolbar -->
@@ -806,7 +784,6 @@ let brushSize = 4;
 let brushOpacity = 1;
 let isDrawing = false;
 let lastX = 0, lastY = 0;
-let lastPointerPos = null;   // 最近一次在画布上悬停的坐标，用于色块盖章定位
 let pressure = 0.5;
 let activeGuide = null;
 let draftType = 'sunflower';
@@ -838,7 +815,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initCanvas();
   initLayers();
   initPalettes();
-  initQuickPalette();
   initSliders();
   initDrawing();
   initKeyboard();
@@ -1017,7 +993,6 @@ function onPointerDown(e) {
   const pos = getCanvasPos(e);
   lastX = pos.x;
   lastY = pos.y;
-  lastPointerPos = pos;
   // 吸管：取画布颜色
   if (currentTool === 'eyedropper') {
     pickColor(pos);
@@ -1037,7 +1012,6 @@ function onPointerMove(e) {
   if (!isDrawing) return;
   pressure = e.pressure || 0.5;
   const pos = getCanvasPos(e);
-  lastPointerPos = pos;
   // 调色板模式：沿途继续印出整组颜色
   if (currentTool === 'brush' && selectedPaletteIdx >= 0) {
     stampPaletteColors(pos);
@@ -1599,51 +1573,6 @@ let selectedPaletteIdx = -1;
 
 function initPalettes() {
   initArtistList();
-}
-
-// ===== 画布内快速取色（16色，点击即选色并进入画布） =====
-const quickColors = ['#E63946','#F3722C','#F9C74F','#90BE6D','#43AA8B','#4D908E','#577590','#277DA1','#9B5DE5','#F15BB5','#FEE440','#00BBF9','#FFFFFF','#9AA0A6','#212529','#8B5E3C'];
-
-function initQuickPalette() {
-  const grid = document.getElementById('canvasPaletteGrid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  quickColors.forEach((c) => {
-    const s = document.createElement('div');
-    s.className = 'cp-swatch' + (c.toLowerCase() === brushColor.toLowerCase() ? ' active' : '');
-    s.style.background = c;
-    s.title = c;
-    s.onclick = () => pickQuickColor(c, s);
-    grid.appendChild(s);
-  });
-}
-
-function pickQuickColor(c, el) {
-  setBrushColor(c);
-  const cp = document.getElementById('colorPicker');
-  if (cp) cp.value = c;
-  setTool('brush');                 // 直接进入画布：切到画笔工具
-  stampColorBlock(c);               // 落笔盖章：把该色大方块画进画布，大小跟随笔刷
-  document.querySelectorAll('.cp-swatch').forEach(x => x.classList.remove('active'));
-  if (el) el.classList.add('active');
-  if (drawCanvas && drawCanvas.focus) drawCanvas.focus();
-  showToast('已盖章 ' + c.toUpperCase() + ' · 色块大小=' + Math.max(2, brushSize) + 'px');
-}
-
-// 落笔盖章：在画布上印一个实心色块，尺寸 = 当前笔刷大小，定位 = 最近悬停处（默认画布中心）
-function stampColorBlock(c) {
-  saveUndoState();
-  const ctx = getActiveLayerCtx();
-  if (!ctx) { showToast('当前图层已锁定，无法盖章'); return; }
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.globalAlpha = brushOpacity;
-  ctx.fillStyle = c;
-  const sz = Math.max(2, brushSize);
-  const p = lastPointerPos || { x: canvasW / 2, y: canvasH / 2 };
-  ctx.fillRect(Math.round(p.x - sz / 2), Math.round(p.y - sz / 2), Math.round(sz), Math.round(sz));
-  ctx.restore();
-  compositeToMain();
 }
 
 // ===== 艺术家油画配色：名单 + 对话框 + 作品配色 =====
