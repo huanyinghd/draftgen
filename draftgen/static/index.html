@@ -602,7 +602,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
               <button class="draft-type-btn" data-draft="figure" onclick="setDraftType('figure')">🧍 人物姿态</button>
               <button class="draft-type-btn" data-draft="layout" onclick="setDraftType('layout')">📐 构图布局</button>
               <button class="draft-type-btn" data-draft="doodle" onclick="setDraftType('doodle')">✏️ 速写涂鸦</button>
-              <button class="draft-type-btn" data-draft="master" onclick="setDraftType('master')">🏛 大师人体速写</button>
+              <button class="draft-type-btn" data-draft="master" onclick="setDraftType('master')">🏛 大师草稿</button>
+            </div>
+            <div class="slider-row" id="masterCatRow">
+              <label>大师草稿分类</label>
+              <div class="layout-options" id="masterCatChips"></div>
             </div>
             <div class="slider-row layout-row">
               <label>布局形式</label>
@@ -680,7 +684,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div class="gallery-subtabs">
             <button class="g-sub active" data-g="master" onclick="switchGallery('master')">名作展厅</button>
             <button class="g-sub" data-g="mine" onclick="switchGallery('mine')">我的素材</button>
-            <button class="g-sub" data-g="figure" onclick="switchGallery('figure')">人物速写</button>
+            <button class="g-sub" data-g="figure" onclick="switchGallery('figure')">大师草稿</button>
           </div>
           <div id="gallery-master">
             <div class="aesthetic-toolbar">
@@ -720,6 +724,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div id="gallery-figure" style="display:none">
             <div class="aesthetic-toolbar">
               <input id="figSearch" placeholder="搜索作品 / 艺术家…" oninput="renderFigureGrid()">
+              <div class="layout-options" id="figCatChips" style="flex-wrap:wrap"></div>
             </div>
             <div class="aesthetic-grid" id="figGrid"></div>
           </div>
@@ -824,6 +829,9 @@ let batchCount = 10;
 let customBrushImg = null;
 let floatObj = null;   // 可编辑/缩放的浮动草稿对象：{ canvas, x, y, scale }（坐标均为画布像素）
 let _floatDrag = null; // 拖拽状态
+// 大师草稿库分类（与后台 figure-manifest.json 的 category 字段对应）
+const FIGURE_CATS = ['全部', '人体速写', '解剖研究', '手部研究', '肖像起草', '构图草稿', '风景草稿', '凌乱速写', '综合草稿'];
+let currentFigureCat = '全部';
 
 // Layer system
 let layers = [];
@@ -860,6 +868,8 @@ window.addEventListener('DOMContentLoaded', () => {
   loadVersions();
   initAesthetic();
   loadFigureLibrary();
+  buildFigureCatChips();
+  setDraftType(draftType);
   showToast('草稿生成器已就绪 ✨');
 });
 
@@ -1773,6 +1783,9 @@ function applyPaletteToRef(idx) {
 function setDraftType(type) {
   draftType = type;
   document.querySelectorAll('[data-draft]').forEach(b => b.classList.toggle('active', b.dataset.draft === type));
+  // 只有「大师草稿」类型才需要分类选择
+  const row = document.getElementById('masterCatRow');
+  if (row) row.style.display = (type === 'master') ? 'flex' : 'none';
 }
 
 // Perlin noise (simplified)
@@ -1883,11 +1896,38 @@ function figImgError(img, item) {
   else { img.src = AES_PLACEHOLDER; img.classList.add('img-fallback'); }
 }
 
+// 构建大师草稿分类筛选条（随机模块 + 美术馆共用一个 currentFigureCat）
+function buildFigureCatChips() {
+  ['masterCatChips', 'figCatChips'].forEach(function (cid) {
+    const box = document.getElementById(cid);
+    if (!box) return;
+    box.innerHTML = '';
+    FIGURE_CATS.forEach(function (c) {
+      const b = document.createElement('button');
+      b.className = 'layout-btn' + (c === currentFigureCat ? ' active' : '');
+      b.textContent = c;
+      b.onclick = function () { setFigureCat(c); };
+      box.appendChild(b);
+    });
+  });
+}
+function setFigureCat(c) {
+  currentFigureCat = c;
+  buildFigureCatChips();
+  const gf = document.getElementById('gallery-figure');
+  if (gf && gf.style.display !== 'none') renderFigureGrid();
+}
+
 // 把一张随机大师人体速写绘制到给定 ctx（围绕 focus 焦点放置），返回是否成功
 async function drawMasterFigureImage(ctx, focus) {
   if (!figureCollection.length) await loadFigureLibrary();
   if (!figureCollection.length) return false;
-  const item = figureCollection[Math.floor(Math.random() * figureCollection.length)];
+  let pool = figureCollection;
+  if (currentFigureCat && currentFigureCat !== '全部') {
+    const f = figureCollection.filter(a => a.category === currentFigureCat);
+    if (f.length) pool = f;
+  }
+  const item = pool[Math.floor(Math.random() * pool.length)];
   const url = figLocalUrl(item);
   return await new Promise((resolve) => {
     const img = new Image();
@@ -2894,7 +2934,9 @@ function renderFigureGrid() {
   grid.innerHTML = '';
   const q = (document.getElementById('figSearch') ? document.getElementById('figSearch').value : '').trim().toLowerCase();
   if (!figureCollection.length) { grid.innerHTML = '<div class="art-empty">人物速写库加载中…</div>'; return; }
-  const list = figureCollection.filter(a => !q || a.title.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q));
+  const list = figureCollection.filter(a =>
+    (!q || a.title.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q)) &&
+    (currentFigureCat === '全部' || a.category === currentFigureCat));
   lastFigList = list;
   if (list.length === 0) { grid.innerHTML = '<div class="art-empty">没有匹配的作品，换个关键词试试。</div>'; return; }
   list.forEach(a => {
@@ -2932,7 +2974,7 @@ function renderFigureFrame() {
   img.onerror = () => { img.onerror = null; img.src = AES_PLACEHOLDER; };
   img.src = figLocalUrl(a);
   document.getElementById('figFrameTitle').textContent = a.title;
-  document.getElementById('figFrameSub').textContent = `${a.artist} · ${a.year}`;
+  document.getElementById('figFrameSub').textContent = `${a.artist} · ${a.year}` + (a.category ? ' · ' + a.category : '');
 }
 function figFramePrev() { if (!lastFigList.length) return; const i = currentFigIndex(); currentFigId = lastFigList[(i - 1 + lastFigList.length) % lastFigList.length].id; renderFigureFrame(); }
 function figFrameNext() { if (!lastFigList.length) return; const i = currentFigIndex(); currentFigId = lastFigList[(i + 1) % lastFigList.length].id; renderFigureFrame(); }
