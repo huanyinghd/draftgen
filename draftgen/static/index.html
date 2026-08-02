@@ -36,6 +36,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .canvas-wrapper canvas { display: block; position: absolute; top:0; left:0; }
 .canvas-wrapper .guide-canvas { z-index: 5; pointer-events: none; }
 .canvas-wrapper .draw-canvas { z-index: 10; cursor: crosshair; }
+.canvas-wrapper .obj-canvas { z-index: 20; pointer-events: none; }
+.gen-toolbar { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); background: #2b2b2b; color: #fff; padding: 6px 12px; border-radius: 22px; display: flex; align-items: center; gap: 8px; font-size: 12px; z-index: 200; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+.gen-toolbar button { border: none; border-radius: 14px; padding: 5px 12px; font-size: 12px; cursor: pointer; background: #5b8def; color: #fff; }
+.gen-toolbar button.cancel { background: #e05b5b; }
+.gen-toolbar .hint { opacity: .7; font-size: 11px; }
+.gen-toolbar #genScaleLabel { min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
 
 /* Floating Toolbar */
 .float-toolbar {
@@ -468,6 +474,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <canvas id="bgCanvas"></canvas>
       <canvas id="guideCanvas" class="guide-canvas"></canvas>
       <canvas id="drawCanvas" class="draw-canvas"></canvas>
+      <canvas id="objCanvas" class="obj-canvas"></canvas>
+    </div>
+    <div class="gen-toolbar" id="genToolbar" style="display:none">
+      <span id="genScaleLabel">100%</span>
+      <button onclick="commitFloat()">✓ 放入画布</button>
+      <button class="cancel" onclick="cancelFloat()">✕ 取消</button>
+      <span class="hint">拖动移动 · 拖角缩放 · 滚轮缩放</span>
     </div>
 
     <!-- Floating Toolbar -->
@@ -809,6 +822,8 @@ let currentLayout = 'none';   // 随机/批量生成的布局形式：none/third
 let aiMode = 'composition';
 let batchCount = 10;
 let customBrushImg = null;
+let floatObj = null;   // 可编辑/缩放的浮动草稿对象：{ canvas, x, y, scale }（坐标均为画布像素）
+let _floatDrag = null; // 拖拽状态
 
 // Layer system
 let layers = [];
@@ -820,16 +835,18 @@ let undoStack = [];
 const MAX_UNDO = 30;
 
 // Canvases
-let bgCanvas, bgCtx, guideCanvas, guideCtx, drawCanvas, drawCtx;
+let bgCanvas, bgCtx, guideCanvas, guideCtx, drawCanvas, drawCtx, objCanvas, objCtx;
 
 // ============ INIT ============
 window.addEventListener('DOMContentLoaded', () => {
   bgCanvas = document.getElementById('bgCanvas');
   guideCanvas = document.getElementById('guideCanvas');
   drawCanvas = document.getElementById('drawCanvas');
+  objCanvas = document.getElementById('objCanvas');
   bgCtx = bgCanvas.getContext('2d');
   guideCtx = guideCanvas.getContext('2d');
   drawCtx = drawCanvas.getContext('2d');
+  objCtx = objCanvas.getContext('2d');
   
   initCanvas();
   initLayers();
@@ -837,6 +854,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initSliders();
   initDrawing();
   initKeyboard();
+  initFloatInteractions();
   initDragToolbar();
   loadGallery();
   loadVersions();
@@ -858,12 +876,13 @@ function initCanvas() {
   wrapper.style.width = dispW + 'px';
   wrapper.style.height = dispH + 'px';
   
-  [bgCanvas, guideCanvas, drawCanvas].forEach(c => {
+  [bgCanvas, guideCanvas, drawCanvas, objCanvas].forEach(c => {
     c.width = canvasW;
     c.height = canvasH;
     c.style.width = dispW + 'px';
     c.style.height = dispH + 'px';
   });
+  if (objCanvas) objCanvas.getContext('2d').clearRect(0, 0, canvasW, canvasH);
   
   // White background
   bgCtx.fillStyle = '#FFFFFF';
@@ -873,6 +892,7 @@ function initCanvas() {
 // ============ ORIENTATION ============
 function setOrientation(o) {
   if (orientation === o) return;
+  if (floatObj) commitFloat();   // 先把浮动草稿固化进画布快照
   // Save current content
   const tempCanvas = document.createElement('canvas');
   tempCanvas.width = canvasW;
@@ -1885,50 +1905,165 @@ async function drawMasterFigureImage(ctx, focus) {
   });
 }
 
-// 随机模块：生成大师人体速写（含布局参考线）
-async function drawMasterFigure(ctx, focus) {
-  const ok = await drawMasterFigureImage(ctx, focus);
-  drawLayoutLines(ctx, currentLayout);
-  compositeToMain();
-  showToast((ok ? '大师人体速写' : '（图片加载失败，请稍后重试）') + '已生成 🏛' + (currentLayout !== 'none' ? ' · ' + LAYOUT_NAMES[currentLayout] : ''));
-}
-
+// 随机生成草稿：先渲染到离屏画布，作为可缩放/移动的浮动对象出现，确认后再落进图层
 async function generateRandomDraft() {
-  const ctx = getActiveLayerCtx();
-  if (!ctx) { showToast('当前图层已锁定'); return; }
+  if (floatObj) commitFloat();   // 先提交上一次未确认的浮动草稿
 
   const focus = layoutFocus(currentLayout);
+  const cx = focus ? focus.x : canvasW / 2;
+  const cy = focus ? focus.y : canvasH / 2;
 
-  // 大师人体速写：直接把名作图片落到画布（围绕所选布局焦点）
+  // 离屏画布（透明底），所有草稿类型都画在这里
+  const oc = document.createElement('canvas');
+  oc.width = canvasW;
+  oc.height = canvasH;
+  const octx = oc.getContext('2d');
+
+  const layoutTag = (currentLayout !== 'none') ? ' · ' + LAYOUT_NAMES[currentLayout] : '';
+
   if (draftType === 'master') {
-    await drawMasterFigure(ctx, focus);
+    const ok = await drawMasterFigureImage(octx, { x: cx, y: cy });
+    drawLayoutLines(octx, currentLayout);
+    presentFloat(oc, cx, cy);
+    showToast((ok ? '大师人体速写' : '（图片加载失败，请稍后重试）') + ' · 可缩放后放入画布 🏛' + layoutTag);
     return;
   }
+
+  octx.save();
+  octx.strokeStyle = brushColor;
+  octx.lineCap = 'round';
+  octx.lineJoin = 'round';
 
   const density = parseInt(document.getElementById('lineDensity').value);
   const chaos = parseInt(document.getElementById('chaosLevel').value) / 100;
   const seed = Date.now();
   const rng = mulberry32(seed);
   const noise = createNoise(seed);
-
-  ctx.save();
-  ctx.strokeStyle = brushColor;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
   const densityMult = [0.6, 1, 1.8][density - 1];
 
   switch (draftType) {
-    case 'sunflower': drawSunflower(ctx, rng, noise, densityMult, chaos, focus); break;
-    case 'figure': drawFigure(ctx, rng, noise, densityMult, chaos, focus); break;
-    case 'layout': drawLayout(ctx, rng, noise, densityMult, chaos); break;
-    case 'doodle': drawDoodle(ctx, rng, noise, densityMult, chaos, focus); break;
+    case 'sunflower': drawSunflower(octx, rng, noise, densityMult, chaos, focus); break;
+    case 'figure': drawFigure(octx, rng, noise, densityMult, chaos, focus); break;
+    case 'layout': drawLayout(octx, rng, noise, densityMult, chaos); break;
+    case 'doodle': drawDoodle(octx, rng, noise, densityMult, chaos, focus); break;
   }
 
-  ctx.restore();
-  drawLayoutLines(ctx, currentLayout);   // 把所选布局参考线一并落到画布
+  octx.restore();
+  drawLayoutLines(octx, currentLayout);
+  presentFloat(oc, cx, cy);
+  showToast('随机草稿已生成 🎲' + layoutTag + ' · 可缩放后放入画布');
+}
+
+// ============ 浮动对象：拖动 / 缩放 / 确认放入 ============
+function presentFloat(offCanvas, x, y) {
+  if (floatObj) commitFloat();
+  floatObj = { canvas: offCanvas, x: x, y: y, scale: 1 };
+  objCanvas.style.pointerEvents = 'auto';
+  document.getElementById('genToolbar').style.display = 'flex';
+  renderFloat();
+}
+
+function renderFloat() {
+  objCtx.clearRect(0, 0, canvasW, canvasH);
+  if (!floatObj) return;
+  const dw = canvasW * floatObj.scale;
+  const dh = canvasH * floatObj.scale;
+  const dx = floatObj.x - dw / 2;
+  const dy = floatObj.y - dh / 2;
+  objCtx.drawImage(floatObj.canvas, dx, dy, dw, dh);
+
+  // 选框 + 缩放手柄（右下角）
+  objCtx.save();
+  objCtx.strokeStyle = '#5b8def';
+  objCtx.lineWidth = 2 / scale;
+  objCtx.setLineDash([8 / scale, 6 / scale]);
+  objCtx.strokeRect(dx, dy, dw, dh);
+  objCtx.setLineDash([]);
+  const hs = 9 / scale;
+  objCtx.fillStyle = '#5b8def';
+  objCtx.fillRect(dx + dw - hs, dy + dh - hs, hs * 2, hs * 2);
+  objCtx.restore();
+
+  const lbl = document.getElementById('genScaleLabel');
+  if (lbl) lbl.textContent = Math.round(floatObj.scale * 100) + '%';
+}
+
+function commitFloat() {
+  if (!floatObj) return;
+  const ctx = getActiveLayerCtx();
+  if (!ctx) { showToast('当前图层已锁定，无法放入'); cancelFloat(); return; }
+  saveUndoState();
+  const dw = canvasW * floatObj.scale;
+  const dh = canvasH * floatObj.scale;
+  const dx = floatObj.x - dw / 2;
+  const dy = floatObj.y - dh / 2;
+  ctx.drawImage(floatObj.canvas, dx, dy, dw, dh);
   compositeToMain();
-  showToast('随机草稿已生成 🎲' + (currentLayout !== 'none' ? ' · ' + LAYOUT_NAMES[currentLayout] : ''));
+  cancelFloat();
+}
+
+function cancelFloat() {
+  floatObj = null;
+  _floatDrag = null;
+  if (objCanvas) objCanvas.style.pointerEvents = 'none';
+  if (objCtx) objCtx.clearRect(0, 0, canvasW, canvasH);
+  const tb = document.getElementById('genToolbar');
+  if (tb) tb.style.display = 'none';
+}
+
+function initFloatInteractions() {
+  const oc = document.getElementById('objCanvas');
+  if (!oc) return;
+
+  oc.addEventListener('pointerdown', (e) => {
+    if (!floatObj) return;
+    e.preventDefault();
+    const pos = getCanvasPos(e);
+    const dw = canvasW * floatObj.scale;
+    const dh = canvasH * floatObj.scale;
+    const dx = floatObj.x - dw / 2;
+    const dy = floatObj.y - dh / 2;
+    const hx = dx + dw, hy = dy + dh;
+    const tol = 16 / scale;
+    if (Math.abs(pos.x - hx) <= tol && Math.abs(pos.y - hy) <= tol) {
+      // 拖右下角手柄 → 以中心为锚点等比缩放
+      const d0 = Math.hypot(pos.x - floatObj.x, pos.y - floatObj.y) || 1;
+      _floatDrag = { mode: 'scale', d0, s0: floatObj.scale };
+    } else if (pos.x >= dx && pos.x <= hx && pos.y >= dy && pos.y <= hy) {
+      _floatDrag = { mode: 'move', sx: pos.x, sy: pos.y, ox: floatObj.x, oy: floatObj.y };
+    } else {
+      return;
+    }
+    try { oc.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+
+  oc.addEventListener('pointermove', (e) => {
+    if (!floatObj || !_floatDrag) return;
+    const pos = getCanvasPos(e);
+    if (_floatDrag.mode === 'move') {
+      floatObj.x = _floatDrag.ox + (pos.x - _floatDrag.sx);
+      floatObj.y = _floatDrag.oy + (pos.y - _floatDrag.sy);
+    } else {
+      const d = Math.hypot(pos.x - floatObj.x, pos.y - floatObj.y);
+      floatObj.scale = Math.max(0.05, Math.min(6, _floatDrag.s0 * d / _floatDrag.d0));
+    }
+    renderFloat();
+  });
+
+  const end = (e) => {
+    if (!_floatDrag) return;
+    _floatDrag = null;
+    try { oc.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  oc.addEventListener('pointerup', end);
+  oc.addEventListener('pointercancel', end);
+
+  oc.addEventListener('wheel', (e) => {
+    if (!floatObj) return;
+    e.preventDefault();
+    floatObj.scale = Math.max(0.05, Math.min(6, floatObj.scale * (1 - e.deltaY * 0.0015)));
+    renderFloat();
+  }, { passive: false });
 }
 
 function sketchyLine(ctx, x1, y1, x2, y2, passes, jitter) {
@@ -3525,6 +3660,7 @@ function closeModal() {
 }
 
 function resetCanvas() {
+  if (floatObj) cancelFloat();
   layers.forEach(l => {
     l.ctx.clearRect(0, 0, canvasW, canvasH);
   });
