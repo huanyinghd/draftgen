@@ -153,6 +153,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .gallery-item { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; }
 .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
 .gallery-item .gallery-time { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 8px; padding: 1px 3px; }
+.gallery-del { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border: none; border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff; font-size: 11px; line-height: 20px; text-align: center; cursor: pointer; padding: 0; z-index: 2; }
+.gallery-del:hover { background: #c0392b; }
+.layout-row { flex-wrap: wrap; align-items: center; }
+.layout-options { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; width: 100%; }
+.layout-btn { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; }
+.layout-btn:hover { border-color: var(--accent); }
+.layout-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* Version */
 .version-list { max-height: 200px; overflow-y: auto; }
@@ -403,6 +410,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <button class="frame-nav frame-next" onclick="event.stopPropagation();artFrameNext()" title="下一张 (→)">›</button>
 </div>
 
+<!-- 人物大师速写 Modal -->
+<div class="art-frame-modal" id="figFrameModal" onclick="if(event.target===this)closeFigureModal()">
+  <button class="frame-nav frame-prev" onclick="event.stopPropagation();figFramePrev()" title="上一张 (←)">‹</button>
+  <div class="art-frame-stage">
+    <div class="art-frame-mat">
+      <div class="art-frame-inner">
+        <img id="figFrameImg" src="" alt="">
+      </div>
+    </div>
+    <div class="art-frame-caption">
+      <div class="af-title" id="figFrameTitle"></div>
+      <div class="af-sub" id="figFrameSub"></div>
+      <div class="art-modal-actions">
+        <button class="action-btn" onclick="event.stopPropagation();figPlaceRef()">📐 参考层</button>
+        <button class="action-btn" onclick="event.stopPropagation();figDownload()">⬇️ 下载</button>
+        <button class="action-btn secondary" onclick="event.stopPropagation();closeFigureModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+  <button class="frame-nav frame-next" onclick="event.stopPropagation();figFrameNext()" title="下一张 (→)">›</button>
+</div>
+
 <!-- Image Draft Modal -->
 <div class="art-modal" id="imgDraftModal" onclick="if(event.target===this)closeImgDraftModal()">
   <div class="art-modal-inner">
@@ -490,8 +519,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
       <div class="tab" data-tab="layer" onclick="switchTab('layer')">图层</div>
-      <div class="tab" data-tab="random" onclick="switchTab('random')">随机</div>
-      <div class="tab" data-tab="sketch" onclick="switchTab('sketch')">转草稿</div>
+      <div class="tab" data-tab="random" onclick="switchTab('random')">随机生成草稿</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
@@ -561,6 +589,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
               <button class="draft-type-btn" data-draft="figure" onclick="setDraftType('figure')">🧍 人物姿态</button>
               <button class="draft-type-btn" data-draft="layout" onclick="setDraftType('layout')">📐 构图布局</button>
               <button class="draft-type-btn" data-draft="doodle" onclick="setDraftType('doodle')">✏️ 速写涂鸦</button>
+              <button class="draft-type-btn" data-draft="master" onclick="setDraftType('master')">🏛 大师人体速写</button>
+            </div>
+            <div class="slider-row layout-row">
+              <label>布局形式</label>
+              <div class="layout-options">
+                <button class="layout-btn active" data-layout="none" onclick="setLayout('none')">自由</button>
+                <button class="layout-btn" data-layout="thirds" onclick="setLayout('thirds')">三分法</button>
+                <button class="layout-btn" data-layout="golden" onclick="setLayout('golden')">黄金比例</button>
+                <button class="layout-btn" data-layout="perspective" onclick="setLayout('perspective')">透视</button>
+                <button class="layout-btn" data-layout="triangle" onclick="setLayout('triangle')">三角</button>
+              </div>
             </div>
             <div class="slider-row">
               <label>线条密度</label>
@@ -628,6 +667,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div class="gallery-subtabs">
             <button class="g-sub active" data-g="master" onclick="switchGallery('master')">名作展厅</button>
             <button class="g-sub" data-g="mine" onclick="switchGallery('mine')">我的素材</button>
+            <button class="g-sub" data-g="figure" onclick="switchGallery('figure')">人物速写</button>
           </div>
           <div id="gallery-master">
             <div class="aesthetic-toolbar">
@@ -651,7 +691,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
                 <option value="">全部来源</option>
                 <option value="训练·原图">训练·原图</option>
                 <option value="训练·草图">训练·草图</option>
-                <option value="转草图·原图">转草图·原图</option>
                 <option value="URL导入">URL导入</option>
                 <option value="审美作品">审美作品</option>
               </select>
@@ -665,42 +704,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
             </div>
             <input type="file" id="imgdraftImport" accept="application/json,.json" style="display:none" onchange="importImgDrafts(event)">
           </div>
-        </div>
-      </div>
-
-      <!-- Sketch Tab -->
-      <div class="tab-content" id="tab-sketch" style="display:none">
-        <div class="panel-section">
-          <h3>图像转草稿</h3>
-          <div class="upload-area" id="uploadArea" onclick="document.getElementById('imgUpload').click()">
-            <input type="file" id="imgUpload" accept="image/*" onchange="handleImageUpload(event)">
-            📷 点击上传图片
-          </div>
-          <input type="text" placeholder="或输入图片URL..." class="ai-key-input" id="imgUrl" style="margin-bottom:6px">
-          <button class="action-btn secondary" onclick="loadImageFromUrl()" style="margin-bottom:8px">加载URL图片</button>
-          <div class="slider-row">
-            <label>线条密度</label>
-            <input type="range" id="sketchDensity" min="1" max="5" value="3">
-            <span class="val" id="sketchDensityVal">3</span>
-          </div>
-          <div class="slider-row">
-            <label>线条粗细</label>
-            <input type="range" id="sketchThickness" min="1" max="5" value="2">
-            <span class="val" id="sketchThickVal">2</span>
-          </div>
-          <div class="slider-row">
-            <label>抖动程度</label>
-            <input type="range" id="sketchJitter" min="0" max="10" value="3">
-            <span class="val" id="sketchJitterVal">3</span>
-          </div>
-          <div class="slider-row">
-            <label>细节程度</label>
-            <input type="range" id="sketchDetail" min="1" max="5" value="3">
-            <span class="val" id="sketchDetailVal">3</span>
-          </div>
-          <div style="margin-top:6px;display:flex;gap:4px">
-            <button class="action-btn" style="flex:1" onclick="convertToSketch('sobel')">Sobel边缘</button>
-            <button class="action-btn" style="flex:1" onclick="convertToSketch('canny')">Canny边缘</button>
+          <div id="gallery-figure" style="display:none">
+            <div class="aesthetic-toolbar">
+              <input id="figSearch" placeholder="搜索作品 / 艺术家…" oninput="renderFigureGrid()">
+            </div>
+            <div class="aesthetic-grid" id="figGrid"></div>
           </div>
         </div>
       </div>
@@ -733,6 +741,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
             <button class="batch-btn" data-count="5" onclick="setBatchCount(5)">5张</button>
             <button class="batch-btn active" data-count="10" onclick="setBatchCount(10)">10张</button>
             <button class="batch-btn" data-count="20" onclick="setBatchCount(20)">20张</button>
+          </div>
+          <div class="slider-row layout-row">
+            <label>布局形式</label>
+            <div class="layout-options">
+              <button class="layout-btn active" data-layout="none" onclick="setLayout('none')">自由</button>
+              <button class="layout-btn" data-layout="thirds" onclick="setLayout('thirds')">三分法</button>
+              <button class="layout-btn" data-layout="golden" onclick="setLayout('golden')">黄金比例</button>
+              <button class="layout-btn" data-layout="perspective" onclick="setLayout('perspective')">透视</button>
+              <button class="layout-btn" data-layout="triangle" onclick="setLayout('triangle')">三角</button>
+            </div>
           </div>
           <button class="action-btn" onclick="batchGenerate()">🎲 批量生成</button>
         </div>
@@ -787,6 +805,7 @@ let lastX = 0, lastY = 0;
 let pressure = 0.5;
 let activeGuide = null;
 let draftType = 'sunflower';
+let currentLayout = 'none';   // 随机/批量生成的布局形式：none/thirds/golden/perspective/triangle
 let aiMode = 'composition';
 let batchCount = 10;
 let customBrushImg = null;
@@ -822,6 +841,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadGallery();
   loadVersions();
   initAesthetic();
+  loadFigureLibrary();
   showToast('草稿生成器已就绪 ✨');
 });
 
@@ -1774,33 +1794,141 @@ function createNoise(seed) {
   };
 }
 
-function generateRandomDraft() {
+const LAYOUT_NAMES = { none: '自由', thirds: '三分法布局', golden: '黄金比例构图', perspective: '透视布局', triangle: '三角布局' };
+
+// 布局形式：把生成内容按所选构图放置（随机与批量模块共用）
+function setLayout(type) {
+  currentLayout = type;
+  document.querySelectorAll('[data-layout]').forEach(b => b.classList.toggle('active', b.dataset.layout === type));
+}
+
+// 计算主体放置焦点（对应布局的视觉重心）
+function layoutFocus(type) {
+  if (!type || type === 'none') return null;
+  const W = canvasW, H = canvasH;
+  if (type === 'thirds')      return { x: W * 0.66, y: H * 0.34 };
+  if (type === 'golden')       return { x: W * 0.62, y: H * 0.38 };
+  if (type === 'perspective')  return { x: W * 0.5,  y: H * 0.42 };
+  if (type === 'triangle')     return { x: W * 0.5,  y: H * 0.64 };
+  return null;
+}
+
+// 在画布上绘制布局参考线（生成时一并落下，体现"按布局放置"）
+function drawLayoutLines(ctx, type) {
+  if (!type || type === 'none') return;
+  const W = canvasW, H = canvasH;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(196, 168, 130, 0.55)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([10, 6]);
+  if (type === 'thirds') {
+    for (let i = 1; i <= 2; i++) {
+      ctx.beginPath(); ctx.moveTo(W*i/3, 0); ctx.lineTo(W*i/3, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, H*i/3); ctx.lineTo(W, H*i/3); ctx.stroke();
+    }
+  } else if (type === 'golden') {
+    const phi = 1.618;
+    ctx.strokeRect(W*0.1, H*0.1, W*0.8, H*0.8);
+    ctx.strokeRect(W*0.1, H*0.1, W*0.8/phi, H*0.8);
+  } else if (type === 'perspective') {
+    const vpx1 = W*0.12, vpx2 = W*0.88, vpy = H*0.4;
+    ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(vpx1, vpy); ctx.lineTo(W, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(vpx1, vpy); ctx.lineTo(W, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(vpx2, vpy); ctx.lineTo(W, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(vpx2, vpy); ctx.lineTo(W, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(vpx1, vpy); ctx.lineTo(vpx2, vpy); ctx.stroke();
+  } else if (type === 'triangle') {
+    ctx.beginPath(); ctx.moveTo(W*0.5, H*0.12); ctx.lineTo(W*0.12, H*0.88); ctx.lineTo(W*0.88, H*0.88); ctx.closePath(); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(W*0.5, H*0.64, 10, 0, Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ============ 人物大师速写库（来自 figure-manifest.json，经 /static/figure-collection 代理） ============
+let figureCollection = [];
+async function loadFigureLibrary() {
+  try {
+    const resp = await fetch('/static/figure-manifest.json');
+    if (resp.ok) figureCollection = await resp.json();
+  } catch (e) { console.warn('figure manifest load failed', e); }
+  return figureCollection;
+}
+function figLocalUrl(item) { return '/static/figure-collection/' + item.id + '.jpg'; }
+function figImgError(img, item) {
+  img.onerror = null;
+  var key = 'fig_retry_' + item.id;
+  var n = parseInt(sessionStorage.getItem(key) || '0', 10);
+  if (n < 2) { sessionStorage.setItem(key, String(n + 1)); setTimeout(function () { img.src = figLocalUrl(item); }, 2500); }
+  else { img.src = AES_PLACEHOLDER; img.classList.add('img-fallback'); }
+}
+
+// 把一张随机大师人体速写绘制到给定 ctx（围绕 focus 焦点放置），返回是否成功
+async function drawMasterFigureImage(ctx, focus) {
+  if (!figureCollection.length) await loadFigureLibrary();
+  if (!figureCollection.length) return false;
+  const item = figureCollection[Math.floor(Math.random() * figureCollection.length)];
+  const url = figLocalUrl(item);
+  return await new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const fx = focus ? focus.x : canvasW / 2;
+      const fy = focus ? focus.y : canvasH / 2;
+      const fit = Math.min(canvasW / img.width, canvasH / img.height) * 0.85;
+      const w = img.width * fit, h = img.height * fit;
+      ctx.drawImage(img, fx - w / 2, fy - h / 2, w, h);
+      resolve(true);
+    };
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
+// 随机模块：生成大师人体速写（含布局参考线）
+async function drawMasterFigure(ctx, focus) {
+  const ok = await drawMasterFigureImage(ctx, focus);
+  drawLayoutLines(ctx, currentLayout);
+  compositeToMain();
+  showToast((ok ? '大师人体速写' : '（图片加载失败，请稍后重试）') + '已生成 🏛' + (currentLayout !== 'none' ? ' · ' + LAYOUT_NAMES[currentLayout] : ''));
+}
+
+async function generateRandomDraft() {
   const ctx = getActiveLayerCtx();
   if (!ctx) { showToast('当前图层已锁定'); return; }
-  
+
+  const focus = layoutFocus(currentLayout);
+
+  // 大师人体速写：直接把名作图片落到画布（围绕所选布局焦点）
+  if (draftType === 'master') {
+    await drawMasterFigure(ctx, focus);
+    return;
+  }
+
   const density = parseInt(document.getElementById('lineDensity').value);
   const chaos = parseInt(document.getElementById('chaosLevel').value) / 100;
   const seed = Date.now();
   const rng = mulberry32(seed);
   const noise = createNoise(seed);
-  
+
   ctx.save();
   ctx.strokeStyle = brushColor;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  
+
   const densityMult = [0.6, 1, 1.8][density - 1];
-  
+
   switch (draftType) {
-    case 'sunflower': drawSunflower(ctx, rng, noise, densityMult, chaos); break;
-    case 'figure': drawFigure(ctx, rng, noise, densityMult, chaos); break;
+    case 'sunflower': drawSunflower(ctx, rng, noise, densityMult, chaos, focus); break;
+    case 'figure': drawFigure(ctx, rng, noise, densityMult, chaos, focus); break;
     case 'layout': drawLayout(ctx, rng, noise, densityMult, chaos); break;
-    case 'doodle': drawDoodle(ctx, rng, noise, densityMult, chaos); break;
+    case 'doodle': drawDoodle(ctx, rng, noise, densityMult, chaos, focus); break;
   }
-  
+
   ctx.restore();
+  drawLayoutLines(ctx, currentLayout);   // 把所选布局参考线一并落到画布
   compositeToMain();
-  showToast('随机草稿已生成 🎲');
+  showToast('随机草稿已生成 🎲' + (currentLayout !== 'none' ? ' · ' + LAYOUT_NAMES[currentLayout] : ''));
 }
 
 function sketchyLine(ctx, x1, y1, x2, y2, passes, jitter) {
@@ -1818,9 +1946,10 @@ function sketchyLine(ctx, x1, y1, x2, y2, passes, jitter) {
   }
 }
 
-function drawSunflower(ctx, rng, noise, density, chaos) {
-  const cx = canvasW * (0.4 + rng() * 0.2);
-  const cy = canvasH * (0.3 + rng() * 0.1);
+function drawSunflower(ctx, rng, noise, density, chaos, focus) {
+  let cx = canvasW * (0.4 + rng() * 0.2);
+  let cy = canvasH * (0.3 + rng() * 0.1);
+  if (focus) { cx = focus.x; cy = focus.y; }
   const headR = canvasW * (0.1 + rng() * 0.08);
   
   // Multiple passes for messy look
@@ -1913,14 +2042,15 @@ function drawSunflower(ctx, rng, noise, density, chaos) {
   }
 }
 
-function drawFigure(ctx, rng, noise, density, chaos) {
+function drawFigure(ctx, rng, noise, density, chaos, focus) {
   ctx.lineWidth = 2 + chaos * 4;
   ctx.globalAlpha = 0.5 + chaos * 0.2;
   const passes = Math.ceil(2 + density);
-  
+
   // Head
-  const hx = canvasW * (0.4 + rng() * 0.2);
-  const hy = canvasH * (0.15 + rng() * 0.05);
+  let hx = canvasW * (0.4 + rng() * 0.2);
+  let hy = canvasH * (0.15 + rng() * 0.05);
+  if (focus) { hx = focus.x; hy = Math.max(canvasH * 0.06, focus.y - canvasH * 0.22); }
   const headR = canvasW * (0.03 + rng() * 0.02);
   
   for (let p = 0; p < passes; p++) {
@@ -2089,15 +2219,16 @@ function drawLayout(ctx, rng, noise, density, chaos) {
   }
 }
 
-function drawDoodle(ctx, rng, noise, density, chaos) {
+function drawDoodle(ctx, rng, noise, density, chaos, focus) {
   const subjects = ['猫', '房子', '树', '山', '花', '鱼', '杯子', '星星', '月亮', '云'];
   const subject = subjects[Math.floor(rng() * subjects.length)];
   
   ctx.lineWidth = 2 + chaos * 3;
   ctx.globalAlpha = 0.5 + chaos * 0.3;
   
-  const cx = canvasW * (0.3 + rng() * 0.4);
-  const cy = canvasH * (0.3 + rng() * 0.2);
+  let cx = canvasW * (0.3 + rng() * 0.4);
+  let cy = canvasH * (0.3 + rng() * 0.2);
+  if (focus) { cx = focus.x; cy = focus.y; }
   const scale2 = canvasW * (0.1 + rng() * 0.05);
   const passes = Math.ceil(2 + density);
   
@@ -2622,6 +2753,67 @@ function renderAestheticGrid() {
   });
 }
 
+// ============ 美术馆·人物大师速写 ============
+function renderFigureGrid() {
+  const grid = document.getElementById('figGrid');
+  grid.innerHTML = '';
+  const q = (document.getElementById('figSearch') ? document.getElementById('figSearch').value : '').trim().toLowerCase();
+  if (!figureCollection.length) { grid.innerHTML = '<div class="art-empty">人物速写库加载中…</div>'; return; }
+  const list = figureCollection.filter(a => !q || a.title.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q));
+  lastFigList = list;
+  if (list.length === 0) { grid.innerHTML = '<div class="art-empty">没有匹配的作品，换个关键词试试。</div>'; return; }
+  list.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'art-card';
+    card.innerHTML = `<img src="${figLocalUrl(a)}" onerror="figImgError(this, a)" alt="${a.title}" loading="lazy">` +
+      `<div class="meta"><div class="t">${a.title}</div><div class="a">${a.artist} · ${a.year}</div></div>`;
+    card.onclick = () => openFigureModal(a.id);
+    grid.appendChild(card);
+  });
+}
+
+function loadFigureImage(item, cb) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => cb(img);
+  img.onerror = () => { img.onerror = null; img.src = figLocalUrl(item); img.onload = () => cb(img); };
+  img.src = figLocalUrl(item);
+}
+
+let currentFigId = null;
+let lastFigList = [];
+function openFigureModal(id) {
+  currentFigId = id;
+  if (!lastFigList.length || !lastFigList.find(x => x.id === id)) lastFigList = figureCollection.filter(a => a.id === id);
+  document.getElementById('figFrameModal').style.display = 'flex';
+  renderFigureFrame();
+}
+function closeFigureModal() { const m = document.getElementById('figFrameModal'); if (m) m.style.display = 'none'; currentFigId = null; }
+function currentFigure() { return figureCollection.find(x => x.id === currentFigId); }
+function currentFigIndex() { if (!lastFigList.length) return -1; const i = lastFigList.findIndex(x => x.id === currentFigId); return i < 0 ? 0 : i; }
+function renderFigureFrame() {
+  const a = currentFigure(); if (!a) return;
+  const img = document.getElementById('figFrameImg');
+  img.onerror = () => { img.onerror = null; img.src = AES_PLACEHOLDER; };
+  img.src = figLocalUrl(a);
+  document.getElementById('figFrameTitle').textContent = a.title;
+  document.getElementById('figFrameSub').textContent = `${a.artist} · ${a.year}`;
+}
+function figFramePrev() { if (!lastFigList.length) return; const i = currentFigIndex(); currentFigId = lastFigList[(i - 1 + lastFigList.length) % lastFigList.length].id; renderFigureFrame(); }
+function figFrameNext() { if (!lastFigList.length) return; const i = currentFigIndex(); currentFigId = lastFigList[(i + 1) % lastFigList.length].id; renderFigureFrame(); }
+function figPlaceRef() {
+  const a = currentFigure(); if (!a) return;
+  loadFigureImage(a, (img) => {
+    addLayer('参考·' + a.title);
+    const ctx = layers[activeLayerIdx].ctx;
+    const fit = Math.min(canvasW / img.width, canvasH / img.height);
+    const w = img.width * fit, h = img.height * fit;
+    ctx.globalAlpha = 0.5; ctx.drawImage(img, (canvasW - w) / 2, (canvasH - h) / 2, w, h); ctx.globalAlpha = 1;
+    compositeToMain(); renderLayerList(); showToast('已放入参考层 ✓');
+  });
+}
+function figDownload() { const a = currentFigure(); if (!a) return; const link = document.createElement('a'); link.href = figLocalUrl(a); link.download = a.id + '.jpg'; link.click(); }
+
 let currentArtId = null;
 let lastAesList = [];
 const aesImgCache = new Map();
@@ -2960,215 +3152,6 @@ function importImgDrafts(event) {
   event.target.value = '';
 }
 
-// ============ IMAGE TO SKETCH ============
-let uploadedImage = null;
-
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => { uploadedImage = img; captureImage(img, '转草图原图', '转草图·原图'); showToast('图片已加载 ✓'); };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function loadImageFromUrl() {
-  const url = document.getElementById('imgUrl').value;
-  if (!url) { showToast('请输入URL'); return; }
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => { uploadedImage = img; captureImage(img, (url.split('/').pop().slice(0,30) || 'URL图片'), 'URL导入'); showToast('图片已加载 ✓'); };
-  img.onerror = () => showToast('图片加载失败');
-  img.src = url;
-}
-
-function convertToSketch(method) {
-  if (!uploadedImage) { showToast('请先上传图片'); return; }
-  const ctx = getActiveLayerCtx();
-  if (!ctx) { showToast('图层已锁定'); return; }
-  
-  // Draw image to temp canvas at canvas size
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = canvasW;
-  tempCanvas.height = canvasH;
-  const tempCtx = tempCanvas.getContext('2d');
-  
-  // Fit image
-  const imgRatio = uploadedImage.width / uploadedImage.height;
-  const canvasRatio = canvasW / canvasH;
-  let dw, dh;
-  if (imgRatio > canvasRatio) { dw = canvasW; dh = canvasW / imgRatio; }
-  else { dh = canvasH; dw = canvasH * imgRatio; }
-  const dx = (canvasW - dw) / 2;
-  const dy = (canvasH - dh) / 2;
-  tempCtx.drawImage(uploadedImage, dx, dy, dw, dh);
-  
-  // Get pixel data
-  const imgData = tempCtx.getImageData(0, 0, canvasW, canvasH);
-  
-  const density = parseInt(document.getElementById('sketchDensity').value);
-  const thickness = parseInt(document.getElementById('sketchThickness').value);
-  const jitter = parseInt(document.getElementById('sketchJitter').value);
-  const detail = parseInt(document.getElementById('sketchDetail').value);
-  
-  let edges;
-  if (method === 'sobel') {
-    edges = sobelEdgeDetect(imgData);
-  } else {
-    edges = cannyEdgeDetect(imgData, detail);
-  }
-  
-  // Convert edges to sketchy lines
-  ctx.save();
-  ctx.strokeStyle = brushColor;
-  ctx.lineWidth = thickness;
-  ctx.globalAlpha = brushOpacity;
-  
-  const step = Math.max(1, 6 - density);
-  for (let y = 0; y < canvasH; y += step) {
-    for (let x = 0; x < canvasW; x += step) {
-      if (edges[y * canvasW + x] > 128) {
-        const jx = x + (Math.random() - 0.5) * jitter * 2;
-        const jy = y + (Math.random() - 0.5) * jitter * 2;
-        const len = thickness * (1 + Math.random() * 2);
-        const angle = Math.atan2(
-          y > 0 && y < canvasH-1 ? (edges[(y+1)*canvasW+x] - edges[(y-1)*canvasW+x]) : 0,
-          x > 0 && x < canvasW-1 ? (edges[y*canvasW+x+1] - edges[y*canvasW+x-1]) : 0
-        ) + Math.PI/2;
-        
-        ctx.beginPath();
-        ctx.moveTo(jx - Math.cos(angle)*len, jy - Math.sin(angle)*len);
-        ctx.lineTo(jx + Math.cos(angle)*len, jy + Math.sin(angle)*len);
-        ctx.stroke();
-      }
-    }
-  }
-  ctx.restore();
-  compositeToMain();
-  showToast(`${method === 'sobel' ? 'Sobel' : 'Canny'}边缘检测完成 ✓`);
-}
-
-function sobelEdgeDetect(imgData) {
-  const w = imgData.width, h = imgData.height;
-  const d = imgData.data;
-  const gray = new Float32Array(w * h);
-  
-  // Grayscale
-  for (let i = 0; i < w * h; i++) {
-    gray[i] = d[i*4] * 0.299 + d[i*4+1] * 0.587 + d[i*4+2] * 0.114;
-  }
-  
-  const edges = new Float32Array(w * h);
-  
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      const gx = -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)]
-                 -2*gray[y*w+(x-1)] + 2*gray[y*w+(x+1)]
-                 -gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
-      const gy = -gray[(y-1)*w+(x-1)] - 2*gray[(y-1)*w+x] - gray[(y-1)*w+(x+1)]
-                 +gray[(y+1)*w+(x-1)] + 2*gray[(y+1)*w+x] + gray[(y+1)*w+(x+1)];
-      edges[y * w + x] = Math.sqrt(gx * gx + gy * gy);
-    }
-  }
-  
-  // Normalize
-  let maxVal = 0;
-  for (let i = 0; i < edges.length; i++) maxVal = Math.max(maxVal, edges[i]);
-  if (maxVal > 0) for (let i = 0; i < edges.length; i++) edges[i] = (edges[i] / maxVal) * 255;
-  
-  return edges;
-}
-
-function cannyEdgeDetect(imgData, detail) {
-  const w = imgData.width, h = imgData.height;
-  const d = imgData.data;
-  const gray = new Float32Array(w * h);
-  
-  for (let i = 0; i < w * h; i++) {
-    gray[i] = d[i*4] * 0.299 + d[i*4+1] * 0.587 + d[i*4+2] * 0.114;
-  }
-  
-  // Gaussian blur
-  const blurred = new Float32Array(w * h);
-  const kernel = [1, 2, 1, 2, 4, 2, 1, 2, 1];
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      let sum = 0;
-      for (let ky = -1; ky <= 1; ky++) {
-        for (let kx = -1; kx <= 1; kx++) {
-          sum += gray[(y+ky)*w+(x+kx)] * kernel[(ky+1)*3+(kx+1)];
-        }
-      }
-      blurred[y*w+x] = sum / 16;
-    }
-  }
-  
-  // Sobel
-  const edges = new Float32Array(w * h);
-  const directions = new Float32Array(w * h);
-  
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      const gx = -blurred[(y-1)*w+(x-1)] + blurred[(y-1)*w+(x+1)]
-                 -2*blurred[y*w+(x-1)] + 2*blurred[y*w+(x+1)]
-                 -blurred[(y+1)*w+(x-1)] + blurred[(y+1)*w+(x+1)];
-      const gy = -blurred[(y-1)*w+(x-1)] - 2*blurred[(y-1)*w+x] - blurred[(y-1)*w+(x+1)]
-                 +blurred[(y+1)*w+(x-1)] + 2*blurred[(y+1)*w+x] + blurred[(y+1)*w+(x+1)];
-      edges[y*w+x] = Math.sqrt(gx*gx + gy*gy);
-      directions[y*w+x] = Math.atan2(gy, gx);
-    }
-  }
-  
-  // Non-maximum suppression
-  const suppressed = new Float32Array(w * h);
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      const angle = directions[y*w+x];
-      const mag = edges[y*w+x];
-      let n1 = 0, n2 = 0;
-      
-      const a = angle < 0 ? angle + Math.PI : angle;
-      if (a < Math.PI/8 || a > Math.PI*7/8) {
-        n1 = edges[y*w+x+1]; n2 = edges[y*w+x-1];
-      } else if (a < Math.PI*3/8) {
-        n1 = edges[(y-1)*w+x+1]; n2 = edges[(y+1)*w+x-1];
-      } else if (a < Math.PI*5/8) {
-        n1 = edges[(y-1)*w+x]; n2 = edges[(y+1)*w+x];
-      } else {
-        n1 = edges[(y-1)*w+x-1]; n2 = edges[(y+1)*w+x+1];
-      }
-      
-      suppressed[y*w+x] = (mag >= n1 && mag >= n2) ? mag : 0;
-    }
-  }
-  
-  // Hysteresis thresholding
-  const highThreshold = 200 / detail;
-  const lowThreshold = highThreshold * 0.4;
-  const result = new Float32Array(w * h);
-  
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      if (suppressed[y*w+x] >= highThreshold) {
-        result[y*w+x] = 255;
-      } else if (suppressed[y*w+x] >= lowThreshold) {
-        // Check neighbors
-        let hasStrong = false;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (suppressed[(y+dy)*w+(x+dx)] >= highThreshold) hasStrong = true;
-          }
-        }
-        result[y*w+x] = hasStrong ? 255 : 0;
-      }
-    }
-  }
-  
-  return result;
-}
 
 // ============ AI DRAFT ============
 function setAIMode(mode) {
@@ -3230,7 +3213,9 @@ function setBatchCount(n) {
 
 async function batchGenerate() {
   showToast(`正在生成${batchCount}张草稿...`);
-  
+  const focus = layoutFocus(currentLayout);
+  const types = ['sunflower', 'figure', 'layout', 'doodle', 'master'];
+
   for (let i = 0; i < batchCount; i++) {
     // Create a temp canvas for each draft
     const tempCanvas = document.createElement('canvas');
@@ -3239,28 +3224,35 @@ async function batchGenerate() {
     const tempCtx = tempCanvas.getContext('2d');
     tempCtx.fillStyle = '#FFFFFF';
     tempCtx.fillRect(0, 0, canvasW, canvasH);
-    
+
     // Generate random draft on temp canvas
     const seed = Date.now() + i * 1000;
     const rng = mulberry32(seed);
     const noise = createNoise(seed);
     const density = 1 + Math.floor(rng() * 3);
     const chaos = rng();
-    
+
     tempCtx.strokeStyle = '#333';
     tempCtx.lineCap = 'round';
     tempCtx.lineJoin = 'round';
-    
-    const types = ['sunflower', 'figure', 'layout', 'doodle'];
+
     const type = types[Math.floor(rng() * types.length)];
-    
-    switch(type) {
-      case 'sunflower': drawSunflower(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
-      case 'figure': drawFigure(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
-      case 'layout': drawLayout(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
-      case 'doodle': drawDoodle(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
+
+    if (type === 'master') {
+      const ok = await drawMasterFigureImage(tempCtx, focus);
+      if (!ok) drawFigure(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); // 图片失败回退到程序化人物
+    } else {
+      switch(type) {
+        case 'sunflower': drawSunflower(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); break;
+        case 'figure': drawFigure(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); break;
+        case 'layout': drawLayout(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
+        case 'doodle': drawDoodle(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); break;
+      }
     }
-    
+
+    // 把所选布局参考线一并落到画布
+    drawLayoutLines(tempCtx, currentLayout);
+
     // Save to IndexedDB
     const dataUrl = tempCanvas.toDataURL('image/png');
     await saveDraftToDB({
@@ -3271,9 +3263,9 @@ async function batchGenerate() {
       params: { density, chaos: chaos.toFixed(2) }
     });
   }
-  
+
   loadGallery();
-  showToast(`已生成${batchCount}张草稿 ✓`);
+  showToast(`已生成${batchCount}张草稿 ✓` + (currentLayout !== 'none' ? ' · ' + LAYOUT_NAMES[currentLayout] : ''));
 }
 
 // IndexedDB
@@ -3328,10 +3320,22 @@ async function loadGallery() {
   drafts.forEach(d => {
     const item = document.createElement('div');
     item.className = 'gallery-item';
-    item.innerHTML = `<img src="${d.data}" alt="${d.type}"><div class="gallery-time">${new Date(d.timestamp).toLocaleTimeString()}</div>`;
+    item.innerHTML = `<img src="${d.data}" alt="${d.type}"><div class="gallery-time">${new Date(d.timestamp).toLocaleTimeString()}</div><button class="gallery-del" title="删除这张草稿" onclick="event.stopPropagation();deleteDraft('${d.id}')">✕</button>`;
     item.onclick = () => loadDraftToCanvas(d);
     grid.appendChild(item);
   });
+}
+
+async function deleteDraft(id) {
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readwrite');
+    tx.objectStore('drafts').delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  loadGallery();
+  showToast('已删除该草稿 ✓');
 }
 
 function loadDraftToCanvas(draft) {
@@ -3545,7 +3549,9 @@ function switchGallery(sub) {
   document.querySelectorAll('.g-sub').forEach(b => b.classList.toggle('active', b.dataset.g === sub));
   document.getElementById('gallery-master').style.display = (sub === 'master') ? 'block' : 'none';
   document.getElementById('gallery-mine').style.display = (sub === 'mine') ? 'block' : 'none';
+  document.getElementById('gallery-figure').style.display = (sub === 'figure') ? 'block' : 'none';
   if (sub === 'master') renderAestheticGrid();
+  else if (sub === 'figure') renderFigureGrid();
   else renderImgDraftLibrary();
 }
 
@@ -3556,18 +3562,6 @@ function initSliders() {
   });
   document.getElementById('chaosLevel').addEventListener('input', function() {
     document.getElementById('chaosVal').textContent = this.value;
-  });
-  document.getElementById('sketchDensity').addEventListener('input', function() {
-    document.getElementById('sketchDensityVal').textContent = this.value;
-  });
-  document.getElementById('sketchThickness').addEventListener('input', function() {
-    document.getElementById('sketchThickVal').textContent = this.value;
-  });
-  document.getElementById('sketchJitter').addEventListener('input', function() {
-    document.getElementById('sketchJitterVal').textContent = this.value;
-  });
-  document.getElementById('sketchDetail').addEventListener('input', function() {
-    document.getElementById('sketchDetailVal').textContent = this.value;
   });
 }
 

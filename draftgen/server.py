@@ -12,6 +12,9 @@ from typing import Optional
 
 app = FastAPI(title="DraftGen Server")
 
+# 浏览器缓存头：名作/速写图片内容固定（id 即作品），长期缓存避免重复跨洋拉取导致美术馆加载慢
+_CACHE = {"Cache-Control": "public, max-age=86400, immutable"}
+
 # ---- 美术馆·名作图片预下载（部署/启动时自动补齐 static/art-collection，避免依赖被墙的外部图源）----
 import time
 import urllib.parse
@@ -205,6 +208,18 @@ try:
     print(f"[art-proxy] loaded {len(_WM_MAP)} artworks from manifest")
 except Exception as e:
     print("[art-proxy] manifest load failed:", e)
+
+# 人物姿态内容库（大师人体速写）：同样走 Wikimedia 代理，规避 GFW 封锁
+_FIGURE_MANIFEST = os.path.join(os.path.dirname(__file__), "static", "figure-manifest.json")
+_FIGURE_MAP = {}
+try:
+    with open(_FIGURE_MANIFEST, "r", encoding="utf-8") as _fm:
+        for _m in json.load(_fm):
+            _FIGURE_MAP[_m["id"]] = {"en": _m.get("en", ""), "wm": _m.get("wm")}
+    print(f"[figure-proxy] loaded {len(_FIGURE_MAP)} figure sketches from manifest")
+except Exception as e:
+    print("[figure-proxy] manifest load failed:", e)
+
 ART_SEM = asyncio.Semaphore(2)
 # 已解析文件名缓存（持久化到磁盘，重启后保留，避免重复查询维基 API）
 _RESOLVED_PATH = os.path.join(os.path.dirname(__file__), "static", "art-collection", "_resolved.json")
@@ -355,7 +370,7 @@ async def art_collection_proxy(filename: str):
     os.makedirs(base, exist_ok=True)
     dest = os.path.join(base, filename)
     if os.path.exists(dest) and os.path.getsize(dest) > 1000:
-        return FileResponse(dest, media_type="image/jpeg")
+        return FileResponse(dest, media_type="image/jpeg", headers=_CACHE)
     aid = filename[:-4]
     info = _WM_MAP.get(aid)
     if not info:
@@ -367,7 +382,31 @@ async def art_collection_proxy(filename: str):
     if data:
         with open(dest, "wb") as f:
             f.write(data)
-        return Response(data, media_type="image/jpeg")
+        return Response(data, media_type="image/jpeg", headers=_CACHE)
+    raise HTTPException(status_code=404, detail="fetch failed")
+
+@app.get("/static/figure-collection/{filename}")
+async def figure_collection_proxy(filename: str):
+    """人物姿态内容库代理：与名作代理同机制，按 figure-manifest 解析维基文件名后缓存到本地。"""
+    if not re.match(r"^[a-z0-9-]+\.jpg$", filename):
+        raise HTTPException(status_code=404, detail="not found")
+    base = os.path.join(os.path.dirname(__file__), "static", "figure-collection")
+    os.makedirs(base, exist_ok=True)
+    dest = os.path.join(base, filename)
+    if os.path.exists(dest) and os.path.getsize(dest) > 1000:
+        return FileResponse(dest, media_type="image/jpeg", headers=_CACHE)
+    aid = filename[:-4]
+    info = _FIGURE_MAP.get(aid)
+    if not info:
+        raise HTTPException(status_code=404, detail="not found")
+    wm = await resolve_wm(aid, info["en"], info["wm"])
+    if not wm:
+        raise HTTPException(status_code=404, detail="resolve failed")
+    data = await _wm_fetch(wm, aid)
+    if data:
+        with open(dest, "wb") as f:
+            f.write(data)
+        return Response(data, media_type="image/jpeg", headers=_CACHE)
     raise HTTPException(status_code=404, detail="fetch failed")
 
 app.mount("/static", StaticFiles(directory="./draftgen/static"), name="static")
