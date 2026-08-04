@@ -159,9 +159,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .ai-status { font-size: 11px; color: var(--text-light); margin-top: 4px; }
 
 /* Batch */
-.batch-options { display: flex; gap: 4px; margin-bottom: 8px; }
-.batch-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 11px; }
-.batch-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.dice-ico { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; filter: drop-shadow(0 0 4px rgba(255,255,255,.55)); animation: diceFloat 3.2s ease-in-out infinite; }
+@keyframes diceFloat { 0%,100%{ transform: translateY(0) rotate(-4deg); } 50%{ transform: translateY(-2px) rotate(4deg); } }
+.chain-act .dice-ico { width: 14px; height: 14px; margin-right: 4px; }
 
 /* Draft Gallery */
 .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
@@ -508,12 +508,12 @@ body{ background: var(--bg); color: var(--text); }
 .action-btn.secondary{ background: var(--glass); color:var(--text); border:1px solid var(--border); box-shadow:none; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .action-btn.secondary:hover{ border-color: rgba(139,92,246,.5); box-shadow: var(--neon); color:#fff; background: rgba(139,92,246,.12); }
 
-.guide-btn,.draft-type-btn,.layout-btn,.batch-btn,.g-sub{
+.guide-btn,.draft-type-btn,.layout-btn,.g-sub{
   padding:8px; border:1px solid var(--border); border-radius:10px; background: var(--glass); cursor:pointer; font-size:11px;
   text-align:center; transition: all .15s; color:var(--text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
-.guide-btn:hover,.draft-type-btn:hover,.layout-btn:hover,.batch-btn:hover,.g-sub:hover{ border-color: rgba(139,92,246,.5); color:#fff; box-shadow: var(--neon); transform: translateY(-1px); }
-.guide-btn.active,.draft-type-btn.active,.layout-btn.active,.batch-btn.active,.g-sub.active{ border-color:transparent; background: var(--grad); color:#fff; box-shadow:0 0 16px rgba(139,92,246,.5); }
+.guide-btn:hover,.draft-type-btn:hover,.layout-btn:hover,.g-sub:hover{ border-color: rgba(139,92,246,.5); color:#fff; box-shadow: var(--neon); transform: translateY(-1px); }
+.guide-btn.active,.draft-type-btn.active,.layout-btn.active,.g-sub.active{ border-color:transparent; background: var(--grad); color:#fff; box-shadow:0 0 16px rgba(139,92,246,.5); }
 .g-sub{ flex:1; }
 
 /* ---------- Float toolbar ---------- */
@@ -1088,7 +1088,7 @@ body{ background: var(--bg); color: var(--text); }
       <button class="chain-step" data-step="1" onclick="chainStep(1)">
         <span class="chain-num">1</span>
         <span class="chain-label">草图</span>
-        <span class="chain-act">🎲 生成</span>
+        <span class="chain-act"><svg class="dice-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg> 生成</span>
       </button>
       <span class="chain-arrow">→</span>
       <button class="chain-step" data-step="2" onclick="chainStep(2)">
@@ -1110,7 +1110,6 @@ body{ background: var(--bg); color: var(--text); }
       <div class="tab" data-tab="layer" onclick="switchTab('layer')">图层</div>
       <div class="tab" data-tab="random" onclick="switchTab('random')">随机生成草稿</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
-      <div class="tab" data-tab="batch" onclick="switchTab('batch')">批量</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
       <div class="tab" data-tab="complib" onclick="switchTab('complib')">构图库</div>
       <div class="tab" data-tab="gallery" onclick="switchTab('gallery')">美术馆</div>
@@ -1225,7 +1224,17 @@ body{ background: var(--bg); color: var(--text); }
               <input type="range" id="chaosLevel" min="0" max="100" value="50">
               <span class="val" id="chaosVal">50</span>
             </div>
-            <button class="action-btn" onclick="generateRandomDraft()">🎲 生成随机草稿</button>
+            <button class="action-btn" onclick="generateRandomDraft()">
+              <svg class="dice-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/>
+                <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
+              </svg>
+              生成随机草稿
+            </button>
             <p style="font-size:10px;color:var(--text-light);text-align:center">按 R 键快捷重新生成</p>
           </div>
         </div>
@@ -1348,34 +1357,6 @@ body{ background: var(--bg); color: var(--text); }
       </div>
 
       <!-- Batch Tab -->
-      <div class="tab-content" id="tab-batch" style="display:none">
-        <div class="panel-section">
-          <h3>批量生成</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">设置数量后一键生成多张随机草稿</p>
-          <div class="batch-options">
-            <button class="batch-btn" data-count="5" onclick="setBatchCount(5)">5张</button>
-            <button class="batch-btn active" data-count="10" onclick="setBatchCount(10)">10张</button>
-            <button class="batch-btn" data-count="20" onclick="setBatchCount(20)">20张</button>
-          </div>
-          <div class="slider-row layout-row">
-            <label>布局形式</label>
-            <div class="layout-options">
-              <button class="layout-btn active" data-layout="none" onclick="setLayout('none')">自由</button>
-              <button class="layout-btn" data-layout="thirds" onclick="setLayout('thirds')">三分法</button>
-              <button class="layout-btn" data-layout="golden" onclick="setLayout('golden')">黄金比例</button>
-              <button class="layout-btn" data-layout="perspective" onclick="setLayout('perspective')">透视</button>
-              <button class="layout-btn" data-layout="triangle" onclick="setLayout('triangle')">三角</button>
-            </div>
-          </div>
-          <button class="action-btn" onclick="batchGenerate()">🎲 批量生成</button>
-        </div>
-        <div class="panel-section">
-          <h3>草稿库</h3>
-          <div class="gallery-grid" id="galleryGrid"></div>
-          <button class="action-btn secondary" style="margin-top:8px" onclick="batchExportPNG()">📦 批量导出PNG</button>
-        </div>
-      </div>
-
       <!-- Version Tab -->
       <div class="tab-content" id="tab-version" style="display:none">
         <div class="panel-section">
@@ -1447,9 +1428,8 @@ let lastX = 0, lastY = 0;
 let pressure = 0.5;
 let activeGuide = null;
 let draftType = 'sunflower';
-let currentLayout = 'none';   // 随机/批量生成的布局形式：none/thirds/golden/perspective/triangle
+let currentLayout = 'none';   // 随机生成的布局形式：none/thirds/golden/perspective/triangle
 let aiMode = 'composition';
-let batchCount = 10;
 let customBrushImg = null;
 let floatObj = null;   // 可编辑/缩放的浮动草稿对象：{ canvas, x, y, scale }（坐标均为画布像素）
 let _floatDrag = null; // 拖拽状态
@@ -2453,7 +2433,7 @@ function createNoise(seed) {
 
 const LAYOUT_NAMES = { none: '自由', thirds: '三分法布局', golden: '黄金比例构图', perspective: '透视布局', triangle: '三角布局' };
 
-// 布局形式：把生成内容按所选构图放置（随机与批量模块共用）
+// 布局形式：把生成内容按所选构图放置（随机模块）
 function setLayout(type) {
   currentLayout = type;
   document.querySelectorAll('[data-layout]').forEach(b => b.classList.toggle('active', b.dataset.layout === type));
@@ -2569,6 +2549,131 @@ async function drawMasterFigureImage(ctx, focus) {
   });
 }
 
+// ============ 乱线草稿引擎（移植自 paint_masterpieces.py，PIL 名作速写风格） ============
+// 在离屏画布上绘制 6000-10000 条随机线条 + 圆弧/曲线，支持三分法构图与视线聚集点密集化。
+function drawThirdsGuides(ctx, W, H) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(139,92,246,0.30)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 7]);
+  for (let i = 1; i < 3; i++) {
+    ctx.beginPath(); ctx.moveTo(W * i / 3, 0); ctx.lineTo(W * i / 3, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, H * i / 3); ctx.lineTo(W, H * i / 3); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(236,72,153,0.55)';
+  [[W/3,H/3],[2*W/3,H/3],[W/3,2*H/3],[2*W/3,2*H/3]].forEach(p => {
+    ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, 6.2832); ctx.fill();
+  });
+  ctx.restore();
+}
+
+function paintScribble(oc, opts) {
+  const W = oc.width, H = oc.height;
+  const ctx = oc.getContext('2d');
+  const rng = opts.rng;
+  const chaos = opts.chaos;            // 0..1
+  const layout = opts.layout || 'none';
+  const style = opts.style || 'free';
+  const total = opts.count;            // 6000 ~ 10000 条
+  const minSide = Math.min(W, H);
+
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // ── 视线聚集点（focal points）──
+  const focals = [];
+  if (layout === 'thirds') {
+    focals.push({ x: W/3, y: H/3 }, { x: 2*W/3, y: H/3 },
+                { x: W/3, y: 2*H/3 }, { x: 2*W/3, y: 2*H/3 }, { x: W/2, y: H/2 });
+    drawThirdsGuides(ctx, W, H);
+  } else {
+    const n = 3 + Math.floor(rng() * 3);   // 3~5 个随机视线点
+    for (let i = 0; i < n; i++) focals.push({ x: W * (0.18 + rng() * 0.64), y: H * (0.18 + rng() * 0.64) });
+  }
+
+  // ── 风格预设（角度偏置 / 扩散 / 色彩倾向）──
+  const presets = {
+    free:      { ang: rng() * 6.2832, sp: 0.6, warm: 0.5 },
+    sunflower: { ang: 0, sp: 0.35, warm: 0.85, radial: true },
+    figure:    { ang: -1.5708, sp: 0.5, warm: 0.4, vertical: true },
+    layout:    { ang: 0, sp: 0.3, warm: 0.5, thirds: true },
+    doodle:    { ang: rng() * 6.2832, sp: 1.25, warm: 0.6, chaotic: true }
+  };
+  const P = presets[style] || presets.free;
+
+  // 灰度抖动 + 12% 概率偶发彩色（移植自 gray_var / color_pick）
+  function colorPick() {
+    if (rng() < 0.12) {
+      const pal = [[150,60,60],[60,95,150],[150,110,60],[90,140,95]];
+      const c = pal[Math.floor(rng() * pal.length)];
+      return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',';
+    }
+    const s = 42;
+    const r = Math.max(0, Math.min(255, 42 + (rng() * 2 - 1) * s)) | 0;
+    const g = Math.max(0, Math.min(255, 40 + (rng() * 2 - 1) * s)) | 0;
+    const b = Math.max(0, Math.min(255, 46 + (rng() * 2 - 1) * s)) | 0;
+    return 'rgba(' + r + ',' + g + ',' + b + ',';
+  }
+
+  const TAU = 6.2832;
+  // ── 主线条层 ──
+  for (let i = 0; i < total; i++) {
+    let x0, y0, ang;
+    const cluster = focals.length && rng() < 0.62;   // 62% 概率聚集在视线点附近
+    if (cluster) {
+      const f = focals[Math.floor(rng() * focals.length)];
+      const spread = (0.06 + 0.10 * rng()) * minSide; // 越靠近点越密
+      x0 = f.x + (rng() * 2 - 1) * spread;
+      y0 = f.y + (rng() * 2 - 1) * spread;
+    } else {
+      x0 = rng() * W; y0 = rng() * H;
+    }
+    if (P.radial) {
+      const f = cluster ? focals[Math.floor(rng() * focals.length)] : { x: W/2, y: H/2 };
+      ang = Math.atan2(y0 - f.y, x0 - f.x) + (rng() * 2 - 1) * P.sp;
+    } else if (P.vertical) {
+      ang = -1.5708 + (rng() * 2 - 1) * P.sp;
+    } else {
+      ang = P.ang + (rng() * 2 - 1) * P.sp;
+      if (P.chaotic) ang += (rng() * 2 - 1) * chaos * 1.6;
+    }
+    let len = ((chaos * 0.5 + 0.5) * minSide * 0.02) + rng() * minSide * 0.18;
+    if (cluster) len *= 0.6;                          // 聚集处更细碎
+    const w = 1 + Math.floor(rng() * 2);
+    const a = (cluster ? 0.5 : 0.28) + rng() * 0.5;
+    ctx.strokeStyle = colorPick() + a.toFixed(2) + ')';
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0 + Math.cos(ang) * len, y0 + Math.sin(ang) * len);
+    ctx.stroke();
+  }
+
+  // ── 圆弧 / 曲线层（约占总量 8%）──
+  const arcN = Math.floor(total * 0.08);
+  for (let i = 0; i < arcN; i++) {
+    const cluster = focals.length && rng() < 0.5;
+    let x0, y0;
+    if (cluster) {
+      const f = focals[Math.floor(rng() * focals.length)];
+      const sp = (0.05 + 0.10 * rng()) * minSide;
+      x0 = f.x + (rng() * 2 - 1) * sp; y0 = f.y + (rng() * 2 - 1) * sp;
+    } else { x0 = rng() * W; y0 = rng() * H; }
+    const r = minSide * (0.01 + rng() * 0.06);
+    const kind = ['circle','semicircle','arc','curve'][Math.floor(rng() * 4)];
+    ctx.strokeStyle = colorPick() + (0.30 + rng() * 0.5).toFixed(2) + ')';
+    ctx.lineWidth = 1 + Math.floor(rng() * 2);
+    ctx.beginPath();
+    if (kind === 'circle') ctx.arc(x0, y0, r, 0, TAU);
+    else if (kind === 'semicircle') { const st = [0,1.57,3.14,4.71][Math.floor(rng()*4)]; ctx.arc(x0, y0, r, st, st + 3.1416); }
+    else if (kind === 'arc') { const st = rng() * TAU; ctx.arc(x0, y0, r, st, st + rng() * 5.6); }
+    else { let cx = x0, cy = y0; ctx.moveTo(cx, cy); const ns = 3 + Math.floor(rng() * 7);
+           for (let k = 0; k < ns; k++) { cx += (rng()*2-1)*r; cy += (rng()*2-1)*r; ctx.lineTo(cx, cy); } }
+    ctx.stroke();
+  }
+}
+
 // 随机生成草稿：先渲染到离屏画布，作为可缩放/移动的浮动对象出现，确认后再落进图层
 async function generateRandomDraft() {
   if (floatObj) commitFloat();   // 先提交上一次未确认的浮动草稿
@@ -2593,29 +2698,22 @@ async function generateRandomDraft() {
     return;
   }
 
-  octx.save();
-  octx.strokeStyle = brushColor;
-  octx.lineCap = 'round';
-  octx.lineJoin = 'round';
-
-  const density = parseInt(document.getElementById('lineDensity').value);
+  const density = parseInt(document.getElementById('lineDensity').value); // 1..3
   const chaos = parseInt(document.getElementById('chaosLevel').value) / 100;
+  const counts = [6000, 8000, 10000];                       // 低密度6000 / 中8000 / 高10000
   const seed = Date.now();
   const rng = mulberry32(seed);
-  const noise = createNoise(seed);
-  const densityMult = [0.6, 1, 1.8][density - 1];
+  const count = counts[density - 1] + Math.floor(rng() * 600); // 落在 6000~10000 区间
 
-  switch (draftType) {
-    case 'sunflower': drawSunflower(octx, rng, noise, densityMult, chaos, focus); break;
-    case 'figure': drawFigure(octx, rng, noise, densityMult, chaos, focus); break;
-    case 'layout': drawLayout(octx, rng, noise, densityMult, chaos); break;
-    case 'doodle': drawDoodle(octx, rng, noise, densityMult, chaos, focus); break;
-  }
-
+  octx.save();
+  octx.lineCap = 'round';
+  octx.lineJoin = 'round';
+  paintScribble(oc, { rng, chaos, layout: currentLayout, style: draftType, count });
   octx.restore();
-  drawLayoutLines(octx, currentLayout);
+
+  if (currentLayout !== 'thirds') drawLayoutLines(octx, currentLayout); // 三分法参考线已由 paintScribble 绘制
   presentFloat(oc, cx, cy);
-  showToast('随机草稿已生成 🎲' + layoutTag + ' · 可缩放后放入画布');
+  showToast('乱线草稿已生成 · ' + count + ' 条线条' + layoutTag + ' · 可缩放后放入画布');
 }
 
 // ============ 浮动对象：拖动 / 缩放 / 确认放入 ============
@@ -4007,70 +4105,7 @@ async function generateAIDraft() {
   }
 }
 
-// ============ BATCH GENERATE ============
-function setBatchCount(n) {
-  batchCount = n;
-  document.querySelectorAll('[data-count]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.count) === n));
-}
-
-async function batchGenerate() {
-  showToast(`正在生成${batchCount}张草稿...`);
-  const focus = layoutFocus(currentLayout);
-  const types = ['sunflower', 'figure', 'layout', 'doodle', 'master'];
-
-  for (let i = 0; i < batchCount; i++) {
-    // Create a temp canvas for each draft
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvasW;
-    tempCanvas.height = canvasH;
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.fillStyle = '#FFFFFF';
-    tempCtx.fillRect(0, 0, canvasW, canvasH);
-
-    // Generate random draft on temp canvas
-    const seed = Date.now() + i * 1000;
-    const rng = mulberry32(seed);
-    const noise = createNoise(seed);
-    const density = 1 + Math.floor(rng() * 3);
-    const chaos = rng();
-
-    tempCtx.strokeStyle = '#333';
-    tempCtx.lineCap = 'round';
-    tempCtx.lineJoin = 'round';
-
-    const type = types[Math.floor(rng() * types.length)];
-
-    if (type === 'master') {
-      const ok = await drawMasterFigureImage(tempCtx, focus);
-      if (!ok) drawFigure(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); // 图片失败回退到程序化人物
-    } else {
-      switch(type) {
-        case 'sunflower': drawSunflower(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); break;
-        case 'figure': drawFigure(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); break;
-        case 'layout': drawLayout(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos); break;
-        case 'doodle': drawDoodle(tempCtx, rng, noise, [0.6,1,1.8][density-1], chaos, focus); break;
-      }
-    }
-
-    // 把所选布局参考线一并落到画布
-    drawLayoutLines(tempCtx, currentLayout);
-
-    // Save to IndexedDB
-    const dataUrl = tempCanvas.toDataURL('image/png');
-    await saveDraftToDB({
-      id: `draft_${Date.now()}_${i}`,
-      data: dataUrl,
-      type: type,
-      timestamp: new Date().toISOString(),
-      params: { density, chaos: chaos.toFixed(2) }
-    });
-  }
-
-  loadGallery();
-  showToast(`已生成${batchCount}张草稿 ✓` + (currentLayout !== 'none' ? ' · ' + LAYOUT_NAMES[currentLayout] : ''));
-}
-
-// IndexedDB
+// ============ IndexedDB ============
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('DraftGenDB', 2);
@@ -4150,20 +4185,6 @@ function loadDraftToCanvas(draft) {
     showToast('草稿已加载到画布');
   };
   img.src = draft.data;
-}
-
-async function batchExportPNG() {
-  const drafts = await getAllDrafts();
-  if (drafts.length === 0) { showToast('草稿库为空'); return; }
-  
-  for (const d of drafts) {
-    const link = document.createElement('a');
-    link.href = d.data;
-    link.download = `draftgen_${d.id}.png`;
-    link.click();
-    await new Promise(r => setTimeout(r, 200));
-  }
-  showToast(`已导出${drafts.length}张PNG`);
 }
 
 // ============ VERSION MANAGEMENT ============
