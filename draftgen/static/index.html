@@ -834,6 +834,56 @@ body{ background: var(--bg); color: var(--text); }
   text-align:center; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; }
 .proc-thumb.active{ border-color: var(--c2); box-shadow: var(--neon); }
 .proc-controls{ display:flex; gap:6px; flex-wrap:wrap; }
+
+/* ===== WIN98 retro player: 我们为什么努力？ ===== */
+.welcome-actions{ display:flex; gap:16px; justify-content:center; align-items:center; flex-wrap:wrap; margin-top:22px; }
+.why-btn{
+  margin-top:0; display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border-radius:999px; cursor:pointer;
+  font:600 15px/1 'Segoe UI',system-ui,sans-serif; letter-spacing:.5px;
+  color:#e8f0ff; background:rgba(20,24,48,.45);
+  border:1px solid rgba(34,211,238,.5);
+  box-shadow:0 0 18px rgba(34,211,238,.35), inset 0 0 12px rgba(34,211,238,.12);
+  backdrop-filter:blur(8px); transition:.25s;
+}
+.why-btn:hover{ transform:translateY(-2px); border-color:rgba(236,72,153,.7);
+  box-shadow:0 0 26px rgba(236,72,153,.5), inset 0 0 14px rgba(236,72,153,.15); color:#fff; }
+.why-btn:active{ transform:translateY(0) scale(.97); }
+
+.why-window{
+  position:absolute; z-index:50; left:50%; top:50%;
+  width:min(640px,92vw); transform:translate(-50%,-50%) scale(.9);
+  opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s cubic-bezier(.2,.9,.3,1.2);
+  /* classic win98 3D bevel */
+  background:#c0c0c0;
+  border:2px solid; border-color:#ffffff #000000 #000000 #ffffff;
+  box-shadow:1px 1px 0 #808080, 2px 2px 0 #404040, 0 30px 80px rgba(0,0,0,.6);
+}
+.why-window.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+.why-titlebar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:3px 4px 3px 6px;
+  background:linear-gradient(90deg,#000080,#1084d0);
+  border-bottom:1px solid #000000;
+}
+.why-title{ color:#fff; font:700 12px/1 'MS Sans Serif',Tahoma,sans-serif; letter-spacing:.3px; text-shadow:1px 1px 0 #000; }
+.why-close{
+  width:18px; height:16px; line-height:14px; text-align:center; cursor:pointer;
+  background:#c0c0c0; color:#000; font:700 11px/1 'Marlett',Tahoma,sans-serif;
+  border:2px solid; border-color:#ffffff #000000 #000000 #ffffff;
+}
+.why-close:active{ border-color:#000000 #ffffff #ffffff #000000; }
+.why-client{
+  padding:6px; background:#000; border-top:1px solid #dfdfdf;
+  border:2px solid; border-color:#808080 #ffffff #ffffff #808080; margin:3px;
+}
+.why-video{ display:block; width:100%; height:auto; background:#000; image-rendering:auto; }
+.why-caption{
+  margin-top:6px; padding:6px 4px; text-align:center; color:#f4f4f4;
+  font:600 13px/1.5 'MS Sans Serif',Tahoma,sans-serif;
+  background:#000080; border:2px solid; border-color:#4040a0 #1a1a66 #1a1a66 #4040a0;
+  text-shadow:1px 1px 0 #000;
+}
 </style>
 </head>
 <body>
@@ -854,11 +904,28 @@ body{ background: var(--bg); color: var(--text); }
     <h1 class="welcome-title">DraftGen</h1>
     <div class="welcome-sub">草稿生成器 · 把灵感画出来</div>
     <p class="welcome-desc">海量大师草稿 · 随机生成草图 · 智能配色 · 绘画过程可剪辑<br>在这里，每一笔都发光。</p>
-    <button class="enter-btn" onclick="enterStudio()">
-      <span>进入工作室</span>
-      <span class="arrow">➜</span>
-    </button>
+    <div class="welcome-actions">
+      <button class="enter-btn" onclick="enterStudio()">
+        <span>进入工作室</span>
+        <span class="arrow">➜</span>
+      </button>
+      <button class="why-btn" type="button" onclick="openWhy()">我们为什么努力？</button>
+    </div>
     <div class="welcome-hints">B 画笔 · E 橡皮 · R 随机草稿 · 拖拽移动 · 滚轮缩放</div>
+  </div>
+
+  <!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
+  <div class="why-window" id="whyWindow" style="display:none">
+    <div class="why-titlebar">
+      <span class="why-title">🎬 我们为什么努力？ — media player</span>
+      <button class="why-close" type="button" onclick="closeWhy()" aria-label="关闭">✕</button>
+    </div>
+    <div class="why-client">
+      <video id="whyVideo" class="why-video"
+             src="https://upload.wikimedia.org/wikipedia/commons/9/93/Sunrise_time_lapse.webm"
+             autoplay muted loop playsinline preload="auto"></video>
+      <div class="why-caption">每一次日出，都是世界又一次相信明天。<br>你落下的每一笔，也是在为某个更好的自己翻篇。</div>
+    </div>
   </div>
 </div>
 
@@ -4493,19 +4560,18 @@ window.addEventListener('resize', () => {
         hue: HUES[(Math.random() * HUES.length) | 0]
       });
     }
+    function respawn(p) {
+      p.x = Math.random() * FW; p.y = Math.random() * FH;
+      p.vx = (Math.random() - .5) * .4; p.vy = (Math.random() - .5) * .4;
+      p.r = 64 + Math.random() * 150; p.z = 0.35 + Math.random() * 0.65;
+      p.hue = HUES[(Math.random() * HUES.length) | 0] + (Math.random() - .5) * 44;
+      p.hueSp = 7 + Math.random() * 18; p.ph = Math.random() * 6.2832;
+      p.sp = 0.4 + Math.random() * 1.0; p.tw = 0.6 + Math.random() * 0.6;
+      p.burst = 0; p.nextBurst = 1.5 + Math.random() * 4;
+    }
     function fresInit() {
       fres = [];
-      for (var i = 0; i < 3; i++) {
-        fres.push({
-          x: Math.random() * FW, y: Math.random() * FH,
-          vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
-          r: 64 + Math.random() * 150, z: 0.35 + Math.random() * 0.65,
-          hue: HUES[i % HUES.length] + (Math.random() - .5) * 44,
-          hueSp: 7 + Math.random() * 18, ph: Math.random() * 6.2832,
-          sp: 0.4 + Math.random() * 1.0, tw: 0.6 + Math.random() * 0.6,
-          burst: 0, nextBurst: 1.5 + Math.random() * 4
-        });
-      }
+      for (var i = 0; i < 3; i++) { var p = {}; respawn(p); fres.push(p); }
     }
     var last = performance.now ? performance.now() : Date.now();
     function fresTick(t) {
@@ -4538,8 +4604,7 @@ window.addEventListener('resize', () => {
         p.vx *= 0.992; p.vy *= 0.992;
         var sp = Math.hypot(p.vx, p.vy), max = 0.6 * p.z + 0.15;
         if (sp > max) { p.vx = p.vx / sp * max; p.vy = p.vy / sp * max; }
-        if (p.x < -p.r) p.x = FW + p.r; if (p.x > FW + p.r) p.x = -p.r;
-        if (p.y < -p.r) p.y = FH + p.r; if (p.y > FH + p.r) p.y = -p.r;
+        if (p.x < -p.r * 1.3 || p.x > FW + p.r * 1.3 || p.y < -p.r * 1.3 || p.y > FH + p.r * 1.3) { respawn(p); }
         var px = p.x, py = p.y;
         var pulse = 1 + Math.sin(t * 0.001 * p.sp + p.ph) * 0.12 * p.tw;
         var burstMul = 1 + p.burst * 0.55;
@@ -4612,6 +4677,24 @@ window.addEventListener('resize', () => {
     window.__stopFresnel = function () { frun = false; if (fraf) cancelAnimationFrame(fraf); };
   })();
 })();
+
+function openWhy() {
+  var win = document.getElementById('whyWindow');
+  var vid = document.getElementById('whyVideo');
+  if (!win) return;
+  win.style.display = 'block';
+  void win.offsetWidth; // force reflow so the transition runs
+  win.classList.add('show');
+  if (vid) { try { vid.currentTime = 0; var p = vid.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
+}
+function closeWhy() {
+  var win = document.getElementById('whyWindow');
+  var vid = document.getElementById('whyVideo');
+  if (!win) return;
+  win.classList.remove('show');
+  if (vid) { try { vid.pause(); } catch (e) {} }
+  setTimeout(function () { win.style.display = 'none'; }, 320);
+}
 
 function enterStudio() {
   var w = document.getElementById('welcome');
