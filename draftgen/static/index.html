@@ -4464,7 +4464,6 @@ window.addEventListener('resize', () => {
     if (!fc) return;
     var fctx = fc.getContext('2d');
     var FW, FH, fres = [], stars = [], fraf = null, frun = true;
-    var mouse = { x: -9999, y: -9999, has: false };
     var HUES = [190, 265, 325, 155, 215];
     var expls = [], nextExpl = 0.7;
     function spawnExplosion(x, y, inward) {
@@ -4496,7 +4495,7 @@ window.addEventListener('resize', () => {
     }
     function fresInit() {
       fres = [];
-      for (var i = 0; i < 14; i++) {
+      for (var i = 0; i < 3; i++) {
         fres.push({
           x: Math.random() * FW, y: Math.random() * FH,
           vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
@@ -4536,17 +4535,12 @@ window.addEventListener('resize', () => {
         if (p.nextBurst <= 0) { p.burst = 1; p.nextBurst = 2 + Math.random() * 5; }
         p.burst *= Math.pow(0.1, dt);
         p.x += p.vx; p.y += p.vy;
-        if (mouse.has) {
-          var dxm = mouse.x - p.x, dym = mouse.y - p.y, dm = Math.hypot(dxm, dym) || 1;
-          if (dm < 360) { p.vx += (dxm / dm) * 0.014 * p.z; p.vy += (dym / dm) * 0.014 * p.z; }
-        }
         p.vx *= 0.992; p.vy *= 0.992;
         var sp = Math.hypot(p.vx, p.vy), max = 0.6 * p.z + 0.15;
         if (sp > max) { p.vx = p.vx / sp * max; p.vy = p.vy / sp * max; }
         if (p.x < -p.r) p.x = FW + p.r; if (p.x > FW + p.r) p.x = -p.r;
         if (p.y < -p.r) p.y = FH + p.r; if (p.y > FH + p.r) p.y = -p.r;
-        var px = p.x + (mouse.has ? (mouse.x - cx) * (p.z - 0.35) * 0.05 : 0);
-        var py = p.y + (mouse.has ? (mouse.y - cy) * (p.z - 0.35) * 0.05 : 0);
+        var px = p.x, py = p.y;
         var pulse = 1 + Math.sin(t * 0.001 * p.sp + p.ph) * 0.12 * p.tw;
         var burstMul = 1 + p.burst * 0.55;
         var R = p.r * p.z * pulse * burstMul;
@@ -4598,8 +4592,7 @@ window.addEventListener('resize', () => {
           var sp2 = ex.sparks[s2]; sp2.age += dt;
           sp2.x += sp2.vx * dt; sp2.y += sp2.vy * dt; sp2.vx *= 0.97; sp2.vy *= 0.97;
           var sa = Math.max(0, 1 - sp2.age / sp2.life);
-          var qx = sp2.x + (mouse.has ? (mouse.x - cx) * 0.02 : 0);
-          var qy = sp2.y + (mouse.has ? (mouse.y - cy) * 0.02 : 0);
+          var qx = sp2.x, qy = sp2.y;
           var tx2 = qx - sp2.vx * 0.03, ty2 = qy - sp2.vy * 0.03;
           var lg2 = fctx.createLinearGradient(tx2, ty2, qx, qy);
           lg2.addColorStop(0, 'hsla(' + sp2.hue.toFixed(1) + ',100%,70%,0)');
@@ -4616,7 +4609,6 @@ window.addEventListener('resize', () => {
     }
     fresResize(); fresInit(); fresTick(performance.now ? performance.now() : Date.now());
     window.addEventListener('resize', function () { fresResize(); fresInit(); });
-    window.addEventListener('pointermove', function (e) { mouse.x = e.clientX; mouse.y = e.clientY; mouse.has = true; }, { passive: true });
     window.__stopFresnel = function () { frun = false; if (fraf) cancelAnimationFrame(fraf); };
   })();
 })();
