@@ -716,15 +716,22 @@ body{ background: var(--bg); color: var(--text); }
   transition: opacity .7s ease, transform .7s ease, filter .7s ease;
 }
 #welcome::before{
-  content:''; position:absolute; inset:-25%;
+  content:''; position:absolute; inset:-25%; z-index:1;
   background:
-    radial-gradient(closest-side, rgba(34,211,238,.5), transparent) 15% 25%/40vmax 40vmax no-repeat,
-    radial-gradient(closest-side, rgba(139,92,246,.55), transparent) 80% 20%/36vmax 36vmax no-repeat,
-    radial-gradient(closest-side, rgba(236,72,153,.5), transparent) 70% 85%/44vmax 44vmax no-repeat,
-    radial-gradient(closest-side, rgba(16,185,129,.4), transparent) 25% 80%/32vmax 32vmax no-repeat;
+    radial-gradient(closest-side, rgba(34,211,238,.32), transparent) 15% 25%/40vmax 40vmax no-repeat,
+    radial-gradient(closest-side, rgba(139,92,246,.38), transparent) 80% 20%/36vmax 36vmax no-repeat,
+    radial-gradient(closest-side, rgba(236,72,153,.32), transparent) 70% 85%/44vmax 44vmax no-repeat,
+    radial-gradient(closest-side, rgba(16,185,129,.26), transparent) 25% 80%/32vmax 32vmax no-repeat;
   filter: blur(52px) saturate(165%); animation: aurora 16s ease-in-out infinite alternate, hueShift 22s linear infinite;
 }
 @keyframes hueShift{ from{ filter: blur(52px) saturate(165%) hue-rotate(0deg); } to{ filter: blur(52px) saturate(165%) hue-rotate(360deg); } }
+#welcome-nebula{
+  position:absolute; inset:0; z-index:0; width:100%; height:100%; object-fit:cover;
+  opacity:.62; mix-blend-mode:screen; pointer-events:none;
+  filter: saturate(118%) brightness(.92) hue-rotate(-10deg) contrast(1.05);
+  animation: nebulaDrift 70s ease-in-out infinite alternate;
+}
+@keyframes nebulaDrift{ from{ transform: scale(1.08) translate(0,0); } to{ transform: scale(1.18) translate(-2.5%,-2%); } }
 #welcome::after{
   content:''; position:absolute; inset:0; opacity:.3;
   background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
@@ -732,8 +739,8 @@ body{ background: var(--bg); color: var(--text); }
   -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 25%, transparent 75%);
           mask-image: radial-gradient(circle at 50% 45%, #000 25%, transparent 75%);
 }
-#welcome-particles{ position:absolute; inset:0; z-index:1; }
-#welcome-fresnel{ position:absolute; inset:0; z-index:2; pointer-events:none; mix-blend-mode:screen; }
+#welcome-particles{ position:absolute; inset:0; z-index:2; }
+#welcome-fresnel{ position:absolute; inset:0; z-index:3; pointer-events:none; mix-blend-mode:screen; }
 .welcome-ring{
   position:absolute; left:50%; top:50%; width:520px; height:520px; transform:translate(-50%,-50%); z-index:1; border-radius:50%;
   background: conic-gradient(from 0deg, transparent, rgba(139,92,246,.55), transparent 30%, rgba(34,211,238,.55), transparent 60%, rgba(236,72,153,.55), transparent);
@@ -742,7 +749,7 @@ body{ background: var(--bg); color: var(--text); }
   animation: spin 20s linear infinite; opacity:.55;
 }
 @keyframes spin{ to{ transform: translate(-50%,-50%) rotate(360deg); } }
-.welcome-inner{ position:relative; z-index:3; text-align:center; padding:24px; max-width:780px; }
+.welcome-inner{ position:relative; z-index:4; text-align:center; padding:24px; max-width:780px; }
 .welcome-badge{
   display:inline-block; font-size:12px; letter-spacing:2px; color:#c4b5fd; padding:7px 16px; border-radius:999px;
   border:1px solid rgba(139,92,246,.4); background: rgba(139,92,246,.1); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
@@ -838,6 +845,7 @@ body{ background: var(--bg); color: var(--text); }
 
 <!-- ============ WELCOME PAGE ============ -->
 <div id="welcome">
+  <img id="welcome-nebula" alt="" referrerpolicy="no-referrer" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg/1920px-Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg">
   <canvas id="welcome-particles"></canvas>
   <canvas id="welcome-fresnel"></canvas>
   <div class="welcome-ring"></div>
@@ -4458,6 +4466,24 @@ window.addEventListener('resize', () => {
     var FW, FH, fres = [], stars = [], fraf = null, frun = true;
     var mouse = { x: -9999, y: -9999, has: false };
     var HUES = [190, 265, 325, 155, 215];
+    var expls = [], nextExpl = 0.7;
+    function spawnExplosion(x, y, inward) {
+      var n = inward ? 22 : 30, life = inward ? 0.85 : 1.0, sparks = [];
+      for (var k = 0; k < n; k++) {
+        var ang = Math.random() * 6.2832, hue = HUES[(Math.random() * HUES.length) | 0] + (Math.random() - .5) * 34;
+        if (inward) {
+          var rad = 120 + Math.random() * 180;
+          sparks.push({ x: x + Math.cos(ang) * rad, y: y + Math.sin(ang) * rad,
+            vx: -Math.cos(ang) * (140 + Math.random() * 200), vy: -Math.sin(ang) * (140 + Math.random() * 200),
+            hue: hue, life: life, age: 0, sz: 1.4 + Math.random() * 2.2 });
+        } else {
+          var spd = 130 + Math.random() * 250;
+          sparks.push({ x: x, y: y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+            hue: hue, life: life, age: 0, sz: 1.4 + Math.random() * 2.6 });
+        }
+      }
+      expls.push({ x: x, y: y, inward: inward, age: 0, life: life, sparks: sparks });
+    }
     function fresResize() { FW = fc.width = window.innerWidth; FH = fc.height = window.innerHeight; }
     function spawnStar() {
       var fromLeft = Math.random() < .5;
@@ -4470,11 +4496,11 @@ window.addEventListener('resize', () => {
     }
     function fresInit() {
       fres = [];
-      for (var i = 0; i < 32; i++) {
+      for (var i = 0; i < 14; i++) {
         fres.push({
           x: Math.random() * FW, y: Math.random() * FH,
           vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
-          r: 34 + Math.random() * 104, z: 0.35 + Math.random() * 0.65,
+          r: 64 + Math.random() * 150, z: 0.35 + Math.random() * 0.65,
           hue: HUES[i % HUES.length] + (Math.random() - .5) * 44,
           hueSp: 7 + Math.random() * 18, ph: Math.random() * 6.2832,
           sp: 0.4 + Math.random() * 1.0, tw: 0.6 + Math.random() * 0.6,
@@ -4547,6 +4573,43 @@ window.addEventListener('resize', () => {
         // bright core sparkle (brighter)
         fctx.fillStyle = 'rgba(255,255,255,' + (0.24 * inten).toFixed(3) + ')';
         fctx.beginPath(); fctx.arc(px, py, R * 0.07, 0, 6.2832); fctx.fill();
+      }
+      // ---- explosion bursts (inward implosion + outward blast) ----
+      nextExpl -= dt;
+      if (nextExpl <= 0) {
+        var inward = Math.random() < 0.3;
+        spawnExplosion(cx + (Math.random() - .5) * FW * 0.66, cy + (Math.random() - .5) * FH * 0.6, inward);
+        nextExpl = 1.1 + Math.random() * 1.3;
+      }
+      for (var e = expls.length - 1; e >= 0; e--) {
+        var ex = expls[e]; ex.age += dt;
+        var ep = ex.age / ex.life, hueE = ex.inward ? 288 : 192;
+        var ringR = ex.inward ? (1 - ep) * 230 : ep * 250;
+        var ringA = (1 - ep) * (ex.inward ? 0.5 : 0.62);
+        fctx.strokeStyle = 'hsla(' + hueE + ',100%,78%,' + ringA.toFixed(3) + ')';
+        fctx.lineWidth = 2.6 * (1 - ep) + 0.5;
+        fctx.beginPath(); fctx.arc(ex.x, ex.y, Math.max(1, ringR), 0, 6.2832); fctx.stroke();
+        var fl = (1 - ep) * (ex.inward ? 0.5 : 0.7), fr = 46 * (ex.inward ? (1 - ep) : 1);
+        var fg = fctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, Math.max(1, fr));
+        fg.addColorStop(0, 'hsla(' + hueE + ',100%,86%,' + fl.toFixed(3) + ')');
+        fg.addColorStop(1, 'hsla(' + hueE + ',100%,86%,0)');
+        fctx.fillStyle = fg; fctx.beginPath(); fctx.arc(ex.x, ex.y, Math.max(1, fr), 0, 6.2832); fctx.fill();
+        for (var s2 = 0; s2 < ex.sparks.length; s2++) {
+          var sp2 = ex.sparks[s2]; sp2.age += dt;
+          sp2.x += sp2.vx * dt; sp2.y += sp2.vy * dt; sp2.vx *= 0.97; sp2.vy *= 0.97;
+          var sa = Math.max(0, 1 - sp2.age / sp2.life);
+          var qx = sp2.x + (mouse.has ? (mouse.x - cx) * 0.02 : 0);
+          var qy = sp2.y + (mouse.has ? (mouse.y - cy) * 0.02 : 0);
+          var tx2 = qx - sp2.vx * 0.03, ty2 = qy - sp2.vy * 0.03;
+          var lg2 = fctx.createLinearGradient(tx2, ty2, qx, qy);
+          lg2.addColorStop(0, 'hsla(' + sp2.hue.toFixed(1) + ',100%,70%,0)');
+          lg2.addColorStop(1, 'hsla(' + sp2.hue.toFixed(1) + ',100%,80%,' + (0.95 * sa).toFixed(3) + ')');
+          fctx.strokeStyle = lg2; fctx.lineWidth = sp2.sz; fctx.lineCap = 'round';
+          fctx.beginPath(); fctx.moveTo(tx2, ty2); fctx.lineTo(qx, qy); fctx.stroke();
+          fctx.fillStyle = 'rgba(255,255,255,' + (0.9 * sa).toFixed(3) + ')';
+          fctx.beginPath(); fctx.arc(qx, qy, sp2.sz * 0.6, 0, 6.2832); fctx.fill();
+        }
+        if (ex.age > ex.life) expls.splice(e, 1);
       }
       fctx.globalCompositeOperation = 'source-over';
       fraf = requestAnimationFrame(fresTick);
