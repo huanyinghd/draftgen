@@ -774,6 +774,58 @@ body{ background: var(--bg); color: var(--text); }
   #fx-bg::before, .welcome-ring, .welcome-title, .header h1, .enter-btn::before{ animation: none !important; }
 }
 </style>
+<style id="dg-chain-css">
+/* ===== 绘画链 追踪条 ===== */
+.chain-bar{ display:flex; align-items:center; gap:6px; padding:10px 12px; margin-bottom:10px;
+  background: var(--glass); border:1px solid var(--border); border-radius:14px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.chain-step{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 8px; min-width:74px;
+  border:1px solid var(--border); border-radius:11px; background: rgba(255,255,255,.03);
+  color: var(--text); cursor:pointer; transition: all .18s; }
+.chain-step:hover{ transform: translateY(-1px); border-color: var(--c2); }
+.chain-step .chain-num{ width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%;
+  font-size:12px; font-weight:700; color:#fff; background: var(--grad); box-shadow: var(--neon); }
+.chain-step .chain-label{ font-size:12px; font-weight:600; }
+.chain-step .chain-act{ font-size:10px; color: var(--text-light); }
+.chain-step.done .chain-num{ background: linear-gradient(135deg,#2dd4bf,#22d3ee); }
+.chain-step.active{ border-color: var(--c2); box-shadow: var(--neon); background: rgba(139,92,246,.12); }
+.chain-step.active .chain-num{ animation: pulseGlow 1.6s ease-in-out infinite; }
+.chain-arrow{ color: var(--text-light); font-size:16px; }
+@keyframes pulseGlow{ 0%,100%{ box-shadow:0 0 6px rgba(139,92,246,.5);} 50%{ box-shadow:0 0 16px rgba(34,211,238,.8);} }
+
+/* ===== 配色 ===== */
+.color-preset-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+.color-preset{ display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--border);
+  border-radius:10px; cursor:pointer; background: rgba(255,255,255,.03); transition: all .15s; }
+.color-preset:hover{ transform: translateY(-1px); border-color: var(--c2); }
+.color-preset.active{ border-color: var(--c2); box-shadow: var(--neon); background: rgba(139,92,246,.1); }
+.color-preset .sw{ flex:1; height:18px; border-radius:6px; border:1px solid rgba(255,255,255,.15); }
+.color-preset .nm{ font-size:11px; white-space:nowrap; }
+.chk-row{ display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color: var(--text-light); margin:8px 0; }
+.chk-row label{ cursor:pointer; }
+.color-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+
+/* ===== 过程剪辑 ===== */
+.proc-stats{ font-size:11px; color: var(--text-light); margin-bottom:8px; }
+.proc-preview-wrap{ position:relative; background:#000; border-radius:10px; overflow:hidden;
+  border:1px solid var(--border); margin-bottom:8px; }
+.proc-preview{ display:block; width:100%; max-height:340px; object-fit:contain; background:#000; }
+.proc-frame-label{ position:absolute; left:8px; bottom:8px; font-size:11px; background:rgba(0,0,0,.55);
+  color:#fff; padding:2px 8px; border-radius:8px; }
+.proc-scrub{ width:100%; margin:4px 0 10px; accent-color: var(--c2); }
+.proc-filmstrip{ display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; min-height:66px; }
+.proc-filmstrip::-webkit-scrollbar{ height:6px; }
+.proc-filmstrip::-webkit-scrollbar-thumb{ background: var(--c2); border-radius:3px; }
+.proc-thumb{ position:relative; flex:0 0 auto; width:88px; border-radius:8px; overflow:hidden;
+  border:2px solid transparent; cursor:pointer; background:#111; }
+.proc-thumb img{ width:100%; display:block; }
+.proc-thumb .tlabel{ position:absolute; bottom:0; left:0; right:0; font-size:9px; background:rgba(0,0,0,.6);
+  color:#fff; padding:1px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.proc-thumb .tidx{ position:absolute; top:2px; left:2px; font-size:10px; width:16px; height:16px; line-height:16px;
+  text-align:center; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; }
+.proc-thumb.active{ border-color: var(--c2); box-shadow: var(--neon); }
+.proc-controls{ display:flex; gap:6px; flex-wrap:wrap; }
+</style>
 </head>
 <body>
 
@@ -787,10 +839,10 @@ body{ background: var(--bg); color: var(--text); }
   <canvas id="welcome-particles"></canvas>
   <div class="welcome-ring"></div>
   <div class="welcome-inner">
-    <div class="welcome-badge">✦ AI 绘画工作室</div>
+    <div class="welcome-badge">✦ 绘画工作室</div>
     <h1 class="welcome-title">DraftGen</h1>
     <div class="welcome-sub">草稿生成器 · 把灵感画出来</div>
-    <p class="welcome-desc">海量大师草稿 · 随机生成 · 智能配色 · AI 辅助创作<br>在这里，每一笔都发光。</p>
+    <p class="welcome-desc">海量大师草稿 · 随机生成草图 · 智能配色 · 绘画过程可剪辑<br>在这里，每一笔都发光。</p>
     <button class="enter-btn" onclick="enterStudio()">
       <span>进入工作室</span>
       <span class="arrow">➜</span>
@@ -953,6 +1005,27 @@ body{ background: var(--bg); color: var(--text); }
 
   <!-- Right Panel -->
   <div class="right-panel">
+    <!-- 绘画链 追踪条 -->
+    <div class="chain-bar" id="chainBar">
+      <button class="chain-step" data-step="1" onclick="chainStep(1)">
+        <span class="chain-num">1</span>
+        <span class="chain-label">草图</span>
+        <span class="chain-act">🎲 生成</span>
+      </button>
+      <span class="chain-arrow">→</span>
+      <button class="chain-step" data-step="2" onclick="chainStep(2)">
+        <span class="chain-num">2</span>
+        <span class="chain-label">配色</span>
+        <span class="chain-act">🎨 上色</span>
+      </button>
+      <span class="chain-arrow">→</span>
+      <button class="chain-step" data-step="3" onclick="chainStep(3)">
+        <span class="chain-num">3</span>
+        <span class="chain-label">剪辑</span>
+        <span class="chain-act">🎬 过程</span>
+      </button>
+    </div>
+
     <div class="panel-tabs">
       <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
@@ -965,6 +1038,7 @@ body{ background: var(--bg); color: var(--text); }
       <div class="tab" data-tab="gallery" onclick="switchTab('gallery')">美术馆</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
       <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
+      <div class="tab" data-tab="process" onclick="switchTab('process')">过程剪辑</div>
     </div>
 
     <div class="panel-content">
@@ -999,6 +1073,26 @@ body{ background: var(--bg); color: var(--text); }
           <h3>🎨 艺术家油画配色</h3>
           <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">点击艺术家，弹出对话框（含肖像）。选择代表作，即可把该画的经典配色铺到画布。</p>
           <div class="artist-list" id="artistList"></div>
+        </div>
+        <div class="panel-section">
+          <h3>🌈 一键配色（草图 → 上色）</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">把当前画布（或当前图层）的草稿一键上色。先选配色方案，可保留原始线条，也可作用于全部可见层。</p>
+          <div class="color-preset-grid" id="colorPresetGrid"></div>
+          <div class="slider-row">
+            <label>配色强度</label>
+            <input type="range" id="colorIntensity" min="0" max="100" value="100" oninput="document.getElementById('colorIntensityVal').textContent=this.value+'%'">
+            <span class="val" id="colorIntensityVal">100%</span>
+          </div>
+          <div class="chk-row">
+            <label><input type="checkbox" id="colorKeepLines" checked> 保留原始线条</label>
+            <label><input type="checkbox" id="colorTargetAll"> 作用于全部可见层</label>
+          </div>
+          <div class="color-actions">
+            <button class="action-btn" onclick="applyColorizeSelected()">🎨 应用配色</button>
+            <button class="action-btn secondary" onclick="applyColorizeSmart()">✨ 智能配色</button>
+            <button class="action-btn secondary" onclick="applyColorizeRandom()">🎲 随机</button>
+          </div>
+          <div class="ai-status" id="colorStatus"></div>
         </div>
       </div>
 
@@ -1221,6 +1315,33 @@ body{ background: var(--bg); color: var(--text); }
             <button class="action-btn" onclick="exportPNG()">📥 导出 A4 300dpi PNG</button>
             <button class="action-btn secondary" onclick="copyToClipboard()">📋 复制图片到剪贴板</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Process / 绘画过程剪辑 Tab -->
+      <div class="tab-content" id="tab-process" style="display:none">
+        <div class="panel-section">
+          <h3>🎬 绘画过程剪辑</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">每当你「放入草图」「应用配色」或手动记录，都会自动拍下一张过程帧。可在此回放、调整顺序、删减并导出成视频。</p>
+          <div class="proc-stats" id="procStats">尚无过程帧，先去 ① 生成草图吧</div>
+          <div class="proc-preview-wrap">
+            <canvas id="processPreview" class="proc-preview" width="360" height="260"></canvas>
+            <div class="proc-frame-label" id="processFrameLabel">预览</div>
+          </div>
+          <input type="range" id="processScrub" min="0" max="0" value="0" class="proc-scrub">
+          <div class="proc-filmstrip" id="processFilmstrip"></div>
+          <div class="proc-controls">
+            <button class="action-btn" onclick="playProcess()">▶ 回放</button>
+            <button class="action-btn secondary" onclick="stopProcess()">⏸ 停止</button>
+            <button class="action-btn secondary" onclick="recordCurrentStage()">📸 记录当前</button>
+            <button class="action-btn secondary" onclick="moveStage(-1)">◀ 前移</button>
+            <button class="action-btn secondary" onclick="moveStage(1)">后移 ▶</button>
+            <button class="action-btn secondary" onclick="deleteStage()">🗑 删除</button>
+            <button class="action-btn" onclick="exportProcessVideo()">💾 导出视频</button>
+            <button class="action-btn secondary" onclick="exportStagePNG()">🖼 导出帧</button>
+            <button class="action-btn secondary" onclick="clearProcess()">🧹 清空</button>
+          </div>
+          <div class="ai-status" id="processStatus"></div>
         </div>
       </div>
     </div>
@@ -2465,6 +2586,7 @@ function commitFloat() {
   ctx.drawImage(floatObj.canvas, dx, dy, dw, dh);
   compositeToMain();
   cancelFloat();
+  try { recordStage('草图'); setChainProgress(2); } catch (e) { console.warn('recordStage', e); }
 }
 
 function cancelFloat() {
@@ -4336,6 +4458,280 @@ function enterStudio() {
   window.dispatchEvent(new Event('resize'));
   if (typeof showToast === 'function') showToast('欢迎来到 DraftGen 工作室 ✦');
 }
+</script>
+<script>
+// =====================================================================
+// 绘画链：配色 + 绘画过程剪辑
+// =====================================================================
+
+// ---------- 配色方案（灰度 -> 渐变映射） ----------
+const COLOR_PRESETS = [
+  { key:'cyber',   name:'赛博霓虹', stops:['#0a0a2a','#ff2bd6','#00f0ff'] },
+  { key:'monet',   name:'莫奈花园', stops:['#1b3a5b','#e8a0a0','#fdf3d0'] },
+  { key:'vangogh', name:'梵高星空', stops:['#0b1d51','#2a6cb0','#f4d35e'] },
+  { key:'morandi', name:'莫兰迪',   stops:['#6b6b6b','#b8a99a','#e8e2d8'] },
+  { key:'retro',   name:'复古胶片', stops:['#2b1b0e','#c8772f','#f3e0b5'] },
+  { key:'ink',     name:'水墨丹青', stops:['#1a1a1a','#4a6b7c','#eef3f0'] },
+  { key:'pop',     name:'糖果波普', stops:['#7b2ff7','#ff5da2','#ffe66d'] },
+  { key:'forest',  name:'森系',     stops:['#13351f','#4e9f6b','#dff0d8'] },
+  { key:'sunset',  name:'落日',     stops:['#2a0a4a','#ff6b3d','#ffd56b'] },
+  { key:'bw',      name:'黑白经典', stops:['#000000','#777777','#ffffff'] }
+];
+let currentColorPalette = 'cyber';
+
+function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function gradientAt(stops, t){
+  const n=stops.length-1; const p=Math.max(0,Math.min(1,t))*n; const i=Math.floor(p); const f=p-i;
+  const a=stops[i], b=stops[Math.min(n,i+1)];
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+
+function buildColorPresets(){
+  const box=document.getElementById('colorPresetGrid');
+  if(!box) return;
+  box.innerHTML='';
+  COLOR_PRESETS.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='color-preset'+(p.key===currentColorPalette?' active':'');
+    const grad='linear-gradient(90deg,'+p.stops.join(',')+')';
+    b.innerHTML='<span class="sw" style="background:'+grad+'"></span><span class="nm">'+p.name+'</span>';
+    b.onclick=()=>{ currentColorPalette=p.key; buildColorPresets();
+      const s=document.getElementById('colorStatus'); if(s) s.textContent='已选择方案：'+p.name; };
+    box.appendChild(b);
+  });
+}
+
+// 核心：对画布像素做灰度->渐变映射上色
+function applyColorize(key){
+  const preset=COLOR_PRESETS.find(p=>p.key===key)||COLOR_PRESETS[0];
+  const keepLines=document.getElementById('colorKeepLines').checked;
+  const targetAll=document.getElementById('colorTargetAll').checked;
+  const intensity=parseInt(document.getElementById('colorIntensity').value||'100',10)/100;
+
+  let layer=layers[activeLayerIdx];
+  if(!layer){ showToast('还没有可用图层'); return; }
+  if(layer.locked){ showToast('当前图层已锁定，无法配色'); return; }
+
+  const st=document.getElementById('colorStatus');
+  if(st) st.textContent='配色中…';
+
+  // 若作用于全部可见层：先把合成画面烘焙进当前层
+  if(targetAll){
+    layer.ctx.clearRect(0,0,canvasW,canvasH);
+    layer.ctx.drawImage(bgCanvas,0,0);
+  }
+
+  let img;
+  try { img=layer.ctx.getImageData(0,0,canvasW,canvasH); }
+  catch(e){ if(st) st.textContent=''; showToast('该图层含跨域图片，无法读取像素配色'); return; }
+  const d=img.data;
+  const stops=preset.stops.map(hexToRgb);
+  for(let i=0;i<d.length;i+=4){
+    const a=d[i+3]; if(a===0) continue;
+    const r=d[i],g=d[i+1],b=d[i+2];
+    const lum=(0.299*r+0.587*g+0.114*b)/255;
+    if(lum>0.93) continue; // 保留纸白
+    const cr=gradientAt(stops,lum);
+    const nr=r+(cr[0]-r)*intensity;
+    const ng=g+(cr[1]-g)*intensity;
+    const nb=b+(cr[2]-b)*intensity;
+    if(keepLines && lum<0.55){
+      const m=Math.min(0.92,(0.55-lum)/0.55);
+      d[i]=nr*(1-m); d[i+1]=ng*(1-m); d[i+2]=nb*(1-m);
+    } else {
+      d[i]=nr; d[i+1]=ng; d[i+2]=nb;
+    }
+  }
+  layer.ctx.putImageData(img,0,0);
+  compositeToMain();
+  renderLayerList();
+  if(st) st.textContent='已应用：'+preset.name;
+  showToast('已配色 · '+preset.name);
+  try { recordStage('配色'); setChainProgress(3); } catch(e){ console.warn(e); }
+}
+function applyColorizeSelected(){ if(!currentColorPalette){ showToast('先选一个配色方案'); return; } applyColorize(currentColorPalette); }
+function applyColorizeRandom(){ const pool=COLOR_PRESETS.filter(p=>p.key!=='bw'); const p=pool[Math.floor(Math.random()*pool.length)]; currentColorPalette=p.key; buildColorPresets(); applyColorize(p.key); }
+function applyColorizeSmart(){
+  // 依据画面平均亮度选方案
+  const t=document.createElement('canvas'); t.width=120; t.height=Math.round(120*canvasH/canvasW);
+  const tc=t.getContext('2d'); tc.drawImage(bgCanvas,0,0,t.width,t.height);
+  const dd=tc.getImageData(0,0,t.width,t.height).data; let sum=0,cnt=0;
+  for(let i=0;i<dd.length;i+=4){ if(dd[i+3]===0) continue; sum+=(0.299*dd[i]+0.587*dd[i+1]+0.114*dd[i+2])/255; cnt++; }
+  const avg=cnt?sum/cnt:0.5;
+  let key = avg<0.4 ? 'vangogh' : avg>0.72 ? 'monet' : 'morandi';
+  currentColorPalette=key; buildColorPresets(); applyColorize(key);
+}
+
+// ---------- 绘画过程剪辑 ----------
+let processStages=[];
+let selectedStageIdx=-1;
+let processPlaying=false;
+
+function captureProcessFrame(){
+  const maxW=1000, scale=Math.min(1,maxW/bgCanvas.width);
+  const w=Math.round(bgCanvas.width*scale), h=Math.round(bgCanvas.height*scale);
+  const fc=document.createElement('canvas'); fc.width=w; fc.height=h;
+  fc.getContext('2d').drawImage(bgCanvas,0,0,w,h);
+  const frame=fc.toDataURL('image/jpeg',0.85);
+  const tw=240, th=Math.round(h*tw/w);
+  const tc=document.createElement('canvas'); tc.width=tw; tc.height=th;
+  tc.getContext('2d').drawImage(bgCanvas,0,0,tw,th);
+  const thumb=tc.toDataURL('image/jpeg',0.7);
+  return { frame, thumb, w, h };
+}
+function recordStage(label){
+  if(!bgCanvas) return;
+  const cap=captureProcessFrame();
+  processStages.push({ id:'st'+Date.now()+Math.floor(Math.random()*999), label, t:Date.now(), frame:cap.frame, thumb:cap.thumb, w:cap.w, h:cap.h });
+  updateProcStats(); renderProcessFilmstrip();
+}
+function recordCurrentStage(){ recordStage('手动'); showToast('已记录当前画面'); }
+function updateProcStats(){
+  const el=document.getElementById('procStats');
+  if(!el) return;
+  el.textContent = processStages.length ? ('共 '+processStages.length+' 帧 · 选中 '+(selectedStageIdx+1)) : '尚无过程帧，先去 ① 生成草图吧';
+}
+function renderProcessFilmstrip(){
+  const box=document.getElementById('processFilmstrip');
+  if(!box) return;
+  box.innerHTML='';
+  processStages.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='proc-thumb'+(i===selectedStageIdx?' active':'');
+    d.innerHTML='<span class="tidx">'+(i+1)+'</span><img src="'+s.thumb+'" alt=""><span class="tlabel">'+s.label+'</span>';
+    d.onclick=()=>selectStage(i);
+    box.appendChild(d);
+  });
+  const scrub=document.getElementById('processScrub');
+  if(scrub){ scrub.max=Math.max(0,processStages.length-1); }
+  updateProcStats();
+}
+function fitPreview(stage){
+  const pv=document.getElementById('processPreview');
+  if(!pv||!stage) return;
+  const max=720, sc=Math.min(1,max/stage.w);
+  pv.width=Math.round(stage.w*sc); pv.height=Math.round(stage.h*sc);
+}
+function showStage(i){
+  if(i<0||i>=processStages.length) return;
+  selectedStageIdx=i;
+  const s=processStages[i];
+  fitPreview(s);
+  const pv=document.getElementById('processPreview'); const pctx=pv.getContext('2d');
+  const img=new Image();
+  img.onload=()=>{ pctx.clearRect(0,0,pv.width,pv.height); pctx.drawImage(img,0,0,pv.width,pv.height); };
+  img.src=s.frame;
+  const lab=document.getElementById('processFrameLabel');
+  if(lab) lab.textContent=(i+1)+'/'+processStages.length+' · '+s.label;
+  const scrub=document.getElementById('processScrub'); if(scrub) scrub.value=i;
+  renderProcessFilmstrip();
+}
+function selectStage(i){ stopProcess(); showStage(i); }
+
+function playProcess(){
+  if(processStages.length===0){ showToast('还没有过程帧，先生成草图或点「记录当前」'); return; }
+  stopProcess();
+  processPlaying=true;
+  let i=0;
+  const step=()=>{
+    if(!processPlaying) return;
+    if(i>=processStages.length){ processPlaying=false; showToast('回放结束'); return; }
+    showStage(i); i++;
+    setTimeout(step, 650);
+  };
+  step();
+}
+function stopProcess(){ processPlaying=false; }
+
+function moveStage(dir){
+  if(selectedStageIdx<0){ showToast('先选择一帧'); return; }
+  const j=selectedStageIdx+dir;
+  if(j<0||j>=processStages.length){ return; }
+  const tmp=processStages[selectedStageIdx]; processStages[selectedStageIdx]=processStages[j]; processStages[j]=tmp;
+  selectedStageIdx=j; renderProcessFilmstrip(); showStage(j);
+}
+function deleteStage(){
+  if(selectedStageIdx<0){ showToast('先选择一帧'); return; }
+  processStages.splice(selectedStageIdx,1);
+  selectedStageIdx=Math.min(selectedStageIdx,processStages.length-1);
+  renderProcessFilmstrip();
+  if(selectedStageIdx>=0) showStage(selectedStageIdx);
+  else { const pv=document.getElementById('processPreview'); if(pv) pv.getContext('2d').clearRect(0,0,pv.width,pv.height); }
+  showToast('已删除该帧');
+}
+function clearProcess(){
+  if(!processStages.length){ showToast('已是空'); return; }
+  if(!confirm('清空全部过程帧？此操作不可撤销')) return;
+  processStages=[]; selectedStageIdx=-1; renderProcessFilmstrip();
+  const pv=document.getElementById('processPreview'); if(pv) pv.getContext('2d').clearRect(0,0,pv.width,pv.height);
+  showToast('已清空过程帧');
+}
+
+function downloadBlob(blob,name){
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+function downloadDataURL(dataURL,name){
+  const a=document.createElement('a'); a.href=dataURL; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+}
+function pickMime(){
+  const list=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  for(const m of list){ if(window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m; }
+  return null;
+}
+function exportProcessVideo(){
+  if(processStages.length<2){ showToast('至少 2 帧才能导出视频'); return; }
+  if(!window.MediaRecorder){ showToast('当前浏览器不支持视频导出'); return; }
+  const mime=pickMime();
+  if(!mime){ showToast('当前浏览器不支持 WebM 录制'); return; }
+  const f0=processStages[0];
+  const c=document.createElement('canvas'); c.width=f0.w; c.height=f0.h;
+  const cx=c.getContext('2d');
+  const stream=c.captureStream(8);
+  const rec=new MediaRecorder(stream,{mimeType:mime});
+  const chunks=[];
+  rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{ const blob=new Blob(chunks,{type:mime}); downloadBlob(blob,'DraftGen-绘画过程.webm'); showToast('视频已导出 ✨'); };
+  const st=document.getElementById('processStatus'); if(st) st.textContent='正在录制视频…';
+  rec.start();
+  let i=0;
+  const drawNext=()=>{
+    if(i>=processStages.length){ rec.stop(); if(st) st.textContent=''; return; }
+    const img=new Image();
+    img.onload=()=>{ cx.clearRect(0,0,c.width,c.height); cx.drawImage(img,0,0); i++; setTimeout(drawNext,125); };
+    img.onerror=()=>{ i++; setTimeout(drawNext,125); };
+    img.src=processStages[i].frame;
+  };
+  drawNext();
+}
+function exportStagePNG(){
+  if(selectedStageIdx<0){ showToast('先选择一帧'); return; }
+  downloadDataURL(processStages[selectedStageIdx].frame, 'DraftGen-帧-'+(selectedStageIdx+1)+'.jpg');
+}
+
+// ---------- 绘画链追踪条 ----------
+function setChainProgress(n){
+  document.querySelectorAll('.chain-step').forEach(s=>{
+    const sn=parseInt(s.dataset.step,10);
+    s.classList.toggle('active', sn===n);
+    s.classList.toggle('done', sn<n);
+  });
+}
+function chainStep(n){
+  setChainProgress(n);
+  if(n===1){ generateRandomDraft(); }
+  else if(n===2){ switchTab('color'); }
+  else if(n===3){ switchTab('process'); if(!processStages.length) showToast('还没有过程帧，先去 ① 生成草图'); }
+}
+
+// ---------- 初始化 ----------
+window.addEventListener('DOMContentLoaded', ()=>{
+  buildColorPresets();
+  const scrub=document.getElementById('processScrub');
+  if(scrub) scrub.addEventListener('input', ()=>selectStage(parseInt(scrub.value,10)));
+  setChainProgress(1);
+});
 </script>
 </body>
 </html>
