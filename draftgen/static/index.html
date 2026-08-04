@@ -722,8 +722,9 @@ body{ background: var(--bg); color: var(--text); }
     radial-gradient(closest-side, rgba(139,92,246,.55), transparent) 80% 20%/36vmax 36vmax no-repeat,
     radial-gradient(closest-side, rgba(236,72,153,.5), transparent) 70% 85%/44vmax 44vmax no-repeat,
     radial-gradient(closest-side, rgba(16,185,129,.4), transparent) 25% 80%/32vmax 32vmax no-repeat;
-  filter: blur(52px) saturate(150%); animation: aurora 16s ease-in-out infinite alternate;
+  filter: blur(52px) saturate(165%); animation: aurora 16s ease-in-out infinite alternate, hueShift 22s linear infinite;
 }
+@keyframes hueShift{ from{ filter: blur(52px) saturate(165%) hue-rotate(0deg); } to{ filter: blur(52px) saturate(165%) hue-rotate(360deg); } }
 #welcome::after{
   content:''; position:absolute; inset:0; opacity:.3;
   background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
@@ -752,7 +753,7 @@ body{ background: var(--bg); color: var(--text); }
   background: linear-gradient(120deg, #22d3ee, #8b5cf6 45%, #ec4899 75%, #22d3ee); background-size:300% auto;
   -webkit-background-clip:text; background-clip:text; color:transparent;
   animation: gradShift 7s linear infinite, floatY 6s ease-in-out infinite;
-  filter: drop-shadow(0 0 30px rgba(139,92,246,.55));
+  filter: drop-shadow(0 0 24px rgba(139,92,246,.7)) drop-shadow(0 0 52px rgba(34,211,238,.42));
 }
 @keyframes floatY{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-12px); } }
 .welcome-sub{ font-size: clamp(15px,2.4vw,22px); color:#e9e9f5; margin-top:14px; font-weight:600; letter-spacing:1px; animation: fadeUp .8s .1s both; }
@@ -4449,39 +4450,69 @@ window.addEventListener('resize', () => {
     window.__stopWelcome = function () { running = false; if (raf) cancelAnimationFrame(raf); };
   }
 
-  // ---- Fresnel soft-particle layer (rim-lit glow, soft edges, additive) ----
+  // ---- Fresnel soft-particle layer (rim-lit glow, bloom halo, hue-cycling, bursts, shooting stars) ----
   (function () {
     var fc = document.getElementById('welcome-fresnel');
     if (!fc) return;
     var fctx = fc.getContext('2d');
-    var FW, FH, fres = [], fraf = null, frun = true;
-    var MCOL = [ [34,211,238], [139,92,246], [236,72,153], [52,211,153], [96,165,250] ];
+    var FW, FH, fres = [], stars = [], fraf = null, frun = true;
     var mouse = { x: -9999, y: -9999, has: false };
+    var HUES = [190, 265, 325, 155, 215];
     function fresResize() { FW = fc.width = window.innerWidth; FH = fc.height = window.innerHeight; }
+    function spawnStar() {
+      var fromLeft = Math.random() < .5;
+      stars.push({
+        x: fromLeft ? -60 : FW + 60, y: Math.random() * FH * 0.7,
+        vx: (fromLeft ? 1 : -1) * (8 + Math.random() * 7),
+        vy: (Math.random() - .5) * 2.6, life: 0, max: 55 + Math.random() * 45,
+        hue: HUES[(Math.random() * HUES.length) | 0]
+      });
+    }
     function fresInit() {
       fres = [];
-      for (var i = 0; i < 26; i++) {
-        var c = MCOL[i % MCOL.length];
+      for (var i = 0; i < 32; i++) {
         fres.push({
           x: Math.random() * FW, y: Math.random() * FH,
-          vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25,
-          r: 38 + Math.random() * 96,
-          z: 0.35 + Math.random() * 0.65,
-          c: c, ph: Math.random() * 6.2832, sp: 0.4 + Math.random() * 0.9, tw: 0.6 + Math.random() * 0.6
+          vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
+          r: 34 + Math.random() * 104, z: 0.35 + Math.random() * 0.65,
+          hue: HUES[i % HUES.length] + (Math.random() - .5) * 44,
+          hueSp: 7 + Math.random() * 18, ph: Math.random() * 6.2832,
+          sp: 0.4 + Math.random() * 1.0, tw: 0.6 + Math.random() * 0.6,
+          burst: 0, nextBurst: 1.5 + Math.random() * 4
         });
       }
     }
+    var last = performance.now ? performance.now() : Date.now();
     function fresTick(t) {
       if (!frun) return;
+      var dt = Math.min(0.05, (t - last) / 1000); last = t;
       fctx.clearRect(0, 0, FW, FH);
       fctx.globalCompositeOperation = 'lighter';
       var cx = FW / 2, cy = FH / 2;
+      if (Math.random() < 0.012 && stars.length < 6) spawnStar();
+      for (var s = stars.length - 1; s >= 0; s--) {
+        var st = stars[s]; st.x += st.vx; st.y += st.vy; st.life += 1;
+        var a = Math.max(0, 1 - st.life / st.max);
+        var tx = st.x - st.vx * 7, ty = st.y - st.vy * 7;
+        var lg = fctx.createLinearGradient(tx, ty, st.x, st.y);
+        lg.addColorStop(0, 'hsla(' + st.hue + ',100%,70%,0)');
+        lg.addColorStop(1, 'hsla(' + st.hue + ',100%,78%,' + (0.95 * a) + ')');
+        fctx.strokeStyle = lg; fctx.lineWidth = 2.6; fctx.lineCap = 'round';
+        fctx.beginPath(); fctx.moveTo(tx, ty); fctx.lineTo(st.x, st.y); fctx.stroke();
+        fctx.fillStyle = 'rgba(255,255,255,' + a + ')';
+        fctx.beginPath(); fctx.arc(st.x, st.y, 2.4, 0, 6.2832); fctx.fill();
+        if (st.life > st.max || st.x < -90 || st.x > FW + 90) stars.splice(s, 1);
+      }
       for (var i = 0; i < fres.length; i++) {
         var p = fres[i];
+        p.hue += p.hueSp * dt; if (p.hue > 360) p.hue -= 360; if (p.hue < 0) p.hue += 360;
+        p.nextBurst -= dt;
+        if (p.nextBurst <= 0) { p.burst = 1; p.nextBurst = 2 + Math.random() * 5; }
+        p.burst *= Math.pow(0.1, dt);
         p.x += p.vx; p.y += p.vy;
         if (mouse.has) {
           var dxm = mouse.x - p.x, dym = mouse.y - p.y, dm = Math.hypot(dxm, dym) || 1;
-          if (dm < 360) { p.vx += (dxm / dm) * 0.012 * p.z; p.vy += (dym / dm) * 0.012 * p.z; }
+          if (dm < 360) { p.vx += (dxm / dm) * 0.014 * p.z; p.vy += (dym / dm) * 0.014 * p.z; }
         }
         p.vx *= 0.992; p.vy *= 0.992;
         var sp = Math.hypot(p.vx, p.vy), max = 0.6 * p.z + 0.15;
@@ -4491,26 +4522,36 @@ window.addEventListener('resize', () => {
         var px = p.x + (mouse.has ? (mouse.x - cx) * (p.z - 0.35) * 0.05 : 0);
         var py = p.y + (mouse.has ? (mouse.y - cy) * (p.z - 0.35) * 0.05 : 0);
         var pulse = 1 + Math.sin(t * 0.001 * p.sp + p.ph) * 0.12 * p.tw;
-        var R = p.r * p.z * pulse;
+        var burstMul = 1 + p.burst * 0.55;
+        var R = p.r * p.z * pulse * burstMul;
         var edge = Math.min(px, py, FW - px, FH - py);
         var edgeFade = Math.max(0, Math.min(1, edge / (R * 1.1)));
-        var inten = (0.5 + 0.5 * Math.sin(t * 0.0007 * p.sp + p.ph)) * edgeFade;
-        var rgb = p.c[0] + ',' + p.c[1] + ',' + p.c[2];
+        var inten = (0.58 + 0.42 * Math.sin(t * 0.0007 * p.sp + p.ph)) * edgeFade;
+        inten = Math.min(1, inten * (1 + p.burst * 0.9));
+        var hue = p.hue.toFixed(1);
+        // outer bloom halo (very soft, bright)
+        var bg = fctx.createRadialGradient(px, py, R * 0.4, px, py, R * 1.55);
+        bg.addColorStop(0, 'hsla(' + hue + ',100%,66%,' + (0.18 * inten).toFixed(3) + ')');
+        bg.addColorStop(1, 'hsla(' + hue + ',100%,66%,0)');
+        fctx.fillStyle = bg;
+        fctx.beginPath(); fctx.arc(px, py, R * 1.55, 0, 6.2832); fctx.fill();
+        // Fresnel rim core (brighter now)
         var g = fctx.createRadialGradient(px, py, R * 0.08, px, py, R);
-        g.addColorStop(0.0,  'rgba(' + rgb + ',0)');
-        g.addColorStop(0.55, 'rgba(' + rgb + ',' + (0.04 * inten).toFixed(3) + ')');
-        g.addColorStop(0.80, 'rgba(' + rgb + ',' + (0.85 * inten).toFixed(3) + ')');
-        g.addColorStop(0.93, 'rgba(' + rgb + ',' + (0.35 * inten).toFixed(3) + ')');
-        g.addColorStop(1.0,  'rgba(' + rgb + ',0)');
+        g.addColorStop(0.0,  'hsla(' + hue + ',100%,72%,0)');
+        g.addColorStop(0.55, 'hsla(' + hue + ',100%,70%,' + (0.07 * inten).toFixed(3) + ')');
+        g.addColorStop(0.80, 'hsla(' + hue + ',100%,74%,' + (1.0 * inten).toFixed(3) + ')');
+        g.addColorStop(0.93, 'hsla(' + hue + ',100%,84%,' + (0.55 * inten).toFixed(3) + ')');
+        g.addColorStop(1.0,  'hsla(' + hue + ',100%,72%,0)');
         fctx.fillStyle = g;
         fctx.beginPath(); fctx.arc(px, py, R, 0, 6.2832); fctx.fill();
-        fctx.fillStyle = 'rgba(255,255,255,' + (0.10 * inten).toFixed(3) + ')';
-        fctx.beginPath(); fctx.arc(px, py, R * 0.06, 0, 6.2832); fctx.fill();
+        // bright core sparkle (brighter)
+        fctx.fillStyle = 'rgba(255,255,255,' + (0.24 * inten).toFixed(3) + ')';
+        fctx.beginPath(); fctx.arc(px, py, R * 0.07, 0, 6.2832); fctx.fill();
       }
       fctx.globalCompositeOperation = 'source-over';
       fraf = requestAnimationFrame(fresTick);
     }
-    fresResize(); fresInit(); fresTick(0);
+    fresResize(); fresInit(); fresTick(performance.now ? performance.now() : Date.now());
     window.addEventListener('resize', function () { fresResize(); fresInit(); });
     window.addEventListener('pointermove', function (e) { mouse.x = e.clientX; mouse.y = e.clientY; mouse.has = true; }, { passive: true });
     window.__stopFresnel = function () { frun = false; if (fraf) cancelAnimationFrame(fraf); };
