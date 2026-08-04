@@ -732,6 +732,7 @@ body{ background: var(--bg); color: var(--text); }
           mask-image: radial-gradient(circle at 50% 45%, #000 25%, transparent 75%);
 }
 #welcome-particles{ position:absolute; inset:0; z-index:1; }
+#welcome-fresnel{ position:absolute; inset:0; z-index:2; pointer-events:none; mix-blend-mode:screen; }
 .welcome-ring{
   position:absolute; left:50%; top:50%; width:520px; height:520px; transform:translate(-50%,-50%); z-index:1; border-radius:50%;
   background: conic-gradient(from 0deg, transparent, rgba(139,92,246,.55), transparent 30%, rgba(34,211,238,.55), transparent 60%, rgba(236,72,153,.55), transparent);
@@ -740,7 +741,7 @@ body{ background: var(--bg); color: var(--text); }
   animation: spin 20s linear infinite; opacity:.55;
 }
 @keyframes spin{ to{ transform: translate(-50%,-50%) rotate(360deg); } }
-.welcome-inner{ position:relative; z-index:2; text-align:center; padding:24px; max-width:780px; }
+.welcome-inner{ position:relative; z-index:3; text-align:center; padding:24px; max-width:780px; }
 .welcome-badge{
   display:inline-block; font-size:12px; letter-spacing:2px; color:#c4b5fd; padding:7px 16px; border-radius:999px;
   border:1px solid rgba(139,92,246,.4); background: rgba(139,92,246,.1); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
@@ -837,6 +838,7 @@ body{ background: var(--bg); color: var(--text); }
 <!-- ============ WELCOME PAGE ============ -->
 <div id="welcome">
   <canvas id="welcome-particles"></canvas>
+  <canvas id="welcome-fresnel"></canvas>
   <div class="welcome-ring"></div>
   <div class="welcome-inner">
     <div class="welcome-badge">✦ 一个人的绘画工作室</div>
@@ -4446,6 +4448,73 @@ window.addEventListener('resize', () => {
     window.addEventListener('resize', function () { resize(); init(); });
     window.__stopWelcome = function () { running = false; if (raf) cancelAnimationFrame(raf); };
   }
+
+  // ---- Fresnel soft-particle layer (rim-lit glow, soft edges, additive) ----
+  (function () {
+    var fc = document.getElementById('welcome-fresnel');
+    if (!fc) return;
+    var fctx = fc.getContext('2d');
+    var FW, FH, fres = [], fraf = null, frun = true;
+    var MCOL = [ [34,211,238], [139,92,246], [236,72,153], [52,211,153], [96,165,250] ];
+    var mouse = { x: -9999, y: -9999, has: false };
+    function fresResize() { FW = fc.width = window.innerWidth; FH = fc.height = window.innerHeight; }
+    function fresInit() {
+      fres = [];
+      for (var i = 0; i < 26; i++) {
+        var c = MCOL[i % MCOL.length];
+        fres.push({
+          x: Math.random() * FW, y: Math.random() * FH,
+          vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25,
+          r: 38 + Math.random() * 96,
+          z: 0.35 + Math.random() * 0.65,
+          c: c, ph: Math.random() * 6.2832, sp: 0.4 + Math.random() * 0.9, tw: 0.6 + Math.random() * 0.6
+        });
+      }
+    }
+    function fresTick(t) {
+      if (!frun) return;
+      fctx.clearRect(0, 0, FW, FH);
+      fctx.globalCompositeOperation = 'lighter';
+      var cx = FW / 2, cy = FH / 2;
+      for (var i = 0; i < fres.length; i++) {
+        var p = fres[i];
+        p.x += p.vx; p.y += p.vy;
+        if (mouse.has) {
+          var dxm = mouse.x - p.x, dym = mouse.y - p.y, dm = Math.hypot(dxm, dym) || 1;
+          if (dm < 360) { p.vx += (dxm / dm) * 0.012 * p.z; p.vy += (dym / dm) * 0.012 * p.z; }
+        }
+        p.vx *= 0.992; p.vy *= 0.992;
+        var sp = Math.hypot(p.vx, p.vy), max = 0.6 * p.z + 0.15;
+        if (sp > max) { p.vx = p.vx / sp * max; p.vy = p.vy / sp * max; }
+        if (p.x < -p.r) p.x = FW + p.r; if (p.x > FW + p.r) p.x = -p.r;
+        if (p.y < -p.r) p.y = FH + p.r; if (p.y > FH + p.r) p.y = -p.r;
+        var px = p.x + (mouse.has ? (mouse.x - cx) * (p.z - 0.35) * 0.05 : 0);
+        var py = p.y + (mouse.has ? (mouse.y - cy) * (p.z - 0.35) * 0.05 : 0);
+        var pulse = 1 + Math.sin(t * 0.001 * p.sp + p.ph) * 0.12 * p.tw;
+        var R = p.r * p.z * pulse;
+        var edge = Math.min(px, py, FW - px, FH - py);
+        var edgeFade = Math.max(0, Math.min(1, edge / (R * 1.1)));
+        var inten = (0.5 + 0.5 * Math.sin(t * 0.0007 * p.sp + p.ph)) * edgeFade;
+        var rgb = p.c[0] + ',' + p.c[1] + ',' + p.c[2];
+        var g = fctx.createRadialGradient(px, py, R * 0.08, px, py, R);
+        g.addColorStop(0.0,  'rgba(' + rgb + ',0)');
+        g.addColorStop(0.55, 'rgba(' + rgb + ',' + (0.04 * inten).toFixed(3) + ')');
+        g.addColorStop(0.80, 'rgba(' + rgb + ',' + (0.85 * inten).toFixed(3) + ')');
+        g.addColorStop(0.93, 'rgba(' + rgb + ',' + (0.35 * inten).toFixed(3) + ')');
+        g.addColorStop(1.0,  'rgba(' + rgb + ',0)');
+        fctx.fillStyle = g;
+        fctx.beginPath(); fctx.arc(px, py, R, 0, 6.2832); fctx.fill();
+        fctx.fillStyle = 'rgba(255,255,255,' + (0.10 * inten).toFixed(3) + ')';
+        fctx.beginPath(); fctx.arc(px, py, R * 0.06, 0, 6.2832); fctx.fill();
+      }
+      fctx.globalCompositeOperation = 'source-over';
+      fraf = requestAnimationFrame(fresTick);
+    }
+    fresResize(); fresInit(); fresTick(0);
+    window.addEventListener('resize', function () { fresResize(); fresInit(); });
+    window.addEventListener('pointermove', function (e) { mouse.x = e.clientX; mouse.y = e.clientY; mouse.has = true; }, { passive: true });
+    window.__stopFresnel = function () { frun = false; if (fraf) cancelAnimationFrame(fraf); };
+  })();
 })();
 
 function enterStudio() {
@@ -4453,6 +4522,7 @@ function enterStudio() {
   if (!w || w.classList.contains('leave')) return;
   w.classList.add('leave');
   if (window.__stopWelcome) window.__stopWelcome();
+  if (window.__stopFresnel) window.__stopFresnel();
   setTimeout(function () { w.style.display = 'none'; }, 750);
   // Re-fit canvas now that the overlay is gone
   window.dispatchEvent(new Event('resize'));
