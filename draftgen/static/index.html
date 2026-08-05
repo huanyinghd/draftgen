@@ -777,7 +777,6 @@ body{ background: var(--bg); color: var(--text); }
 .enter-btn:hover .arrow{ transform: translateX(5px); }
 .welcome-hints{ margin-top:26px; font-size:11px; color:var(--text-light); letter-spacing:1px; animation: fadeUp .8s .45s both; }
 .welcome-actions{ display:flex; gap:16px; margin-top:36px; flex-wrap:wrap; justify-content:center; align-items:center; }
-.welcome-actions .enter-btn, .welcome-actions .why-btn{ margin-top:0; }
 .why-btn{
   display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
   padding:16px 38px; border:none; border-radius:999px;
@@ -1040,7 +1039,7 @@ body{ background: var(--bg); color: var(--text); }
         <button class="enter-btn" id="enterBtn" onclick="enterStudio()">进入工作室 <span>→</span></button>
         <button class="why-btn" id="whyBtn" onclick="openWhy()">我们为什么努力？</button>
       </div>
-      <div class="welcome-tip">移动鼠标把光网聚到光标 · <b>全部汇聚即自动引爆重生</b> ✦ 点击也可引爆</div>
+      <div class="welcome-tip">点击页面任意处可 <b>引爆粒子</b> ✦ 移动鼠标牵引光网</div>
     </div>
 </div>
 <!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
@@ -4611,11 +4610,7 @@ window.addEventListener('resize', () => {
   var rafId=null;
   var welcomeBg=document.getElementById('welcomeBg');
   var rand=function(a,b){return a+Math.random()*(b-a);};
-  var linkDist=170*DPR;
-  var phase='wander';        // wander | exploding
-  var gatherArmed=false;     // 鼠标移动后才允许聚拢
-  var gatherRadius=34*DPR;   // 判定“真正聚集在一起”的容差半径
-  var explodeTimer=0;
+  var linkDist=130*DPR;
 
   function resize(){
     W=pc.width=fc.width=Math.floor(innerWidth*DPR);
@@ -4624,18 +4619,15 @@ window.addEventListener('resize', () => {
     pc.style.height=fc.style.height=innerHeight+'px';
     init();
   }
-  function initParticles(){
+  function init(){
     var area=innerWidth*innerHeight;
-    var N=Math.max(110, Math.min(280, Math.round(area/7000)));
+    var N=Math.max(60, Math.min(175, Math.round(area/11000)));
     particles=[];
     for(var i=0;i<N;i++){
       particles.push({ x:Math.random()*W, y:Math.random()*H,
-        vx:rand(-0.12,0.12)*DPR, vy:rand(-0.12,0.12)*DPR,
+        vx:rand(-0.25,0.25)*DPR, vy:rand(-0.25,0.25)*DPR,
         r:rand(0.8,2.4)*DPR, a:rand(0.4,1), hueOff:rand(0,60) });
     }
-  }
-  function init(){
-    initParticles();
     orbs=[];
     for(var j=0;j<4;j++){
       orbs.push({ x:rand(0,W), y:rand(0,H), vx:rand(-0.12,0.12)*DPR, vy:rand(-0.12,0.12)*DPR,
@@ -4664,18 +4656,6 @@ window.addEventListener('resize', () => {
     bursts.push({ ring:true, x:x, y:y, r:4*DPR, life:1, hue:hue });
   }
 
-  function triggerExplosion(){
-    if(phase!=='wander') return;
-    phase='exploding'; explodeTimer=45;
-    spawnBurst(mouse.x, mouse.y);
-    for(var i=0;i<particles.length;i++){
-      var p=particles[i];
-      var ang=Math.random()*Math.PI*2, sp=rand(1.5,7)*DPR;
-      bursts.push({ x:p.x, y:p.y, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
-        r:rand(1,3.4)*DPR, life:1, hue:hue+rand(-30,30) });
-    }
-    particles=[];
-  }
   function frame(){
     hue=(hue+0.15)%360;
 
@@ -4720,35 +4700,20 @@ window.addEventListener('resize', () => {
     }
 
     // 移动 + 绘制粒子
-    var seeking = (mouse.active && gatherArmed && phase==='wander');
-    var inCount=0;
     for(var i=0;i<particles.length;i++){
       var p=particles[i];
-      if(seeking){
-        // 弹簧式聚拢：越远离光标拉力越强，靠近时自然收敛于光标中心
-        p.vx += (mouse.x-p.x)*0.024;
-        p.vy += (mouse.y-p.y)*0.024;
-        p.vx*=0.80; p.vy*=0.80;
-      } else {
-        p.vx*=0.99; p.vy*=0.99;
+      if(mouse.active){
+        var dx=mouse.x-p.x, dy=mouse.y-p.y, d=Math.hypot(dx,dy);
+        if(d<200*DPR){ p.vx+=dx/d*0.02*DPR; p.vy+=dy/d*0.02*DPR; }
       }
-      p.x+=p.vx; p.y+=p.vy;
-      if(seeking){
-        if(p.x<0)p.x=0; if(p.x>W)p.x=W; if(p.y<0)p.y=0; if(p.y>H)p.y=H;
-        var gdx=mouse.x-p.x, gdy=mouse.y-p.y, gd=Math.hypot(gdx,gdy);
-        if(gd<=gatherRadius) inCount++;
-      } else {
-        if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
-      }
+      p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99;
+      if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
       var h=(hue+p.hueOff)%360;
       pctx.save(); pctx.globalAlpha=p.a;
       pctx.fillStyle='hsl('+h+',100%,72%)';
       pctx.shadowBlur=10*DPR; pctx.shadowColor='hsl('+h+',100%,70%)';
       pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2); pctx.fill(); pctx.restore();
     }
-    // 监控：≥90% 光网点点汇聚到光标中心（容差 gatherRadius）即自动引爆
-    var gatheredAll = seeking && particles.length>0 && (inCount/particles.length)>=0.9;
-    if(gatheredAll){ triggerExplosion(); }
 
     // 连线（星座）
     pctx.globalCompositeOperation='lighter';
@@ -4757,10 +4722,10 @@ window.addEventListener('resize', () => {
         var pa=particles[a], pb=particles[c];
         var ddx=pa.x-pb.x, ddy=pa.y-pb.y, dist=Math.hypot(ddx,ddy);
         if(dist<linkDist){
-          var al=(1-dist/linkDist)*0.78;
+          var al=(1-dist/linkDist)*0.5;
           var lh=(hue+(pa.hueOff+pb.hueOff)/2)%360;
-          pctx.strokeStyle='hsla('+lh+',100%,72%,'+al+')';
-          pctx.lineWidth=1*DPR;
+          pctx.strokeStyle='hsla('+lh+',100%,70%,'+al+')';
+          pctx.lineWidth=0.7*DPR;
           pctx.beginPath(); pctx.moveTo(pa.x,pa.y); pctx.lineTo(pb.x,pb.y); pctx.stroke();
         }
       }
@@ -4797,25 +4762,19 @@ window.addEventListener('resize', () => {
         if(bt.life<=0) bursts.splice(bi,1);
       }
     }
-    if(phase==='exploding'){
-      if(explodeTimer>0) explodeTimer--;
-      if(explodeTimer<=0 && bursts.length===0){ initParticles(); phase='wander'; gatherArmed=false; }
-    }
     rafId=requestAnimationFrame(frame);
   }
 
   window.addEventListener('resize',resize);
   wel.addEventListener('mousemove',function(e){ var r=wel.getBoundingClientRect();
-    mouse.x=(e.clientX-r.left)*DPR; mouse.y=(e.clientY-r.top)*DPR; mouse.active=true; gatherArmed=true;
+    mouse.x=(e.clientX-r.left)*DPR; mouse.y=(e.clientY-r.top)*DPR; mouse.active=true;
     if(welcomeBg){ var px=(e.clientX/innerWidth-0.5), py=(e.clientY/innerHeight-0.5);
       welcomeBg.style.transform='translate('+(-px*26)+'px,'+(-py*26)+'px) scale(1.04)'; } });
   wel.addEventListener('mouseleave',function(){ mouse.active=false; mouse.x=-9999; mouse.y=-9999;
     if(welcomeBg) welcomeBg.style.transform='translate(0,0) scale(1.04)'; });
   wel.addEventListener('click',function(e){
     if(e.target.closest('.enter-btn')||e.target.closest('.why-btn')||e.target.closest('.win98')) return;
-    var r=wel.getBoundingClientRect();
-    mouse.x=(e.clientX-r.left)*DPR; mouse.y=(e.clientY-r.top)*DPR; mouse.active=true;
-    triggerExplosion();   // 点击直接引爆整张光网
+    var r=wel.getBoundingClientRect(); spawnBurst((e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR);
   });
 
   window.__stopWelcome = function(){ if(rafId) cancelAnimationFrame(rafId); };
