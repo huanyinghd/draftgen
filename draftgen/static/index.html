@@ -4614,7 +4614,7 @@ window.addEventListener('resize', () => {
   var linkDist=170*DPR;
   var phase='wander';        // wander | exploding
   var gatherArmed=false;     // 鼠标移动后才允许聚拢
-  var gatherRadius=18*DPR;   // 判定“真正聚集在一起”的容差半径
+  var gatherRadius=34*DPR;   // 判定“真正聚集在一起”的容差半径
   var explodeTimer=0;
 
   function resize(){
@@ -4721,14 +4721,14 @@ window.addEventListener('resize', () => {
 
     // 移动 + 绘制粒子
     var seeking = (mouse.active && gatherArmed && phase==='wander');
-    var gatheredAll = particles.length>0;
+    var inCount=0;
     for(var i=0;i<particles.length;i++){
       var p=particles[i];
       if(seeking){
         // 弹簧式聚拢：越远离光标拉力越强，靠近时自然收敛于光标中心
-        p.vx += (mouse.x-p.x)*0.018;
-        p.vy += (mouse.y-p.y)*0.018;
-        p.vx*=0.82; p.vy*=0.82;
+        p.vx += (mouse.x-p.x)*0.024;
+        p.vy += (mouse.y-p.y)*0.024;
+        p.vx*=0.80; p.vy*=0.80;
       } else {
         p.vx*=0.99; p.vy*=0.99;
       }
@@ -4736,7 +4736,7 @@ window.addEventListener('resize', () => {
       if(seeking){
         if(p.x<0)p.x=0; if(p.x>W)p.x=W; if(p.y<0)p.y=0; if(p.y>H)p.y=H;
         var gdx=mouse.x-p.x, gdy=mouse.y-p.y, gd=Math.hypot(gdx,gdy);
-        if(gd>gatherRadius) gatheredAll=false;
+        if(gd<=gatherRadius) inCount++;
       } else {
         if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
       }
@@ -4746,8 +4746,9 @@ window.addEventListener('resize', () => {
       pctx.shadowBlur=10*DPR; pctx.shadowColor='hsl('+h+',100%,70%)';
       pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2); pctx.fill(); pctx.restore();
     }
-    // 监控：所有光网点点真正汇聚到光标中心时才自动引爆
-    if(seeking && gatheredAll){ triggerExplosion(); }
+    // 监控：≥90% 光网点点汇聚到光标中心（容差 gatherRadius）即自动引爆
+    var gatheredAll = seeking && particles.length>0 && (inCount/particles.length)>=0.9;
+    if(gatheredAll){ triggerExplosion(); }
 
     // 连线（星座）
     pctx.globalCompositeOperation='lighter';
@@ -4812,7 +4813,9 @@ window.addEventListener('resize', () => {
     if(welcomeBg) welcomeBg.style.transform='translate(0,0) scale(1.04)'; });
   wel.addEventListener('click',function(e){
     if(e.target.closest('.enter-btn')||e.target.closest('.why-btn')||e.target.closest('.win98')) return;
-    var r=wel.getBoundingClientRect(); spawnBurst((e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR);
+    var r=wel.getBoundingClientRect();
+    mouse.x=(e.clientX-r.left)*DPR; mouse.y=(e.clientY-r.top)*DPR; mouse.active=true;
+    triggerExplosion();   // 点击直接引爆整张光网
   });
 
   window.__stopWelcome = function(){ if(rafId) cancelAnimationFrame(rafId); };
