@@ -4611,7 +4611,7 @@ window.addEventListener('resize', () => {
   var rafId=null;
   var welcomeBg=document.getElementById('welcomeBg');
   var rand=function(a,b){return a+Math.random()*(b-a);};
-  var linkDist=130*DPR;
+  var linkDist=170*DPR;
   var phase='wander';        // wander | exploding
   var gatherArmed=false;     // 鼠标移动后才允许聚拢
   var gatherRadius=18*DPR;   // 判定“真正聚集在一起”的容差半径
@@ -4626,11 +4626,11 @@ window.addEventListener('resize', () => {
   }
   function initParticles(){
     var area=innerWidth*innerHeight;
-    var N=Math.max(60, Math.min(175, Math.round(area/11000)));
+    var N=Math.max(110, Math.min(280, Math.round(area/7000)));
     particles=[];
     for(var i=0;i<N;i++){
       particles.push({ x:Math.random()*W, y:Math.random()*H,
-        vx:rand(-0.25,0.25)*DPR, vy:rand(-0.25,0.25)*DPR,
+        vx:rand(-0.12,0.12)*DPR, vy:rand(-0.12,0.12)*DPR,
         r:rand(0.8,2.4)*DPR, a:rand(0.4,1), hueOff:rand(0,60) });
     }
   }
@@ -4756,10 +4756,10 @@ window.addEventListener('resize', () => {
         var pa=particles[a], pb=particles[c];
         var ddx=pa.x-pb.x, ddy=pa.y-pb.y, dist=Math.hypot(ddx,ddy);
         if(dist<linkDist){
-          var al=(1-dist/linkDist)*0.5;
+          var al=(1-dist/linkDist)*0.78;
           var lh=(hue+(pa.hueOff+pb.hueOff)/2)%360;
-          pctx.strokeStyle='hsla('+lh+',100%,70%,'+al+')';
-          pctx.lineWidth=0.7*DPR;
+          pctx.strokeStyle='hsla('+lh+',100%,72%,'+al+')';
+          pctx.lineWidth=1*DPR;
           pctx.beginPath(); pctx.moveTo(pa.x,pa.y); pctx.lineTo(pb.x,pb.y); pctx.stroke();
         }
       }
