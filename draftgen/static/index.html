@@ -884,6 +884,115 @@ body{ background: var(--bg); color: var(--text); }
   background:#000080; border:2px solid; border-color:#4040a0 #1a1a66 #1a1a66 #4040a0;
   text-shadow:1px 1px 0 #000;
 }
+
+/* ===== DraftGen 本地欢迎页 + 乱线模块样式（覆盖） ===== */
+  /* ===== 欢迎页（粒子核心） ===== */
+  #welcome{ position:fixed; inset:0; z-index:1000; overflow:hidden; user-select:none;
+    background:radial-gradient(125% 125% at 50% 28%, #15153a 0%, #0a0a18 55%, #040409 100%); }
+  #welcome-nebula{ position:absolute; inset:-12%; pointer-events:none;
+    background:url('https://upload.wikimedia.org/wikipedia/commons/6/68/Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg') center/cover no-repeat;
+    opacity:.32; filter:saturate(1.18) brightness(.82) contrast(1.05);
+    transform:scale(1.06); animation:nebPan 64s ease-in-out infinite alternate; }
+  @keyframes nebPan{ from{transform:scale(1.06) translate(0,0)} to{transform:scale(1.14) translate(-2%,-2%)} }
+  .welcome-aurora{ position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; opacity:.6;
+    background:
+      radial-gradient(42% 32% at 18% 18%, rgba(34,211,238,.26), transparent 70%),
+      radial-gradient(48% 36% at 82% 24%, rgba(139,92,246,.30), transparent 70%),
+      radial-gradient(52% 42% at 50% 92%, rgba(236,72,153,.24), transparent 70%);
+    animation:auroraShift 19s ease-in-out infinite alternate; }
+  @keyframes auroraShift{ from{filter:hue-rotate(0deg) translateY(0)} to{filter:hue-rotate(45deg) translateY(-14px)} }
+  #welcome-particles, #welcome-fresnel{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  #welcome-fresnel{ mix-blend-mode:screen; }
+  /* 视差背景层（星云/极光随鼠标做景深） */
+  .welcome-bg{ position:absolute; inset:0; pointer-events:none; will-change:transform;
+    transition:transform .35s cubic-bezier(.22,.61,.36,1); }
+  /* 电影感颗粒质感 */
+  .welcome-grain{ position:absolute; inset:0; pointer-events:none; opacity:.07; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:160px 160px; animation:grainShift 6s steps(6) infinite; }
+  @keyframes grainShift{ 0%{transform:translate(0,0)} 20%{transform:translate(-4%,3%)} 40%{transform:translate(3%,-2%)}
+    60%{transform:translate(-2%,-4%)} 80%{transform:translate(4%,2%)} 100%{transform:translate(0,0)} }
+  .welcome-vignette{ position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 44%, transparent 38%, rgba(0,0,0,.58) 100%); }
+  .welcome-inner{ position:relative; z-index:5; height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; padding:24px; }
+  .welcome-ring{ position:relative; width:172px; height:172px; margin-bottom:26px; }
+  .welcome-ring .ring{ position:absolute; inset:0; border-radius:50%; }
+  .welcome-ring .r1{ border:1.5px solid rgba(139,92,246,.5);
+    box-shadow:0 0 26px rgba(139,92,246,.4) inset,0 0 26px rgba(139,92,246,.3);
+    animation:spin 14s linear infinite; }
+  .welcome-ring .r1::before{ content:''; position:absolute; top:-4px; left:50%; width:9px;height:9px;margin-left:-4.5px;
+    border-radius:50%; background:#a78bfa; box-shadow:0 0 14px #a78bfa; }
+  .welcome-ring .r2{ inset:18px; border:1px dashed rgba(34,211,238,.5); animation:spin 9s linear infinite reverse; }
+  .welcome-ring .r2::before{ content:''; position:absolute; bottom:-3px; left:28%; width:7px;height:7px;border-radius:50%;
+    background:#22d3ee; box-shadow:0 0 11px #22d3ee; }
+  .welcome-ring .r3{ inset:42px; border:1px solid rgba(236,72,153,.45); animation:spin 23s linear infinite; }
+  .welcome-ring .core{ position:absolute; inset:64px; border-radius:50%;
+    background:radial-gradient(circle,#fff, rgba(139,92,246,.7) 38%, rgba(34,211,238,.25) 68%, transparent 75%);
+    filter:blur(2px); animation:pulse 3.2s ease-in-out infinite; }
+  @keyframes spin{ to{transform:rotate(360deg)} }
+  @keyframes pulse{ 0%,100%{transform:scale(.92);opacity:.85} 50%{transform:scale(1.08);opacity:1} }
+  .welcome-badge{ font-size:13px; letter-spacing:3px; color:#c4b5fd; margin-bottom:14px;
+    padding:6px 16px; border:1px solid rgba(139,92,246,.42); border-radius:999px;
+    background:rgba(139,92,246,.1); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+  .welcome-title{ font-size:clamp(46px,12vw,118px); margin:0; font-weight:800; letter-spacing:6px;
+    background:linear-gradient(135deg,#22d3ee,#8b5cf6 45%,#ec4899); -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:titleGlow 5s ease-in-out infinite; }
+  @keyframes titleGlow{ 0%,100%{filter:drop-shadow(0 0 18px rgba(139,92,246,.45))} 50%{filter:drop-shadow(0 0 36px rgba(236,72,153,.6))} }
+  .welcome-sub{ font-size:15px; color:#aab1cc; margin-top:10px; letter-spacing:2px; }
+  .welcome-actions{ display:flex; gap:16px; margin-top:34px; flex-wrap:wrap; justify-content:center; }
+  .enter-btn{ position:relative; cursor:pointer; border:none; padding:14px 38px; border-radius:999px;
+    font-size:16px; font-weight:700; color:#fff; letter-spacing:2px; overflow:hidden;
+    background:linear-gradient(135deg,#7c3aed,#db2777); box-shadow:0 8px 30px rgba(124,58,237,.5);
+    transition:transform .2s, box-shadow .2s; }
+  .enter-btn span{ display:inline-block; transition:transform .2s; margin-left:6px; }
+  .enter-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 46px rgba(219,39,119,.6); }
+  .enter-btn:hover span{ transform:translateX(6px); }
+  .enter-btn::after{ content:''; position:absolute; top:0; left:-60%; width:50%; height:100%;
+    background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent); transform:skewX(-20deg);
+    animation:sheen 3.6s ease-in-out infinite; }
+  @keyframes sheen{ 0%{left:-60%} 60%,100%{left:130%} }
+  .why-btn{ cursor:pointer; border:1px solid rgba(34,211,238,.5); background:rgba(34,211,238,.08);
+    color:#a5f3fc; padding:14px 22px; border-radius:999px; font-size:14px; letter-spacing:1px;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:.2s; }
+  .why-btn:hover{ background:rgba(34,211,238,.18); box-shadow:0 0 22px rgba(34,211,238,.35); }
+  .welcome-tip{ margin-top:26px; font-size:12px; color:#6b7299; letter-spacing:1px; }
+  .welcome-tip b{ color:#a78bfa; }
+  .welcome-out{ opacity:0 !important; transform:scale(1.05); transition:opacity .8s ease, transform .8s ease; pointer-events:none; }
+
+  /* win98 复古播放器 */
+  .win98{ position:absolute; z-index:30; width:440px; max-width:92vw; left:50%; top:50%;
+    transform:translate(-50%,-50%) scale(.9); opacity:0; pointer-events:none; transition:.25s;
+    background:#c0c0c0; border:2px solid; border-color:#fff #404040 #404040 #fff; box-shadow:0 20px 55px rgba(0,0,0,.6); }
+  .win98.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  .win98 .bar{ display:flex; align-items:center; justify-content:space-between; padding:3px 5px;
+    background:linear-gradient(90deg,#1c4ed8,#3b82f6); color:#fff; font-size:12px; font-weight:700; }
+  .win98 .bar .x{ width:18px;height:16px; background:#c0c0c0; color:#000; border:1px solid;
+    border-color:#fff #404040 #404040 #fff; cursor:pointer; display:flex;align-items:center;justify-content:center; font-weight:700; line-height:1; }
+  .win98 .screen{ background:#000; padding:4px; }
+  .win98 video{ width:100%; display:block; background:#000; }
+  .win98 .status{ font-size:11px; padding:3px 6px; background:#c0c0c0; color:#222; border-top:1px solid #808080; }
+  /* ===== 乱线草图生成器（前端 · DraftGen） ===== */
+  .inp{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;
+    box-sizing:border-box;background:#fff;color:var(--ink);}
+  .dense-panel{border-color:var(--accent);box-shadow:0 0 0 1px rgba(139,92,246,.18);}
+  .dense-panel > label.ttl{color:#7c3aed;}
+  .dense-status{margin-top:8px;font-size:11px;color:var(--inkSoft);min-height:16px;
+    padding:6px 8px;border:1px dashed var(--border);border-radius:6px;background:#fbfaff;line-height:1.5;}
+  .dense-status.busy{color:#7c3aed;}
+  .dense-status.ok{color:#1f9d57;border-color:#bfe9cf;background:#f3fcf6;}
+  .dense-status.err{color:#b03a2e;border-color:#f0c4bc;background:#fdf5f3;}
+  #genDense{background:linear-gradient(135deg,#22D3EE,#8B5CF6,#EC4899);color:#fff;border:none;font-weight:700;}
+  #genDense:hover{opacity:.92;}
+  #genDense:disabled{opacity:.55;cursor:wait;}
+  .dense-panel code{background:#eee;padding:1px 4px;border-radius:4px;font-size:10px;}
+  .fp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+  .fp-grid button{padding:9px 0;border:1px solid var(--border);background:#fff;border-radius:7px;
+    cursor:pointer;font-size:12px;color:var(--ink);transition:all .15s;}
+  .fp-grid button:hover{border-color:var(--accent);}
+  .fp-grid button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .fp-grid button.auto{grid-column:1/-1;background:#fff;}
+  .hide{display:none;}
 </style>
 </head>
 <body>
@@ -894,27 +1003,34 @@ body{ background: var(--bg); color: var(--text); }
 <div id="cursor-glow"></div>
 
 <!-- ============ WELCOME PAGE ============ -->
-<div id="welcome">
-  <img id="welcome-nebula" alt="" referrerpolicy="no-referrer" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg/1920px-Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg">
-  <canvas id="welcome-particles"></canvas>
-  <canvas id="welcome-fresnel"></canvas>
-  <div class="welcome-ring"></div>
-  <div class="welcome-inner">
-    <div class="welcome-badge">✦ 一个人的绘画工作室</div>
-    <h1 class="welcome-title">DraftGen</h1>
-    <div class="welcome-sub">草稿生成器 · 把灵感画出来</div>
-    <p class="welcome-desc">海量大师草稿 · 随机生成草图 · 智能配色 · 绘画过程可剪辑<br>在这里，每一笔都发光。</p>
-    <div class="welcome-actions">
-      <button class="enter-btn" onclick="enterStudio()">
-        <span>进入工作室</span>
-        <span class="arrow">➜</span>
-      </button>
-      <button class="why-btn" type="button" onclick="openWhy()">我们为什么努力？</button>
+  <div id="welcome">
+    <div class="welcome-bg" id="welcomeBg">
+      <div id="welcome-nebula"></div>
+      <div class="welcome-aurora"></div>
     </div>
-    <div class="welcome-hints">B 画笔 · E 橡皮 · R 随机草稿 · 拖拽移动 · 滚轮缩放</div>
-  </div>
+    <div class="welcome-grain"></div>
+    <canvas id="welcome-fresnel"></canvas>
+    <canvas id="welcome-particles"></canvas>
+    <div class="welcome-vignette"></div>
 
-  <!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
+    <div class="welcome-inner">
+      <div class="welcome-ring">
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="ring r3"></div>
+        <div class="core"></div>
+      </div>
+      <div class="welcome-badge">✦ 一个人的绘画工作室</div>
+      <h1 class="welcome-title">DraftGen</h1>
+      <div class="welcome-sub">A4 场景草稿生成器 · 三分法 / 透视 / 3D</div>
+      <div class="welcome-actions">
+        <button class="enter-btn" id="enterBtn" onclick="enterStudio()">进入工作室 <span>→</span></button>
+        <button class="why-btn" id="whyBtn" onclick="openWhy()">我们为什么努力？</button>
+      </div>
+      <div class="welcome-tip">点击页面任意处可 <b>引爆粒子</b> ✦ 移动鼠标牵引光网</div>
+    </div>
+</div>
+<!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
   <div class="why-window" id="whyWindow" style="display:none">
     <div class="why-titlebar">
       <span class="why-title">🎬 我们为什么努力？ — media player</span>
@@ -1191,55 +1307,36 @@ body{ background: var(--bg); color: var(--text); }
       <!-- Random Tab -->
       <div class="tab-content" id="tab-random" style="display:none">
         <div class="panel-section">
-          <h3>随机草稿生成</h3>
-          <div class="draft-options">
-            <div class="draft-type-grid">
-              <button class="draft-type-btn active" data-draft="sunflower" onclick="setDraftType('sunflower')">🌻 向日葵速写</button>
-              <button class="draft-type-btn" data-draft="figure" onclick="setDraftType('figure')">🧍 人物姿态</button>
-              <button class="draft-type-btn" data-draft="layout" onclick="setDraftType('layout')">📐 构图布局</button>
-              <button class="draft-type-btn" data-draft="doodle" onclick="setDraftType('doodle')">✏️ 速写涂鸦</button>
-              <button class="draft-type-btn" data-draft="master" onclick="setDraftType('master')">🏛 大师草稿</button>
+          <h3>乱线草图生成器（前端 · 纯浏览器 · 超密集线条）</h3>
+          <div class="dense-panel">
+            <label class="ttl">风格（经典作品 / 随机）</label>
+            <select id="dStyle"></select>
+            <label>焦点（三分法）</label>
+            <div class="fp-grid" id="dfpGrid">
+              <button data-dfp="0">① 左上</button>
+              <button data-dfp="1">② 右上</button>
+              <button data-dfp="2">③ 左下</button>
+              <button data-dfp="3">④ 右下</button>
+              <button class="auto active" data-dfp="auto">🎲 自动（随机）</button>
             </div>
-            <div class="slider-row" id="masterCatRow">
-              <label>大师草稿分类</label>
-              <div class="layout-options" id="masterCatChips"></div>
+            <label>元素线条密度</label>
+            <select id="dDensity">
+              <option value="1">标准（每种元素 5000+ 条）</option>
+              <option value="2">狂乱（每种约 10000 条）</option>
+              <option value="3">极致（每种约 15000 条）</option>
+            </select>
+            <label>种子（可选，留空随机，同种子=同图）</label>
+            <input id="dSeed" class="inp" placeholder="例如 12345" />
+            <div class="row" style="margin-top:8px;">
+              <button class="action primary" id="genDense">✦ 生成乱线草图</button>
             </div>
-            <div class="slider-row layout-row">
-              <label>布局形式</label>
-              <div class="layout-options">
-                <button class="layout-btn active" data-layout="none" onclick="setLayout('none')">自由</button>
-                <button class="layout-btn" data-layout="thirds" onclick="setLayout('thirds')">三分法</button>
-                <button class="layout-btn" data-layout="golden" onclick="setLayout('golden')">黄金比例</button>
-                <button class="layout-btn" data-layout="perspective" onclick="setLayout('perspective')">透视</button>
-                <button class="layout-btn" data-layout="triangle" onclick="setLayout('triangle')">三角</button>
-              </div>
-            </div>
-            <div class="slider-row">
-              <label>线条密度</label>
-              <input type="range" id="lineDensity" min="1" max="3" value="2" step="1">
-              <span class="val" id="densityVal">中</span>
-            </div>
-            <div class="slider-row">
-              <label>混乱度</label>
-              <input type="range" id="chaosLevel" min="0" max="100" value="50">
-              <span class="val" id="chaosVal">50</span>
-            </div>
-            <button class="action-btn" onclick="generateRandomDraft()">
-              <svg class="dice-ico" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-                <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/>
-                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/>
-                <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
-              </svg>
-              生成随机草稿
-            </button>
-            <p style="font-size:10px;color:var(--text-light);text-align:center">按 R 键快捷重新生成</p>
+            <div id="denseStatus" class="dense-status">未生成</div>
+            <div class="tips">说明：本模式由 <code>DraftGen.generateRandomScene(...)</code> 在<b>浏览器内</b>实时生成上万条随机线条，画面被线填满。已整合 paint_masterpieces 引擎 + 10 经典笔法 + 随机场景，<b>无需起任何服务</b>。</div>
+          </div>
+          <div style="margin-top:12px;">
+            <canvas id="cv" style="max-width:100%;width:100%;border:1px solid var(--border,#d9d3c4);border-radius:8px;background:#0a0a18;"></canvas>
           </div>
         </div>
-      </div>
-
       <!-- Trainer Tab -->
       <div class="tab-content" id="tab-trainer" style="display:none">
         <div class="panel-section">
@@ -4488,217 +4585,192 @@ window.addEventListener('resize', () => {
 
 <!-- ============ WELCOME / FX SCRIPT ============ -->
 <script>
-(function () {
-  // Cursor spotlight
-  var glow = document.getElementById('cursor-glow');
-  if (glow) {
-    window.addEventListener('pointermove', function (e) {
-      glow.style.left = e.clientX + 'px';
-      glow.style.top = e.clientY + 'px';
-    }, { passive: true });
+/* ===== 欢迎页粒子系统 ===== */
+(function(){
+  var wel=document.getElementById('welcome'); if(!wel) return;
+  var pc=document.getElementById('welcome-particles');
+  var fc=document.getElementById('welcome-fresnel');
+  var pctx=pc.getContext('2d'), fctx=fc.getContext('2d');
+  var DPR=Math.min(window.devicePixelRatio||1,2);
+  var W=0,H=0, hue=200;
+  var particles=[], orbs=[], sparks=[], bursts=[], stars=[];
+  var mouse={x:-9999,y:-9999,active:false};
+  var rafId=null;
+  var welcomeBg=document.getElementById('welcomeBg');
+  var rand=function(a,b){return a+Math.random()*(b-a);};
+  var linkDist=130*DPR;
+
+  function resize(){
+    W=pc.width=fc.width=Math.floor(innerWidth*DPR);
+    H=pc.height=fc.height=Math.floor(innerHeight*DPR);
+    pc.style.width=fc.style.width=innerWidth+'px';
+    pc.style.height=fc.style.height=innerHeight+'px';
+    init();
+  }
+  function init(){
+    var area=innerWidth*innerHeight;
+    var N=Math.max(60, Math.min(175, Math.round(area/11000)));
+    particles=[];
+    for(var i=0;i<N;i++){
+      particles.push({ x:Math.random()*W, y:Math.random()*H,
+        vx:rand(-0.25,0.25)*DPR, vy:rand(-0.25,0.25)*DPR,
+        r:rand(0.8,2.4)*DPR, a:rand(0.4,1), hueOff:rand(0,60) });
+    }
+    orbs=[];
+    for(var j=0;j<4;j++){
+      orbs.push({ x:rand(0,W), y:rand(0,H), vx:rand(-0.12,0.12)*DPR, vy:rand(-0.12,0.12)*DPR,
+        r:rand(160,300)*DPR, hue:rand(180,320) });
+    }
+    sparks=[];
+    var S=Math.max(30, Math.min(70, Math.round(area/40000)));
+    for(var k=0;k<S;k++){
+      sparks.push({ x:Math.random()*W, y:Math.random()*H, vy:rand(-0.3,-0.9)*DPR,
+        r:rand(0.6,1.8)*DPR, a:rand(0.2,0.8), ph:rand(0,6.28) });
+    }
+    // 深空星场（底层闪烁）
+    stars=[];
+    var ST=Math.max(120, Math.min(260, Math.round(area/9000)));
+    for(var t=0;t<ST;t++){
+      stars.push({ x:Math.random()*W, y:Math.random()*H, r:rand(0.3,1.4)*DPR,
+        ph:rand(0,6.28), sp:rand(0.4,2.2), hue:rand(180,300) });
+    }
+  }
+  function spawnBurst(x,y){
+    for(var i=0;i<44;i++){
+      var ang=Math.random()*Math.PI*2, sp=rand(1.5,6)*DPR;
+      bursts.push({ x:x, y:y, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+        r:rand(1,3)*DPR, life:1, hue:hue+rand(-30,30) });
+    }
+    bursts.push({ ring:true, x:x, y:y, r:4*DPR, life:1, hue:hue });
   }
 
-  // Welcome particle constellation
-  var cv = document.getElementById('welcome-particles');
-  if (cv) {
-    var ctx = cv.getContext('2d');
-    var W, H, parts = [], raf = null, running = true;
-    var COLORS = ['#22d3ee', '#8b5cf6', '#ec4899', '#34d399'];
-    function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
-    function init() {
-      parts = [];
-      var n = Math.min(90, Math.floor(W * H / 16000));
-      for (var i = 0; i < n; i++) {
-        parts.push({
-          x: Math.random() * W, y: Math.random() * H,
-          vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4,
-          r: Math.random() * 1.8 + .6, c: COLORS[i % COLORS.length]
-        });
-      }
+  function frame(){
+    hue=(hue+0.15)%360;
+
+    // 菲涅尔柔光球
+    fctx.clearRect(0,0,W,H);
+    // 底层星场（source-over，先画）
+    for(var st=0;st<stars.length;st++){
+      var sr=stars[st]; sr.ph+=0.02*sr.sp;
+      var tw=0.35+0.65*Math.abs(Math.sin(sr.ph));
+      fctx.save(); fctx.globalAlpha=tw*0.9;
+      fctx.fillStyle='hsl('+sr.hue+',80%,82%)';
+      fctx.shadowBlur=6*DPR; fctx.shadowColor='hsl('+sr.hue+',80%,80%)';
+      fctx.beginPath(); fctx.arc(sr.x,sr.y,sr.r,0,Math.PI*2); fctx.fill(); fctx.restore();
     }
-    function tick() {
-      if (!running) return;
-      ctx.clearRect(0, 0, W, H);
-      for (var i = 0; i < parts.length; i++) {
-        var p = parts[i];
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > W) p.vx *= -1;
-        if (p.y < 0 || p.y > H) p.vy *= -1;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7);
-        ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 8; ctx.fill();
+    fctx.globalCompositeOperation='lighter';
+    for(var o=0;o<orbs.length;o++){
+      var b=orbs[o]; b.x+=b.vx; b.y+=b.vy;
+      if(b.x<-b.r)b.x=W+b.r; if(b.x>W+b.r)b.x=-b.r;
+      if(b.y<-b.r)b.y=H+b.r; if(b.y>H+b.r)b.y=-b.r;
+      var h=(b.hue+hue*0.3)%360;
+      var g=fctx.createRadialGradient(b.x,b.y,b.r*0.1,b.x,b.y,b.r);
+      g.addColorStop(0,'hsla('+h+',90%,65%,0.16)');
+      g.addColorStop(0.5,'hsla('+h+',90%,60%,0.07)');
+      g.addColorStop(1,'hsla('+h+',90%,60%,0)');
+      fctx.fillStyle=g; fctx.beginPath(); fctx.arc(b.x,b.y,b.r,0,Math.PI*2); fctx.fill();
+    }
+    fctx.globalCompositeOperation='source-over';
+
+    // 粒子层
+    pctx.clearRect(0,0,W,H);
+
+    // 上升火花
+    for(var s=0;s<sparks.length;s++){
+      var sp=sparks[s]; sp.y+=sp.vy; sp.ph+=0.05;
+      if(sp.y<-10){ sp.y=H+10; sp.x=Math.random()*W; }
+      var tw=0.5+0.5*Math.sin(sp.ph);
+      pctx.save(); pctx.globalAlpha=sp.a*tw;
+      var sh=(hue+180)%360;
+      pctx.fillStyle='hsl('+sh+',100%,80%)';
+      pctx.shadowBlur=8*DPR; pctx.shadowColor='hsl('+sh+',100%,80%)';
+      pctx.beginPath(); pctx.arc(sp.x,sp.y,sp.r,0,Math.PI*2); pctx.fill(); pctx.restore();
+    }
+
+    // 移动 + 绘制粒子
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      if(mouse.active){
+        var dx=mouse.x-p.x, dy=mouse.y-p.y, d=Math.hypot(dx,dy);
+        if(d<200*DPR){ p.vx+=dx/d*0.02*DPR; p.vy+=dy/d*0.02*DPR; }
       }
-      ctx.shadowBlur = 0;
-      for (var a = 0; a < parts.length; a++) {
-        for (var b = a + 1; b < parts.length; b++) {
-          var pa = parts[a], pb = parts[b];
-          var dx = pa.x - pb.x, dy = pa.y - pb.y, d = Math.hypot(dx, dy);
-          if (d < 130) {
-            ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y);
-            ctx.strokeStyle = 'rgba(139,92,246,' + (0.12 * (1 - d / 130)) + ')';
-            ctx.lineWidth = 1; ctx.stroke();
-          }
+      p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99;
+      if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
+      var h=(hue+p.hueOff)%360;
+      pctx.save(); pctx.globalAlpha=p.a;
+      pctx.fillStyle='hsl('+h+',100%,72%)';
+      pctx.shadowBlur=10*DPR; pctx.shadowColor='hsl('+h+',100%,70%)';
+      pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2); pctx.fill(); pctx.restore();
+    }
+
+    // 连线（星座）
+    pctx.globalCompositeOperation='lighter';
+    for(var a=0;a<particles.length;a++){
+      for(var c=a+1;c<particles.length;c++){
+        var pa=particles[a], pb=particles[c];
+        var ddx=pa.x-pb.x, ddy=pa.y-pb.y, dist=Math.hypot(ddx,ddy);
+        if(dist<linkDist){
+          var al=(1-dist/linkDist)*0.5;
+          var lh=(hue+(pa.hueOff+pb.hueOff)/2)%360;
+          pctx.strokeStyle='hsla('+lh+',100%,70%,'+al+')';
+          pctx.lineWidth=0.7*DPR;
+          pctx.beginPath(); pctx.moveTo(pa.x,pa.y); pctx.lineTo(pb.x,pb.y); pctx.stroke();
         }
       }
-      raf = requestAnimationFrame(tick);
     }
-    resize(); init(); tick();
-    window.addEventListener('resize', function () { resize(); init(); });
-    window.__stopWelcome = function () { running = false; if (raf) cancelAnimationFrame(raf); };
+    // 鼠标连线
+    if(mouse.active){
+      for(var m=0;m<particles.length;m++){
+        var p2=particles[m];
+        var mx=p2.x-mouse.x, my=p2.y-mouse.y, md=Math.hypot(mx,my);
+        if(md<220*DPR){
+          pctx.strokeStyle='hsla('+(hue%360)+',100%,75%,'+((1-md/(220*DPR))*0.5)+')';
+          pctx.lineWidth=0.8*DPR;
+          pctx.beginPath(); pctx.moveTo(p2.x,p2.y); pctx.lineTo(mouse.x,mouse.y); pctx.stroke();
+        }
+      }
+    }
+    pctx.globalCompositeOperation='source-over';
+
+    // 引爆粒子
+    for(var bi=bursts.length-1;bi>=0;bi--){
+      var bt=bursts[bi];
+      if(bt.ring){
+        bt.r+=6*DPR; bt.life-=0.03;
+        pctx.strokeStyle='hsla('+bt.hue+',100%,75%,'+Math.max(0,bt.life)+')';
+        pctx.lineWidth=2*DPR;
+        pctx.beginPath(); pctx.arc(bt.x,bt.y,bt.r,0,Math.PI*2); pctx.stroke();
+        if(bt.life<=0) bursts.splice(bi,1);
+      } else {
+        bt.x+=bt.vx; bt.y+=bt.vy; bt.vx*=0.96; bt.vy*=0.96; bt.vy+=0.02*DPR; bt.life-=0.018;
+        pctx.save(); pctx.globalAlpha=Math.max(0,bt.life);
+        pctx.fillStyle='hsl('+bt.hue+',100%,70%)';
+        pctx.shadowBlur=8*DPR; pctx.shadowColor='hsl('+bt.hue+',100%,70%)';
+        pctx.beginPath(); pctx.arc(bt.x,bt.y,bt.r,0,Math.PI*2); pctx.fill(); pctx.restore();
+        if(bt.life<=0) bursts.splice(bi,1);
+      }
+    }
+    rafId=requestAnimationFrame(frame);
   }
 
-  // ---- Fresnel soft-particle layer (rim-lit glow, bloom halo, hue-cycling, bursts, shooting stars) ----
-  (function () {
-    var fc = document.getElementById('welcome-fresnel');
-    if (!fc) return;
-    var fctx = fc.getContext('2d');
-    var FW, FH, fres = [], stars = [], fraf = null, frun = true;
-    var HUES = [190, 265, 325, 155, 215];
-    var expls = [], nextExpl = 0.7;
-    function spawnExplosion(x, y, inward) {
-      var n = inward ? 22 : 30, life = inward ? 0.85 : 1.0, sparks = [];
-      for (var k = 0; k < n; k++) {
-        var ang = Math.random() * 6.2832, hue = HUES[(Math.random() * HUES.length) | 0] + (Math.random() - .5) * 34;
-        if (inward) {
-          var rad = 120 + Math.random() * 180;
-          sparks.push({ x: x + Math.cos(ang) * rad, y: y + Math.sin(ang) * rad,
-            vx: -Math.cos(ang) * (140 + Math.random() * 200), vy: -Math.sin(ang) * (140 + Math.random() * 200),
-            hue: hue, life: life, age: 0, sz: 1.4 + Math.random() * 2.2 });
-        } else {
-          var spd = 130 + Math.random() * 250;
-          sparks.push({ x: x, y: y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
-            hue: hue, life: life, age: 0, sz: 1.4 + Math.random() * 2.6 });
-        }
-      }
-      expls.push({ x: x, y: y, inward: inward, age: 0, life: life, sparks: sparks });
-    }
-    function fresResize() { FW = fc.width = window.innerWidth; FH = fc.height = window.innerHeight; }
-    function spawnStar() {
-      var fromLeft = Math.random() < .5;
-      stars.push({
-        x: fromLeft ? -60 : FW + 60, y: Math.random() * FH * 0.7,
-        vx: (fromLeft ? 1 : -1) * (8 + Math.random() * 7),
-        vy: (Math.random() - .5) * 2.6, life: 0, max: 55 + Math.random() * 45,
-        hue: HUES[(Math.random() * HUES.length) | 0]
-      });
-    }
-    function respawn(p) {
-      p.x = Math.random() * FW; p.y = Math.random() * FH;
-      p.vx = (Math.random() - .5) * .4; p.vy = (Math.random() - .5) * .4;
-      p.r = 64 + Math.random() * 150; p.z = 0.35 + Math.random() * 0.65;
-      p.hue = HUES[(Math.random() * HUES.length) | 0] + (Math.random() - .5) * 44;
-      p.hueSp = 7 + Math.random() * 18; p.ph = Math.random() * 6.2832;
-      p.sp = 0.4 + Math.random() * 1.0; p.tw = 0.6 + Math.random() * 0.6;
-      p.burst = 0; p.nextBurst = 1.5 + Math.random() * 4;
-    }
-    function fresInit() {
-      fres = [];
-      for (var i = 0; i < 3; i++) { var p = {}; respawn(p); fres.push(p); }
-    }
-    var last = performance.now ? performance.now() : Date.now();
-    function fresTick(t) {
-      if (!frun) return;
-      var dt = Math.min(0.05, (t - last) / 1000); last = t;
-      fctx.clearRect(0, 0, FW, FH);
-      fctx.globalCompositeOperation = 'lighter';
-      var cx = FW / 2, cy = FH / 2;
-      if (Math.random() < 0.012 && stars.length < 6) spawnStar();
-      for (var s = stars.length - 1; s >= 0; s--) {
-        var st = stars[s]; st.x += st.vx; st.y += st.vy; st.life += 1;
-        var a = Math.max(0, 1 - st.life / st.max);
-        var tx = st.x - st.vx * 7, ty = st.y - st.vy * 7;
-        var lg = fctx.createLinearGradient(tx, ty, st.x, st.y);
-        lg.addColorStop(0, 'hsla(' + st.hue + ',100%,70%,0)');
-        lg.addColorStop(1, 'hsla(' + st.hue + ',100%,78%,' + (0.95 * a) + ')');
-        fctx.strokeStyle = lg; fctx.lineWidth = 2.6; fctx.lineCap = 'round';
-        fctx.beginPath(); fctx.moveTo(tx, ty); fctx.lineTo(st.x, st.y); fctx.stroke();
-        fctx.fillStyle = 'rgba(255,255,255,' + a + ')';
-        fctx.beginPath(); fctx.arc(st.x, st.y, 2.4, 0, 6.2832); fctx.fill();
-        if (st.life > st.max || st.x < -90 || st.x > FW + 90) stars.splice(s, 1);
-      }
-      for (var i = 0; i < fres.length; i++) {
-        var p = fres[i];
-        p.hue += p.hueSp * dt; if (p.hue > 360) p.hue -= 360; if (p.hue < 0) p.hue += 360;
-        p.nextBurst -= dt;
-        if (p.nextBurst <= 0) { p.burst = 1; p.nextBurst = 2 + Math.random() * 5; }
-        p.burst *= Math.pow(0.1, dt);
-        p.x += p.vx; p.y += p.vy;
-        p.vx *= 0.992; p.vy *= 0.992;
-        var sp = Math.hypot(p.vx, p.vy), max = 0.6 * p.z + 0.15;
-        if (sp > max) { p.vx = p.vx / sp * max; p.vy = p.vy / sp * max; }
-        if (p.x < -p.r * 1.3 || p.x > FW + p.r * 1.3 || p.y < -p.r * 1.3 || p.y > FH + p.r * 1.3) { respawn(p); }
-        var px = p.x, py = p.y;
-        var pulse = 1 + Math.sin(t * 0.001 * p.sp + p.ph) * 0.12 * p.tw;
-        var burstMul = 1 + p.burst * 0.55;
-        var R = p.r * p.z * pulse * burstMul;
-        var edge = Math.min(px, py, FW - px, FH - py);
-        var edgeFade = Math.max(0, Math.min(1, edge / (R * 1.1)));
-        var inten = (0.58 + 0.42 * Math.sin(t * 0.0007 * p.sp + p.ph)) * edgeFade;
-        inten = Math.min(1, inten * (1 + p.burst * 0.9));
-        var hue = p.hue.toFixed(1);
-        // outer bloom halo (very soft, bright)
-        var bg = fctx.createRadialGradient(px, py, R * 0.4, px, py, R * 1.55);
-        bg.addColorStop(0, 'hsla(' + hue + ',100%,66%,' + (0.18 * inten).toFixed(3) + ')');
-        bg.addColorStop(1, 'hsla(' + hue + ',100%,66%,0)');
-        fctx.fillStyle = bg;
-        fctx.beginPath(); fctx.arc(px, py, R * 1.55, 0, 6.2832); fctx.fill();
-        // Fresnel rim core (brighter now)
-        var g = fctx.createRadialGradient(px, py, R * 0.08, px, py, R);
-        g.addColorStop(0.0,  'hsla(' + hue + ',100%,72%,0)');
-        g.addColorStop(0.55, 'hsla(' + hue + ',100%,70%,' + (0.07 * inten).toFixed(3) + ')');
-        g.addColorStop(0.80, 'hsla(' + hue + ',100%,74%,' + (1.0 * inten).toFixed(3) + ')');
-        g.addColorStop(0.93, 'hsla(' + hue + ',100%,84%,' + (0.55 * inten).toFixed(3) + ')');
-        g.addColorStop(1.0,  'hsla(' + hue + ',100%,72%,0)');
-        fctx.fillStyle = g;
-        fctx.beginPath(); fctx.arc(px, py, R, 0, 6.2832); fctx.fill();
-        // bright core sparkle (brighter)
-        fctx.fillStyle = 'rgba(255,255,255,' + (0.24 * inten).toFixed(3) + ')';
-        fctx.beginPath(); fctx.arc(px, py, R * 0.07, 0, 6.2832); fctx.fill();
-      }
-      // ---- explosion bursts (inward implosion + outward blast) ----
-      nextExpl -= dt;
-      if (nextExpl <= 0) {
-        var inward = Math.random() < 0.3;
-        spawnExplosion(cx + (Math.random() - .5) * FW * 0.66, cy + (Math.random() - .5) * FH * 0.6, inward);
-        nextExpl = 1.1 + Math.random() * 1.3;
-      }
-      for (var e = expls.length - 1; e >= 0; e--) {
-        var ex = expls[e]; ex.age += dt;
-        var ep = ex.age / ex.life, hueE = ex.inward ? 288 : 192;
-        var ringR = ex.inward ? (1 - ep) * 230 : ep * 250;
-        var ringA = (1 - ep) * (ex.inward ? 0.5 : 0.62);
-        fctx.strokeStyle = 'hsla(' + hueE + ',100%,78%,' + ringA.toFixed(3) + ')';
-        fctx.lineWidth = 2.6 * (1 - ep) + 0.5;
-        fctx.beginPath(); fctx.arc(ex.x, ex.y, Math.max(1, ringR), 0, 6.2832); fctx.stroke();
-        var fl = (1 - ep) * (ex.inward ? 0.5 : 0.7), fr = 46 * (ex.inward ? (1 - ep) : 1);
-        var fg = fctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, Math.max(1, fr));
-        fg.addColorStop(0, 'hsla(' + hueE + ',100%,86%,' + fl.toFixed(3) + ')');
-        fg.addColorStop(1, 'hsla(' + hueE + ',100%,86%,0)');
-        fctx.fillStyle = fg; fctx.beginPath(); fctx.arc(ex.x, ex.y, Math.max(1, fr), 0, 6.2832); fctx.fill();
-        for (var s2 = 0; s2 < ex.sparks.length; s2++) {
-          var sp2 = ex.sparks[s2]; sp2.age += dt;
-          sp2.x += sp2.vx * dt; sp2.y += sp2.vy * dt; sp2.vx *= 0.97; sp2.vy *= 0.97;
-          var sa = Math.max(0, 1 - sp2.age / sp2.life);
-          var qx = sp2.x, qy = sp2.y;
-          var tx2 = qx - sp2.vx * 0.03, ty2 = qy - sp2.vy * 0.03;
-          var lg2 = fctx.createLinearGradient(tx2, ty2, qx, qy);
-          lg2.addColorStop(0, 'hsla(' + sp2.hue.toFixed(1) + ',100%,70%,0)');
-          lg2.addColorStop(1, 'hsla(' + sp2.hue.toFixed(1) + ',100%,80%,' + (0.95 * sa).toFixed(3) + ')');
-          fctx.strokeStyle = lg2; fctx.lineWidth = sp2.sz; fctx.lineCap = 'round';
-          fctx.beginPath(); fctx.moveTo(tx2, ty2); fctx.lineTo(qx, qy); fctx.stroke();
-          fctx.fillStyle = 'rgba(255,255,255,' + (0.9 * sa).toFixed(3) + ')';
-          fctx.beginPath(); fctx.arc(qx, qy, sp2.sz * 0.6, 0, 6.2832); fctx.fill();
-        }
-        if (ex.age > ex.life) expls.splice(e, 1);
-      }
-      fctx.globalCompositeOperation = 'source-over';
-      fraf = requestAnimationFrame(fresTick);
-    }
-    fresResize(); fresInit(); fresTick(performance.now ? performance.now() : Date.now());
-    window.addEventListener('resize', function () { fresResize(); fresInit(); });
-    window.__stopFresnel = function () { frun = false; if (fraf) cancelAnimationFrame(fraf); };
-  })();
+  window.addEventListener('resize',resize);
+  wel.addEventListener('mousemove',function(e){ var r=wel.getBoundingClientRect();
+    mouse.x=(e.clientX-r.left)*DPR; mouse.y=(e.clientY-r.top)*DPR; mouse.active=true;
+    if(welcomeBg){ var px=(e.clientX/innerWidth-0.5), py=(e.clientY/innerHeight-0.5);
+      welcomeBg.style.transform='translate('+(-px*26)+'px,'+(-py*26)+'px) scale(1.04)'; } });
+  wel.addEventListener('mouseleave',function(){ mouse.active=false; mouse.x=-9999; mouse.y=-9999;
+    if(welcomeBg) welcomeBg.style.transform='translate(0,0) scale(1.04)'; });
+  wel.addEventListener('click',function(e){
+    if(e.target.closest('.enter-btn')||e.target.closest('.why-btn')||e.target.closest('.win98')) return;
+    var r=wel.getBoundingClientRect(); spawnBurst((e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR);
+  });
+
+  window.__stopWelcome = function(){ if(rafId) cancelAnimationFrame(rafId); };
+  window.__stopFresnel = function(){};
+
+  resize();
+  rafId=requestAnimationFrame(frame);
 })();
-
 function openWhy() {
   var win = document.getElementById('whyWindow');
   var vid = document.getElementById('whyVideo');
@@ -5002,6 +5074,46 @@ window.addEventListener('DOMContentLoaded', ()=>{
   if(scrub) scrub.addEventListener('input', ()=>selectStage(parseInt(scrub.value,10)));
   setChainProgress(1);
 });
+</script>
+<script src="draftgen.js"></script>
+<script>
+(function(){
+  var cv=document.getElementById('cv'); if(!cv) return;
+  var ctx=cv.getContext('2d');
+  var dFocal='auto';
+  var dStatus=document.getElementById('denseStatus');
+  function dSetStatus(msg, cls){ dStatus.textContent=msg; dStatus.className='dense-status'+(cls?(' '+cls):''); }
+  function fillStyleSelect(list){ var sel=document.getElementById('dStyle'); sel.innerHTML='';
+    list.forEach(function(s){ var o=document.createElement('option'); o.value=s.key||''; o.textContent=(s.artist?(s.title?s.artist+' — '+s.title:s.artist):s.title); sel.appendChild(o); }); }
+  function loadStyles(){ try{
+      var list=(typeof DraftGen!=='undefined'&&DraftGen.listStyles)?DraftGen.listStyles():[];
+      fillStyleSelect([{key:'',title:'🎲 自动（随机挑经典 / 随机场景）'}].concat(list).concat([{key:'random_scene',artist:'纯随机',title:'随机场景（从零生成）'}]));
+    }catch(e){ dSetStatus('DraftGen 未加载：请确认 draftgen.js 已正确引入','err'); } }
+  document.getElementById('dfpGrid').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#dfpGrid button').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); dFocal=b.dataset.dfp; });
+  document.getElementById('genDense').addEventListener('click', function(){ genDense(); });
+  function genDense(){
+    if(typeof DraftGen==='undefined'||!DraftGen.generateRandomScene){ dSetStatus('DraftGen 未加载：请确认 draftgen.js 已引入','err'); return; }
+    var btn=document.getElementById('genDense');
+    var style=document.getElementById('dStyle').value||null;
+    var seedRaw=document.getElementById('dSeed').value.trim();
+    var seedNum=parseInt(seedRaw,10);
+    var seed=(seedRaw&&!isNaN(seedNum))?seedNum:null;
+    var density=+document.getElementById('dDensity').value;
+    btn.disabled=true; dSetStatus('⏳ 正在生成上万条随机线条…（浏览器渲染中）','busy');
+    requestAnimationFrame(function(){ try{
+      var t0=performance.now();
+      var res=DraftGen.generateRandomScene({ seed:seed, styleKey:style, focalIdx: dFocal==='auto'?null:+dFocal, density:density });
+      var canvas=res.canvas, meta=res.meta;
+      var gw=meta.w, gh=meta.h; cv.width=gw; cv.height=gh;
+      var sc=560/Math.max(gw,gh); cv.style.width=(gw*sc)+'px'; cv.style.height=(gh*sc)+'px';
+      ctx.clearRect(0,0,gw,gh); ctx.drawImage(canvas,0,0,gw,gh);
+      btn.disabled=false;
+      dSetStatus('✅ 已生成：'+(meta.style||'auto')+' · 焦点'+(meta.focal!=null?meta.focal:'-')+' · '+gw+'×'+gh+' · 密度×'+meta.density+' · '+Math.round(performance.now()-t0)+'ms','ok');
+    }catch(e){ dSetStatus('❌ 生成失败：'+e.message,'err'); btn.disabled=false; } });
+  }
+  loadStyles();
+})();
 </script>
 </body>
 </html>
