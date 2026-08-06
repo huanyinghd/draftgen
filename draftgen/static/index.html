@@ -460,7 +460,10 @@ body{ background: var(--bg); color: var(--text); }
 .header .shortcut-hint{ font-size:11px; color:var(--text-light); }
 
 /* ---------- Main / Canvas ---------- */
-.main{ display:flex; height: calc(100vh - 48px); position:relative; z-index:2; }
+.main{ display:flex; height: calc(100vh - 48px); position:relative; z-index:2;
+  /* 暗色主题变量覆盖：dg-neon 未重定义基础变量，这里在 .main 范围内翻成深色，不影响欢迎页 */
+  --bg:#0e0c16; --panel:rgba(20,18,32,.72); --card:rgba(22,20,34,.85);
+  --text:#e9e6f5; --text-light:#a9a3c4; --border:rgba(255,255,255,.14); }
 .canvas-area{
   flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
   background:
@@ -2647,13 +2650,27 @@ function drawLayoutLines(ctx, type) {
 // ============ 人物大师速写库（来自 figure-manifest.json，经 /static/figure-collection 代理） ============
 let figureCollection = [];
 async function loadFigureLibrary() {
+  // 人物速写图集（figure-collection）在仓库中缺失，回退到已存在的名作图集（art-collection），
+  // 保证「大师草稿 / 训练构图」标签页不为空、且均为真实作品。
   try {
-    const resp = await fetch('/static/figure-manifest.json');
-    if (resp.ok) figureCollection = await resp.json();
-  } catch (e) { console.warn('figure manifest load failed', e); }
+    const resp = await fetch('/static/art-manifest.json');
+    if (resp.ok) {
+      const arts = await resp.json();
+      figureCollection = arts.map(function (a) {
+        return { id: a.id, title: a.title, artist: a.artist, year: a.year,
+                 category: '综合草稿', type: a.type || 'painting' };
+      });
+    }
+  } catch (e) { console.warn('art manifest load failed', e); }
+  if (!figureCollection.length) {
+    try {
+      const resp2 = await fetch('/static/figure-manifest.json');
+      if (resp2.ok) figureCollection = await resp2.json();
+    } catch (e2) {}
+  }
   return figureCollection;
 }
-function figLocalUrl(item) { return '/static/figure-collection/' + item.id + '.jpg'; }
+function figLocalUrl(item) { return '/static/art-collection/' + item.id + '.jpg'; }
 function figImgError(img, item) {
   img.onerror = null;
   var key = 'fig_retry_' + item.id;
@@ -5140,7 +5157,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   setChainProgress(1);
 });
 </script>
-<script src="draftgen.js"></script>
+<script src="/static/draftgen.js"></script>
 <script>
 (function(){
   var cv=document.getElementById('cv'); if(!cv) return;
@@ -5180,5 +5197,39 @@ window.addEventListener('DOMContentLoaded', ()=>{
   loadStyles();
 })();
 </script>
+
+<style>
+/* ===== 工作室暗色强制覆盖：修复白色 UI 泄漏（不影响 #welcome 欢迎页） ===== */
+.main .guide-btn,.main .palette-actions button,.main .artist-card .palette-actions button,
+.main .layer-actions button,.main .draft-type-btn,.main .action-btn.secondary,
+.main .layout-btn,.main .version-item button,
+.main .layer-floating .lf-body .layer-item,.main .layer-floating .lf-actions button{
+  background:rgba(22,20,34,.85)!important; color:#e9e6f5!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+}
+.main .guide-btn:hover,.main .palette-actions button:hover,.main .artist-card .palette-actions button:hover,
+.main .layer-actions button:hover,.main .draft-type-btn:hover,.main .action-btn.secondary:hover,
+.main .layout-btn:hover,.main .version-item button:hover{
+  border-color:#8b5cf6!important; background:rgba(34,30,52,.95)!important; color:#fff!important;
+}
+.main .artist-card.selected{ background:rgba(40,34,66,.92)!important; }
+.main .complib-item{ background:rgba(22,20,34,.85)!important; border:1px solid rgba(255,255,255,.16)!important; }
+.main .complib-group .cnt{ background:rgba(22,20,34,.92)!important; color:#a9a3c4!important; }
+/* DraftGen 乱线面板（随机草稿）暗色 */
+.main .inp{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
+.main .fp-grid button{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
+.main .fp-grid button.auto{ background:rgba(22,20,34,.9)!important; }
+.main .dense-status{ background:rgba(16,14,26,.78)!important; color:#cfc9e6!important; border:1px dashed rgba(255,255,255,.2)!important; }
+.main .dense-status code{ background:rgba(255,255,255,.08)!important; color:#e9e6f5!important; }
+/* 工作室模态框（position:fixed，挂在 body 下，不在 .main 内） */
+.modal{ background:rgba(18,16,28,.97)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
+.artist-modal{ background:rgba(8,6,14,.7)!important; }
+.artist-modal-card{ background:rgba(18,16,28,.97)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
+.artist-works{ background:rgba(18,16,28,.97)!important; }
+.artist-works .aw-title{ color:#a9a3c4!important; }
+.aw-item{ background:rgba(22,20,34,.85)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
+.aw-item:hover{ border-color:#8b5cf6!important; }
+</style>
+
 </body>
 </html>
