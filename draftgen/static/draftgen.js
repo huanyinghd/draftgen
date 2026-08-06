@@ -194,16 +194,68 @@ class SketchEngine {
     ctx.restore();
   }
 
-  // 焦点处密集爆发（半径约画布短边的 1/6）
+  // 焦点处「随机散布」爆发：围绕主焦点生成若干随机子簇，
+  // 每个子簇有随机偏移、随机半径、随机密度（有疏有密），整体错落有致。
   focalBurst() {
+    if (!this.focal) return;
     const [fx, fy] = this.focal;
-    const r = Math.floor(Math.min(this.W, this.H) / 6);
-    const x0 = Math.max(0, fx - r), y0 = Math.max(0, fy - r);
-    const x1 = Math.min(this.W, fx + r), y1 = Math.min(this.H, fy + r);
-    this.addLines([x0, y0, x1, y1], 350, 0.0, Math.PI, [5, r], [1, 3], [50, 200], null);
-    this.addLines([x0, y0, x1, y1], 250, -1.56, Math.PI, [8, r * 0.7], [1, 2], [55, 190], null);
-    this.addArcs([x0, y0, x1, y1], 200, [5, r * 0.6], [1, 2], [60, 210], [2, 1, 1, 3], null);
-    this.addArcs([x0, y0, x1, y1], 150, [8, r * 0.4], [1, 3], [55, 200], [1, 2, 2, 1], null);
+    const baseR = Math.min(this.W, this.H) / 6;
+    const rnd = this.rng;
+    const ctx = this.ctx;
+
+    // 1) 主簇：紧贴焦点周围的几个随机团块
+    const clusters = [];
+    const mainCount = rnd.int(3, 6);
+    for (let i = 0; i < mainCount; i++) {
+      const ang = rnd.range(0, Math.PI * 2);
+      const dist = rnd.range(0, baseR * 0.7);
+      clusters.push({
+        cx: fx + Math.cos(ang) * dist,
+        cy: fy + Math.sin(ang) * dist,
+        cr: baseR * rnd.range(0.25, 0.95),
+        dens: rnd.range(0.45, 1.4), // 密度系数：有密有疏
+      });
+    }
+    // 2) 卫星簇：更远、更稀疏，向外散射
+    const sat = rnd.int(2, 4);
+    for (let i = 0; i < sat; i++) {
+      const ang = rnd.range(0, Math.PI * 2);
+      const dist = rnd.range(baseR * 0.7, baseR * 1.6);
+      clusters.push({
+        cx: fx + Math.cos(ang) * dist,
+        cy: fy + Math.sin(ang) * dist,
+        cr: baseR * rnd.range(0.15, 0.5),
+        dens: rnd.range(0.3, 0.7),
+      });
+    }
+
+    // 3) 子簇内部用纯随机分布（临时关闭向主焦点偏移），形成错落有致的密集团块
+    const savedFocal = this.focal;
+    this.focal = null;
+    for (const cl of clusters) {
+      const x0 = Math.max(0, cl.cx - cl.cr), y0 = Math.max(0, cl.cy - cl.cr);
+      const x1 = Math.min(this.W, cl.cx + cl.cr), y1 = Math.min(this.H, cl.cy + cl.cr);
+      const nLines = Math.max(40, Math.floor(200 * cl.dens));
+      const nArc = Math.max(24, Math.floor(120 * cl.dens));
+      // 直线：角度完全随机（全向散射）
+      this.addLines([x0, y0, x1, y1], nLines, rnd.range(0, Math.PI), Math.PI, [4, cl.cr * 1.3], [1, 3], [50, 205], null);
+      // 弧线：随机种类与半径
+      this.addArcs([x0, y0, x1, y1], nArc, [5, cl.cr * 0.7], [1, 3], [55, 210], [2, 1, 1, 3], null);
+    }
+    this.focal = savedFocal;
+
+    // 4) 子簇之间稀疏随机连线，串起整体节奏（有疏有密）
+    const linkN = rnd.int(50, 130);
+    for (let i = 0; i < linkN; i++) {
+      const a = rnd.pick(clusters), b = rnd.pick(clusters);
+      const ax = a.cx + rnd.range(-a.cr, a.cr), ay = a.cy + rnd.range(-a.cr, a.cr);
+      const bx = b.cx + rnd.range(-b.cr, b.cr), by = b.cy + rnd.range(-b.cr, b.cr);
+      const col = this._colorPick();
+      const al = rnd.int(35, 140);
+      ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(al / 255).toFixed(3)})`;
+      ctx.lineWidth = rnd.int(1, 2);
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+    }
   }
 
   getCanvas() { return this.canvas; }
