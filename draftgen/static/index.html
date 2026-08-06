@@ -1111,7 +1111,6 @@ body{ background: var(--bg); color: var(--text); }
       <div class="why-caption">每一次日出，都是世界又一次相信明天。<br>你落下的每一笔，也是在为某个更好的自己翻篇。</div>
     </div>
   </div>
-</div>
 
 <!-- 艺术家对话框 -->
 <div class="artist-modal" id="artistModal" style="display:none" onclick="if(event.target===this)closeArtistModal()">
@@ -1222,32 +1221,10 @@ body{ background: var(--bg); color: var(--text); }
       <span class="hint">拖动移动 · 拖角缩放 · 滚轮缩放</span>
     </div>
 
-    <!-- Floating Toolbar -->
-    <div class="float-toolbar" id="floatToolbar">
-      <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')" title="画笔 (B)">✏️</button>
+    <!-- Floating Toolbar：只保留铅笔 / 橡皮，颜色与粗细已移到右侧「色彩」面板 -->
+    <div class="float-toolbar slim" id="floatToolbar">
+      <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')" title="铅笔 (B)">✏️</button>
       <button class="tool-btn" id="btnEraser" onclick="setTool('eraser')" title="橡皮 (E)">🧹</button>
-      <button class="tool-btn" id="btnEyedropper" onclick="setTool('eyedropper')" title="吸管取色 (I)">💧</button>
-      <div class="divider"></div>
-      <div class="slider-group">
-        <label>大小</label>
-        <input type="range" id="brushSize" min="1" max="80" value="4" oninput="updateBrushSize(this.value)">
-      </div>
-      <div class="slider-group">
-        <label>透明</label>
-        <input type="range" id="brushOpacity" min="5" max="100" value="100" oninput="updateBrushOpacity(this.value)">
-      </div>
-      <div class="divider"></div>
-      <div class="color-preview" id="colorPreview" style="background:#000" onclick="toggleColorPalette()" title="画笔颜色 · 点击选色"></div>
-      <input type="color" id="colorPicker" value="#000000" onchange="setBrushColor(this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;">
-      <div id="colorPopover" class="color-popover">
-        <div class="cp-title">选择画笔颜色</div>
-        <div id="swatchGrid" class="swatch-grid"></div>
-        <div class="cp-custom"><input type="color" id="customColor" value="#000000" oninput="setBrushColor(this.value);var cp=document.getElementById('colorPicker');if(cp)cp.value=this.value;"> <span>自定义</span></div>
-      </div>
-      <div class="divider"></div>
-      <button class="tool-btn" onclick="importBrushTip()" title="导入笔尖PNG">🖌️</button>
-      <div class="divider"></div>
-      <button class="tool-btn" onclick="confirmReset()" title="重置画布">🗑️</button>
     </div>
 
     <!-- 顶部下载按钮：导出高清 PNG 位图 -->
@@ -1276,9 +1253,8 @@ body{ background: var(--bg); color: var(--text); }
   <!-- Right Panel -->
   <div class="right-panel">
     <div class="panel-tabs">
-      <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图</div>
+      <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图 · 随机生成</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
-      <div class="tab" data-tab="random" onclick="switchTab('random')">随机生成草稿</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
@@ -1287,6 +1263,27 @@ body{ background: var(--bg); color: var(--text); }
     <div class="panel-content">
       <!-- Compose Tab -->
       <div class="tab-content" id="tab-compose">
+        <!-- ===== 炸裂 Hero：随机草图生成器 ===== -->
+        <div class="fx-hero" id="fxHero">
+          <div class="fx-hero-inner">
+            <div class="fx-orb o1"></div><div class="fx-orb o2"></div><div class="fx-orb o3"></div>
+            <div class="fx-grid"></div>
+            <div class="fx-scan"></div>
+            <div class="fx-noise"></div>
+            <div class="fx-body">
+              <div class="fx-kicker"><i class="dot"></i>DRAFTGEN ／ COMPOSITION ENGINE<i class="dot"></i></div>
+              <div class="fx-title" data-text="随机构图生成器">随机构图生成器</div>
+              <p class="fx-sub">一键在左侧主画布生成草稿 · 拖动移动 · 滚轮缩放 · 「✓ 放入画布」确认</p>
+              <label class="fx-label">风格 STYLE</label>
+              <div class="fx-select-wrap"><select id="dStyle" class="fx-select"></select></div>
+              <button class="action primary big-gen fx-gen" id="genDense"><span class="fx-gen-t">✦ 生成随机草图</span></button>
+              <div class="fx-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fx-sep"><span></span><b>构图参考线 GUIDES</b><span></span></div>
+
         <div class="panel-section">
           <h3>基础构图参考线</h3>
           <div class="guide-grid">
@@ -1327,9 +1324,27 @@ body{ background: var(--bg); color: var(--text); }
 
       <!-- Color Tab -->
       <div class="tab-content" id="tab-color" style="display:none">
-        <div class="panel-section">
-          <h3>调色板已搬到画布</h3>
-          <p style="font-size:11px;color:var(--text-light)">16 色快速取色已贴在画布左上角，点一下即选色并直接作画；下方「艺术家油画配色」可把名画配色铺到画布。</p>
+        <div class="panel-section brush-panel">
+          <h3>🖌 画笔设置</h3>
+          <div class="bp-row">
+            <div class="color-chip" id="colorPreview" style="background:#000000"></div>
+            <div class="bp-meta">
+              <span class="bp-label">当前颜色</span>
+              <span class="bp-hex" id="colorHexLabel">#000000</span>
+            </div>
+            <label class="bp-native" title="自定义颜色">
+              <input type="color" id="colorPicker" value="#000000" oninput="setBrushColor(this.value)" onchange="setBrushColor(this.value)">
+              <span>＋自定义</span>
+            </label>
+          </div>
+          <div id="swatchGrid" class="swatch-grid"></div>
+          <div class="slider-row"><label>粗细</label><input type="range" id="brushSize" min="1" max="80" value="4" oninput="updateBrushSize(this.value);var v=document.getElementById('brushSizeVal');if(v)v.textContent=this.value"><span class="val" id="brushSizeVal">4</span></div>
+          <div class="slider-row"><label>透明</label><input type="range" id="brushOpacity" min="5" max="100" value="100" oninput="updateBrushOpacity(this.value);var v=document.getElementById('brushOpacityVal');if(v)v.textContent=this.value+'%'"><span class="val" id="brushOpacityVal">100%</span></div>
+          <div class="bp-actions">
+            <button class="action-btn secondary" id="bpEyedropper" onclick="setTool('eyedropper')">💧 吸管取色</button>
+            <button class="action-btn secondary" onclick="importBrushTip()">🖌️ 导入笔尖</button>
+            <button class="action-btn secondary" onclick="confirmReset()">🗑️ 重置画布</button>
+          </div>
         </div>
         <div class="panel-section">
           <h3>🎨 艺术家油画配色</h3>
@@ -1373,15 +1388,6 @@ body{ background: var(--bg); color: var(--text); }
         </div>
       </div>
 
-      <!-- Random Tab -->
-      <div class="tab-content" id="tab-random" style="display:none">
-        <div class="panel-section">
-          <h3>随机草图生成</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:14px">点击生成，草稿会直接出现在左侧主画布上；可拖动、滚轮缩放，再用「✓ 放入画布」确认。</p>
-          <label class="ttl" style="display:block;margin-bottom:6px;color:var(--text-light);font-size:12px;">风格</label>
-          <select id="dStyle" style="width:100%;margin-bottom:16px;"></select>
-          <button class="action primary big-gen" id="genDense">✦ 生成随机草图</button>
-        </div>
       <!-- Trainer Tab -->
       <div class="tab-content" id="tab-trainer" style="display:none">
         <div class="panel-section">
@@ -1683,9 +1689,10 @@ function setOrientation(o) {
 // ============ TOOLS ============
 function setTool(tool) {
   currentTool = tool;
-  document.getElementById('btnBrush').classList.toggle('active', tool==='brush');
-  document.getElementById('btnEraser').classList.toggle('active', tool==='eraser');
-  document.getElementById('btnEyedropper').classList.toggle('active', tool==='eyedropper');
+  const _bb = document.getElementById('btnBrush'); if (_bb) _bb.classList.toggle('active', tool==='brush');
+  const _be = document.getElementById('btnEraser'); if (_be) _be.classList.toggle('active', tool==='eraser');
+  const _bi = document.getElementById('btnEyedropper'); if (_bi) _bi.classList.toggle('active', tool==='eyedropper');
+  const _bp = document.getElementById('bpEyedropper'); if (_bp) _bp.classList.toggle('active', tool==='eyedropper');
   if (tool === 'eyedropper') {
     drawCanvas.style.cursor = 'copy';
   } else {
@@ -1704,7 +1711,12 @@ function updateBrushOpacity(val) {
 
 function setBrushColor(color) {
   brushColor = color;
-  document.getElementById('colorPreview').style.background = color;
+  const pv = document.getElementById('colorPreview'); if (pv) pv.style.background = color;
+  const hx = document.getElementById('colorHexLabel'); if (hx) hx.textContent = String(color).toUpperCase();
+  const cp = document.getElementById('colorPicker'); if (cp && cp.value !== color) cp.value = color;
+  document.querySelectorAll('#swatchGrid .swatch').forEach(function(s){
+    s.classList.toggle('on', (s.dataset.c||'').toLowerCase() === String(color).toLowerCase());
+  });
 }
 
 function rgbToHex(r, g, b) {
@@ -4587,10 +4599,11 @@ function switchTab(tabName) {
   if (el) el.style.display = 'block';
   if (tabName === 'complib') loadCompositionLibrary();
   if (tabName === 'gallery') switchGallery('master');
-  if (tabName === 'random') {
-    // 打开「随机生成草稿」标签即自动生成一张，点击就有图
+  if (tabName === 'compose' && !window.__composeAutoGenDone) {
+    // 首次进入「构图 · 随机生成」自动出一张，之后交给按钮
+    window.__composeAutoGenDone = true;
     const g = document.getElementById('genDense');
-    if (g && !g.disabled) setTimeout(function () { g.click(); }, 80);
+    if (g && !g.disabled) setTimeout(function () { g.click(); }, 120);
   }
 }
 
@@ -5249,30 +5262,30 @@ window.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 <script>
-// ===== 画笔色板弹层（点击色块出现，不再移动工具栏） =====
+// ===== 右侧「色彩」面板的画笔色板（常驻，点一下即生效） =====
 (function(){
-  var PRESETS = ['#000000','#ffffff','#e11d48','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#d946ef','#ec4899','#7c3aed','#0ea5e9','#15803d','#b45309','#9b2226','#475569','#78350f','#1f2937'];
+  var PRESETS = ['#000000','#3f3f46','#78716c','#ffffff','#e11d48','#f43f5e','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#9b2226','#78350f','#1e3a5f'];
   function buildSwatches(){
     var g = document.getElementById('swatchGrid'); if (!g) return;
     g.innerHTML = '';
     PRESETS.forEach(function(c){
       var s = document.createElement('button');
       s.type = 'button'; s.className = 'swatch'; s.style.background = c;
-      s.setAttribute('aria-label', c);
-      s.onclick = function(){ if (window.setBrushColor) setBrushColor(c); var cp = document.getElementById('colorPicker'); if (cp) cp.value = c; closeColorPalette(); };
+      s.dataset.c = c;
+      s.setAttribute('aria-label', c); s.title = c.toUpperCase();
+      s.addEventListener('click', function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        if (window.setBrushColor) window.setBrushColor(c);
+        if (window.setTool) window.setTool('brush');
+        if (window.showToast) window.showToast('已选颜色 ' + c.toUpperCase());
+      });
       g.appendChild(s);
     });
+    if (window.setBrushColor) window.setBrushColor('#000000');
   }
-  function openColorPalette(){ var p = document.getElementById('colorPopover'); if (p) p.style.display = 'block'; }
-  function closeColorPalette(){ var p = document.getElementById('colorPopover'); if (p) p.style.display = 'none'; }
-  window.toggleColorPalette = function(){ var p = document.getElementById('colorPopover'); if (!p) return; if (p.style.display === 'block') closeColorPalette(); else openColorPalette(); };
-  window.closeColorPalette = closeColorPalette;
-  document.addEventListener('click', function(e){
-    var p = document.getElementById('colorPopover'); if (!p || p.style.display !== 'block') return;
-    var t = e.target;
-    if (t && (t.id === 'colorPreview' || (t.closest && (t.closest('#colorPreview') || t.closest('#colorPopover'))))) return;
-    closeColorPalette();
-  });
+  // 旧接口留空实现，避免历史调用报错
+  window.toggleColorPalette = function(){ if (window.switchTab) window.switchTab('color'); };
+  window.closeColorPalette = function(){};
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildSwatches);
   else buildSwatches();
 })();
@@ -5313,15 +5326,167 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* 顶部下载按钮（导出高清 PNG） */
 .main .float-dl{ position:absolute; top:12px; right:16px; z-index:55; background:linear-gradient(135deg,#22D3EE,#8B5CF6); color:#fff; border:none; border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(139,92,246,.45); }
 .main .float-dl:hover{ opacity:.92; }
-/* 画笔色板弹层 */
-.main .color-popover{ display:none; position:absolute; left:54px; top:50%; transform:translateY(-50%); z-index:60; width:188px; background:rgba(18,16,28,.98); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:10px; box-shadow:0 8px 28px rgba(0,0,0,.5); }
-.main .color-popover .cp-title{ font-size:11px; color:#a9a3c4; margin-bottom:8px; }
-.main .color-popover .swatch-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
-.main .color-popover .swatch{ width:22px; height:22px; border-radius:6px; border:1px solid rgba(255,255,255,.25); cursor:pointer; padding:0; transition:transform .12s; }
-.main .color-popover .swatch:hover{ transform:scale(1.12); border-color:#fff; }
-.main .color-popover .cp-custom{ display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#a9a3c4; }
-.main .color-popover .cp-custom input[type=color]{ width:30px; height:30px; border:none; background:none; padding:0; cursor:pointer; }
+/* ================= 左侧工具栏：精简为铅笔 + 橡皮 ================= */
+.main .float-toolbar.slim{ padding:8px; gap:8px; }
+.main .float-toolbar.slim .tool-btn{ width:44px; height:44px; font-size:21px; border-radius:13px; }
+.main .float-toolbar.slim .tool-btn.active{ box-shadow:0 0 22px rgba(139,92,246,.75); }
+
+/* ================= 右侧「色彩」→ 画笔设置 ================= */
+.main .brush-panel .bp-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.main .brush-panel .color-chip{ width:38px; height:38px; border-radius:11px; border:2px solid rgba(255,255,255,.28); box-shadow:0 0 14px rgba(0,0,0,.5); flex:0 0 auto; }
+.main .brush-panel .bp-meta{ display:flex; flex-direction:column; line-height:1.35; flex:1; min-width:0; }
+.main .brush-panel .bp-label{ font-size:10px; color:#a9a3c4; letter-spacing:1px; }
+.main .brush-panel .bp-hex{ font-size:13px; font-weight:800; color:#e9e6f5; font-variant-numeric:tabular-nums; }
+.main .brush-panel .bp-native{ position:relative; display:inline-flex; align-items:center; gap:5px; font-size:11px; color:#e9e6f5; padding:7px 10px; border-radius:9px; cursor:pointer; background:rgba(139,92,246,.16); border:1px solid rgba(139,92,246,.45); white-space:nowrap; }
+.main .brush-panel .bp-native:hover{ background:rgba(139,92,246,.3); box-shadow:0 0 14px rgba(139,92,246,.45); }
+.main .brush-panel .bp-native input[type=color]{ position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
+.main #swatchGrid.swatch-grid{ display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin-bottom:12px; }
+.main #swatchGrid .swatch{ width:100%; aspect-ratio:1; border-radius:7px; border:1px solid rgba(255,255,255,.22); cursor:pointer; padding:0; transition:transform .12s, box-shadow .15s; }
+.main #swatchGrid .swatch:hover{ transform:scale(1.18); border-color:#fff; box-shadow:0 0 12px rgba(255,255,255,.35); z-index:2; }
+.main #swatchGrid .swatch.on{ border:2px solid #fff; box-shadow:0 0 0 2px #8b5cf6, 0 0 14px rgba(139,92,246,.8); transform:scale(1.1); }
+.main .brush-panel .slider-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:11px; color:#a9a3c4; }
+.main .brush-panel .slider-row input[type=range]{ flex:1; accent-color:#8b5cf6; }
+.main .brush-panel .slider-row .val{ min-width:38px; text-align:right; color:#e9e6f5; font-variant-numeric:tabular-nums; }
+.main .brush-panel .bp-actions{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; }
+.main .brush-panel .bp-actions .action-btn{ margin:0; font-size:11px; padding:8px 6px; }
+.main .brush-panel .bp-actions .action-btn:last-child{ grid-column:1 / -1; }
+.main #bpEyedropper.active{ border-color:#22d3ee!important; background:rgba(34,211,238,.18)!important; color:#fff!important; box-shadow:0 0 14px rgba(34,211,238,.5)!important; }
+
+/* ================= 炸裂 Hero：随机构图生成器 ================= */
+.main #tab-compose{ position:relative; }
+.main .fx-hero{ position:relative; border-radius:20px; padding:2px; overflow:hidden; margin-bottom:16px; isolation:isolate;
+  box-shadow:0 20px 55px rgba(0,0,0,.6), 0 0 34px rgba(139,92,246,.3); }
+.main .fx-hero::before{ content:''; position:absolute; z-index:0; left:50%; top:50%; width:200%; height:200%; transform:translate(-50%,-50%);
+  background:conic-gradient(from 0deg,#22d3ee,#8b5cf6,#ec4899,#f59e0b,#22d3ee); animation:fxspin 5s linear infinite; }
+@keyframes fxspin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
+.main .fx-hero-inner{ position:relative; z-index:1; border-radius:18px; overflow:hidden; padding:16px 14px 16px;
+  background:linear-gradient(165deg,rgba(12,10,22,.97),rgba(26,17,46,.97) 55%,rgba(10,18,30,.97)); }
+.main .fx-body{ position:relative; z-index:4; }
+.main .fx-orb{ position:absolute; border-radius:50%; filter:blur(30px); opacity:.5; pointer-events:none; z-index:0; }
+.main .fx-orb.o1{ width:150px; height:150px; background:#22d3ee; left:-46px; top:-46px; animation:fxfloat1 9s ease-in-out infinite; }
+.main .fx-orb.o2{ width:170px; height:170px; background:#8b5cf6; right:-56px; top:20%; animation:fxfloat2 11s ease-in-out infinite; }
+.main .fx-orb.o3{ width:130px; height:130px; background:#ec4899; left:22%; bottom:-52px; animation:fxfloat3 8s ease-in-out infinite; }
+@keyframes fxfloat1{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(26px,20px) scale(1.18)} }
+@keyframes fxfloat2{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-22px,26px) scale(.85)} }
+@keyframes fxfloat3{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(18px,-22px) scale(1.22)} }
+.main .fx-grid{ position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(120% 90% at 50% 35%,#000 30%,transparent 78%);
+  mask-image:radial-gradient(120% 90% at 50% 35%,#000 30%,transparent 78%); }
+.main .fx-scan{ position:absolute; left:0; right:0; height:42%; z-index:2; pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(34,211,238,.16),rgba(139,92,246,.1),transparent); animation:fxscan 3.8s linear infinite; }
+@keyframes fxscan{ 0%{ top:-45% } 100%{ top:112% } }
+.main .fx-noise{ position:absolute; inset:0; z-index:3; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+  background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.6) 0 1px,transparent 1px 3px); }
+.main .fx-kicker{ display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:2.4px; color:#8ee7f7; opacity:.9; margin-bottom:7px; font-weight:700; }
+.main .fx-kicker .dot{ width:5px; height:5px; border-radius:50%; background:#22d3ee; box-shadow:0 0 10px #22d3ee; animation:fxblink 1.4s ease-in-out infinite; }
+@keyframes fxblink{ 0%,100%{opacity:.25; transform:scale(.7)} 50%{opacity:1; transform:scale(1.25)} }
+.main .fx-title{ position:relative; font-size:23px; font-weight:900; letter-spacing:2px; line-height:1.15;
+  background:linear-gradient(92deg,#22d3ee,#8b5cf6,#ec4899,#f59e0b,#22d3ee); background-size:320% auto;
+  -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
+  animation:fxflow 4.5s linear infinite; filter:drop-shadow(0 0 14px rgba(139,92,246,.55)); }
+@keyframes fxflow{ to{ background-position:320% center; } }
+.main .fx-title::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%;
+  color:#22d3ee; -webkit-text-fill-color:#22d3ee; background:none; mix-blend-mode:screen; opacity:0; animation:fxglitch 6s infinite; }
+@keyframes fxglitch{
+  0%,88%,100%{ opacity:0; transform:none; clip-path:none; }
+  89%{ opacity:.85; transform:translate(-3px,1px); clip-path:inset(12% 0 62% 0); }
+  91%{ opacity:.85; transform:translate(3px,-1px); clip-path:inset(58% 0 18% 0); }
+  93%{ opacity:.7; transform:translate(-2px,0); clip-path:inset(34% 0 44% 0); }
+  95%{ opacity:0; }
+}
+.main .fx-sub{ font-size:11px; color:#a9a3c4!important; margin:7px 0 12px; line-height:1.65; }
+.main .fx-label{ display:block; font-size:9.5px; letter-spacing:2px; color:#8ee7f7; margin-bottom:6px; font-weight:700; }
+.main .fx-select-wrap{ position:relative; border-radius:11px; padding:1px; background:linear-gradient(120deg,#22d3ee,#8b5cf6,#ec4899); background-size:220% auto; animation:fxflow 6s linear infinite; }
+.main .fx-select-wrap #dStyle{ width:100%; border:none!important; border-radius:10px; background:rgba(10,8,18,.94)!important; color:#e9e6f5!important; padding:10px 11px!important; font-size:13px; outline:none; }
+.main #genDense.fx-gen{ position:relative; display:block; width:100%; margin-top:13px; border:none; border-radius:14px;
+  padding:17px 12px!important; font-size:16px!important; font-weight:900; letter-spacing:3px; color:#fff; cursor:pointer; overflow:hidden;
+  background:linear-gradient(115deg,#22d3ee,#8b5cf6,#ec4899,#f59e0b,#22d3ee); background-size:320% auto;
+  animation:fxflow 3s linear infinite, fxpulse 2.2s ease-in-out infinite; transition:transform .14s; }
+@keyframes fxpulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,.6), 0 10px 30px rgba(0,0,0,.55); } 50%{ box-shadow:0 0 0 12px rgba(139,92,246,0), 0 12px 34px rgba(0,0,0,.6); } }
+.main #genDense.fx-gen::before{ content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(105deg,transparent 32%,rgba(255,255,255,.6) 50%,transparent 68%); transform:translateX(-130%); animation:fxsheen 2.8s ease-in-out infinite; }
+@keyframes fxsheen{ 0%{transform:translateX(-130%)} 55%,100%{transform:translateX(130%)} }
+.main #genDense.fx-gen .fx-gen-t{ position:relative; z-index:2; text-shadow:0 2px 10px rgba(0,0,0,.45); }
+.main #genDense.fx-gen:hover{ transform:translateY(-2px) scale(1.015); }
+.main #genDense.fx-gen:active{ transform:scale(.97); }
+.main #genDense.fx-gen[disabled]{ filter:grayscale(.5) brightness(.8); animation:none; cursor:progress; }
+.main .fx-bars{ display:flex; align-items:flex-end; gap:3px; height:20px; margin-top:12px; opacity:.7; }
+.main .fx-bars i{ flex:1; height:20%; border-radius:2px; background:linear-gradient(180deg,#22d3ee,#8b5cf6); animation:fxbar 1.15s ease-in-out infinite; }
+@keyframes fxbar{ 0%,100%{ height:18% } 50%{ height:100% } }
+.main .fx-bars i:nth-child(3n){ animation-duration:.85s } .main .fx-bars i:nth-child(3n+1){ animation-duration:1.45s }
+.main .fx-bars i:nth-child(2){animation-delay:.08s} .main .fx-bars i:nth-child(3){animation-delay:.16s} .main .fx-bars i:nth-child(4){animation-delay:.24s}
+.main .fx-bars i:nth-child(5){animation-delay:.32s} .main .fx-bars i:nth-child(6){animation-delay:.4s} .main .fx-bars i:nth-child(7){animation-delay:.48s}
+.main .fx-bars i:nth-child(8){animation-delay:.56s} .main .fx-bars i:nth-child(9){animation-delay:.64s} .main .fx-bars i:nth-child(10){animation-delay:.72s}
+.main .fx-bars i:nth-child(11){animation-delay:.8s} .main .fx-bars i:nth-child(12){animation-delay:.88s} .main .fx-bars i:nth-child(13){animation-delay:.96s}
+.main .fx-bars i:nth-child(14){animation-delay:1.04s} .main .fx-bars i:nth-child(15){animation-delay:1.12s} .main .fx-bars i:nth-child(16){animation-delay:.2s}
+.main .fx-bars i:nth-child(17){animation-delay:.36s} .main .fx-bars i:nth-child(18){animation-delay:.52s} .main .fx-bars i:nth-child(19){animation-delay:.68s}
+.main .fx-bars i:nth-child(20){animation-delay:.84s} .main .fx-bars i:nth-child(21){animation-delay:1s} .main .fx-bars i:nth-child(22){animation-delay:.12s}
+.main .fx-bars i:nth-child(23){animation-delay:.28s} .main .fx-bars i:nth-child(24){animation-delay:.44s}
+
+/* 分隔条 */
+.main .fx-sep{ display:flex; align-items:center; gap:9px; margin:4px 0 14px; }
+.main .fx-sep span{ flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(139,92,246,.75),transparent); }
+.main .fx-sep b{ font-size:9.5px; letter-spacing:2.4px; color:#8ee7f7; font-weight:800; white-space:nowrap; text-shadow:0 0 12px rgba(34,211,238,.6); }
+
+/* 构图按钮：霓虹扫光 */
+.main #tab-compose .guide-btn{ position:relative; overflow:hidden; z-index:0; transition:transform .16s, box-shadow .2s, border-color .2s; }
+.main #tab-compose .guide-btn::after{ content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(100deg,transparent 34%,rgba(255,255,255,.3) 50%,transparent 66%); transform:translateX(-140%); transition:transform .6s ease; }
+.main #tab-compose .guide-btn:hover::after{ transform:translateX(140%); }
+.main #tab-compose .guide-btn:hover{ transform:translateY(-2px); border-color:#22d3ee!important;
+  box-shadow:0 0 18px rgba(34,211,238,.5), inset 0 0 16px rgba(34,211,238,.14); color:#fff!important; }
+.main #tab-compose .guide-btn.active{ background:linear-gradient(135deg,#22d3ee,#8b5cf6 60%,#ec4899)!important; background-size:200% auto!important;
+  border-color:transparent!important; color:#fff!important; font-weight:800; animation:fxflow 3.5s linear infinite, fxactive 2s ease-in-out infinite; }
+@keyframes fxactive{ 0%,100%{ box-shadow:0 0 14px rgba(139,92,246,.55) } 50%{ box-shadow:0 0 26px rgba(236,72,153,.8) } }
+.main #tab-compose .panel-section h3{ text-transform:none; }
+.main #tab-compose .panel-section h3::before{ animation:fxblink 2s ease-in-out infinite; }
+
+/* 点击生成时的火花粒子 */
+.fx-spark{ position:fixed; width:7px; height:7px; border-radius:50%; pointer-events:none; z-index:9999; will-change:transform,opacity; }
+
+@media (prefers-reduced-motion: reduce){
+  .main .fx-hero::before,.main .fx-scan,.main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
+}
 </style>
+
+<script>
+// ===== 生成按钮火花爆裂 =====
+(function(){
+  function burst(x, y){
+    var cols = ['#22d3ee','#8b5cf6','#ec4899','#f59e0b','#ffffff'];
+    for (var i = 0; i < 26; i++){
+      (function(i){
+        var s = document.createElement('div');
+        s.className = 'fx-spark';
+        var c = cols[i % cols.length];
+        s.style.background = c;
+        s.style.boxShadow = '0 0 10px ' + c;
+        s.style.left = x + 'px'; s.style.top = y + 'px';
+        var ang = (Math.PI * 2 * i) / 26 + Math.random() * 0.4;
+        var dist = 70 + Math.random() * 130;
+        document.body.appendChild(s);
+        var anim = s.animate([
+          { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+          { transform: 'translate(' + (Math.cos(ang)*dist - 50) + '%,' + (Math.sin(ang)*dist + 40 - 50) + '%) scale(0)', opacity: 0 }
+        ], { duration: 620 + Math.random() * 380, easing: 'cubic-bezier(.15,.7,.3,1)' });
+        anim.onfinish = function(){ s.remove(); };
+      })(i);
+    }
+  }
+  function hook(){
+    var g = document.getElementById('genDense');
+    if (!g) return;
+    g.addEventListener('click', function(e){
+      var r = g.getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + r.height / 2);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook);
+  else hook();
+})();
+</script>
 
 </body>
 </html>
