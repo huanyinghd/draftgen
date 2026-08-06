@@ -4331,8 +4331,9 @@ async function getAllDrafts() {
 }
 
 async function loadGallery() {
-  const drafts = await getAllDrafts();
   const grid = document.getElementById('galleryGrid');
+  if (!grid) return;   // 旧草稿画廊容器已重构，缺失时直接跳过，避免中断初始化
+  const drafts = await getAllDrafts();
   grid.innerHTML = '';
   drafts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   drafts.forEach(d => {
