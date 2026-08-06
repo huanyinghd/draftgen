@@ -1237,13 +1237,21 @@ body{ background: var(--bg); color: var(--text); }
         <input type="range" id="brushOpacity" min="5" max="100" value="100" oninput="updateBrushOpacity(this.value)">
       </div>
       <div class="divider"></div>
-      <div class="color-preview" id="colorPreview" style="background:#000" onclick="document.getElementById('colorPicker').click()" title="画笔颜色"></div>
-      <input type="color" id="colorPicker" value="#000000" onchange="setBrushColor(this.value)">
+      <div class="color-preview" id="colorPreview" style="background:#000" onclick="toggleColorPalette()" title="画笔颜色 · 点击选色"></div>
+      <input type="color" id="colorPicker" value="#000000" onchange="setBrushColor(this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;">
+      <div id="colorPopover" class="color-popover">
+        <div class="cp-title">选择画笔颜色</div>
+        <div id="swatchGrid" class="swatch-grid"></div>
+        <div class="cp-custom"><input type="color" id="customColor" value="#000000" oninput="setBrushColor(this.value);var cp=document.getElementById('colorPicker');if(cp)cp.value=this.value;"> <span>自定义</span></div>
+      </div>
       <div class="divider"></div>
       <button class="tool-btn" onclick="importBrushTip()" title="导入笔尖PNG">🖌️</button>
       <div class="divider"></div>
       <button class="tool-btn" onclick="confirmReset()" title="重置画布">🗑️</button>
     </div>
+
+    <!-- 顶部下载按钮：导出高清 PNG 位图 -->
+    <button class="float-dl" id="floatDownload" onclick="exportPNG()" title="导出高清 PNG 位图">⬇ 下载 PNG</button>
 
     <!-- Palette Strip (选中调色板后，画笔相关颜色一次性出现) -->
     <div class="palette-strip" id="paletteStrip">
@@ -1267,55 +1275,48 @@ body{ background: var(--bg); color: var(--text); }
 
   <!-- Right Panel -->
   <div class="right-panel">
-    <!-- 绘画链 追踪条 -->
-    <div class="chain-bar" id="chainBar">
-      <button class="chain-step" data-step="1" onclick="chainStep(1)">
-        <span class="chain-num">1</span>
-        <span class="chain-label">草图</span>
-        <span class="chain-act"><svg class="dice-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg> 生成</span>
-      </button>
-      <span class="chain-arrow">→</span>
-      <button class="chain-step" data-step="2" onclick="chainStep(2)">
-        <span class="chain-num">2</span>
-        <span class="chain-label">配色</span>
-        <span class="chain-act">🎨 上色</span>
-      </button>
-      <span class="chain-arrow">→</span>
-      <button class="chain-step" data-step="3" onclick="chainStep(3)">
-        <span class="chain-num">3</span>
-        <span class="chain-label">剪辑</span>
-        <span class="chain-act">🎬 过程</span>
-      </button>
-    </div>
-
     <div class="panel-tabs">
       <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
-      <div class="tab" data-tab="layer" onclick="switchTab('layer')">图层</div>
       <div class="tab" data-tab="random" onclick="switchTab('random')">随机生成草稿</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
-      <div class="tab" data-tab="complib" onclick="switchTab('complib')">构图库</div>
-      <div class="tab" data-tab="gallery" onclick="switchTab('gallery')">美术馆</div>
       <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
-      <div class="tab" data-tab="export" onclick="switchTab('export')">导出</div>
-      <div class="tab" data-tab="process" onclick="switchTab('process')">过程剪辑</div>
     </div>
 
     <div class="panel-content">
       <!-- Compose Tab -->
       <div class="tab-content" id="tab-compose">
         <div class="panel-section">
-          <h3>构图参考线</h3>
+          <h3>基础构图参考线</h3>
           <div class="guide-grid">
-            <button class="guide-btn" onclick="toggleGuide('thirds')">三分法</button>
-            <button class="guide-btn" onclick="toggleGuide('perspective')">透视网格</button>
-            <button class="guide-btn" onclick="toggleGuide('golden')">黄金螺旋</button>
-            <button class="guide-btn" onclick="toggleGuide('symmetry')">对称线</button>
-            <button class="guide-btn" onclick="toggleGuide('random')">随机参考点</button>
+            <button class="guide-btn" data-guide="thirds" onclick="toggleGuide('thirds')">三分法</button>
+            <button class="guide-btn" data-guide="perspective" onclick="toggleGuide('perspective')">透视网格</button>
+            <button class="guide-btn" data-guide="golden" onclick="toggleGuide('golden')">黄金螺旋</button>
+            <button class="guide-btn" data-guide="symmetry" onclick="toggleGuide('symmetry')">对称线</button>
+            <button class="guide-btn" data-guide="random" onclick="toggleGuide('random')">随机参考点</button>
             <button class="guide-btn" onclick="clearGuide()">清除参考线</button>
           </div>
           <div class="guide-hint" id="guideHint">选择一种构图参考线，辅助画面布局。</div>
+        </div>
+        <div class="panel-section">
+          <h3>进阶构图线</h3>
+          <label class="ttl" style="display:block;color:var(--text-light);font-size:12px;margin-bottom:6px;">焦点 / 视线</label>
+          <div class="guide-grid">
+            <button class="guide-btn" data-guide="thirds-focus" onclick="toggleGuide('thirds-focus')">井字格四点视线</button>
+          </div>
+          <label class="ttl" style="display:block;color:var(--text-light);font-size:12px;margin:10px 0 6px;">对称构图主视线</label>
+          <div class="guide-grid">
+            <button class="guide-btn" data-guide="symmetry-v" onclick="toggleGuide('symmetry-v')">竖轴</button>
+            <button class="guide-btn" data-guide="symmetry-h" onclick="toggleGuide('symmetry-h')">横轴</button>
+            <button class="guide-btn" data-guide="symmetry-d1" onclick="toggleGuide('symmetry-d1')">斜轴 ↘</button>
+            <button class="guide-btn" data-guide="symmetry-d2" onclick="toggleGuide('symmetry-d2')">斜轴 ↙</button>
+          </div>
+          <label class="ttl" style="display:block;color:var(--text-light);font-size:12px;margin:10px 0 6px;">分割 / 稳定</label>
+          <div class="guide-grid">
+            <button class="guide-btn" data-guide="golden-pts" onclick="toggleGuide('golden-pts')">黄金分割点</button>
+            <button class="guide-btn" data-guide="triangle" onclick="toggleGuide('triangle')">三角形稳定构图</button>
+          </div>
         </div>
         <div class="panel-section">
           <h3>构图分析</h3>
@@ -2051,8 +2052,7 @@ function toggleGuide(type) {
   }
   activeGuide = type;
   document.querySelectorAll('.guide-btn').forEach(b => {
-    if (b.textContent.includes(type === 'thirds' ? '三分' : type === 'perspective' ? '透视' : type === 'golden' ? '黄金' : type === 'symmetry' ? '对称' : '随机'))
-      b.classList.add('active');
+    if (b.dataset.guide === type) b.classList.add('active');
   });
   document.getElementById('guideHint').textContent = guideHints[type] || '';
   drawGuide(type);
@@ -2176,6 +2176,70 @@ function drawGuide(type) {
       guideCtx.moveTo(x, y - 15); guideCtx.lineTo(x, y + 15);
       guideCtx.stroke();
     }
+  } else if (type === 'thirds-focus') {
+    guideCtx.setLineDash([10, 6]);
+    guideCtx.lineWidth = 2;
+    guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.6)';
+    for (let i = 1; i <= 2; i++) {
+      guideCtx.beginPath();
+      guideCtx.moveTo(canvasW * i / 3, 0); guideCtx.lineTo(canvasW * i / 3, canvasH);
+      guideCtx.moveTo(0, canvasH * i / 3); guideCtx.lineTo(canvasW, canvasH * i / 3);
+      guideCtx.stroke();
+    }
+    const tfpts = [[canvasW/3, canvasH/3], [canvasW*2/3, canvasH/3], [canvasW/3, canvasH*2/3], [canvasW*2/3, canvasH*2/3]];
+    tfpts.forEach(function(p) {
+      const px = p[0], py = p[1];
+      guideCtx.setLineDash([4, 4]);
+      guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.7)';
+      guideCtx.lineWidth = 1.5;
+      guideCtx.beginPath();
+      guideCtx.moveTo(0, 0); guideCtx.lineTo(px, py);
+      guideCtx.moveTo(canvasW, 0); guideCtx.lineTo(px, py);
+      guideCtx.moveTo(0, canvasH); guideCtx.lineTo(px, py);
+      guideCtx.moveTo(canvasW, canvasH); guideCtx.lineTo(px, py);
+      guideCtx.stroke();
+      guideCtx.setLineDash([]);
+      guideCtx.fillStyle = 'rgba(232, 116, 44, 0.95)';
+      guideCtx.beginPath(); guideCtx.arc(px, py, 9, 0, Math.PI * 2); guideCtx.fill();
+      guideCtx.fillStyle = 'rgba(255,255,255,0.9)';
+      guideCtx.beginPath(); guideCtx.arc(px, py, 3.5, 0, Math.PI * 2); guideCtx.fill();
+    });
+  } else if (type === 'symmetry-v' || type === 'symmetry-h' || type === 'symmetry-d1' || type === 'symmetry-d2') {
+    guideCtx.setLineDash([]);
+    guideCtx.lineWidth = 3; guideCtx.strokeStyle = 'rgba(232, 116, 44, 0.9)';
+    guideCtx.beginPath();
+    if (type === 'symmetry-v') { guideCtx.moveTo(canvasW/2, 0); guideCtx.lineTo(canvasW/2, canvasH); }
+    else if (type === 'symmetry-h') { guideCtx.moveTo(0, canvasH/2); guideCtx.lineTo(canvasW, canvasH/2); }
+    else if (type === 'symmetry-d1') { guideCtx.moveTo(0, 0); guideCtx.lineTo(canvasW, canvasH); }
+    else { guideCtx.moveTo(canvasW, 0); guideCtx.lineTo(0, canvasH); }
+    guideCtx.stroke();
+    guideCtx.setLineDash([8, 6]); guideCtx.lineWidth = 1; guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.35)';
+    guideCtx.beginPath();
+    if (type === 'symmetry-v') { guideCtx.moveTo(0, canvasH/2); guideCtx.lineTo(canvasW, canvasH/2); }
+    else if (type === 'symmetry-h') { guideCtx.moveTo(canvasW/2, 0); guideCtx.lineTo(canvasW/2, canvasH); }
+    else if (type === 'symmetry-d1') { guideCtx.moveTo(0, canvasH); guideCtx.lineTo(canvasW, 0); }
+    else { guideCtx.moveTo(0, 0); guideCtx.lineTo(canvasW, canvasH); }
+    guideCtx.stroke();
+  } else if (type === 'golden-pts') {
+    const gx1 = canvasW * 0.382, gx2 = canvasW * 0.618, gy1 = canvasH * 0.382, gy2 = canvasH * 0.618;
+    guideCtx.setLineDash([10, 6]); guideCtx.lineWidth = 2; guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.7)';
+    guideCtx.beginPath();
+    guideCtx.moveTo(gx1, 0); guideCtx.lineTo(gx1, canvasH);
+    guideCtx.moveTo(gx2, 0); guideCtx.lineTo(gx2, canvasH);
+    guideCtx.moveTo(0, gy1); guideCtx.lineTo(canvasW, gy1);
+    guideCtx.moveTo(0, gy2); guideCtx.lineTo(canvasW, gy2);
+    guideCtx.stroke();
+    guideCtx.setLineDash([]);
+    [[gx1, gy1], [gx2, gy1], [gx1, gy2], [gx2, gy2]].forEach(function(p) {
+      guideCtx.fillStyle = 'rgba(232, 116, 44, 0.95)';
+      guideCtx.beginPath(); guideCtx.arc(p[0], p[1], 8, 0, Math.PI * 2); guideCtx.fill();
+    });
+  } else if (type === 'triangle') {
+    const A = [canvasW * 0.333, canvasH * 0.667], B = [canvasW * 0.667, canvasH * 0.667], C = [canvasW * 0.5, canvasH * 0.333];
+    guideCtx.setLineDash([]); guideCtx.lineWidth = 2.5; guideCtx.strokeStyle = 'rgba(232, 116, 44, 0.85)';
+    guideCtx.beginPath(); guideCtx.moveTo(A[0], A[1]); guideCtx.lineTo(B[0], B[1]); guideCtx.lineTo(C[0], C[1]); guideCtx.closePath(); guideCtx.stroke();
+    guideCtx.fillStyle = 'rgba(232, 116, 44, 0.95)';
+    [A, B, C].forEach(function(p) { guideCtx.beginPath(); guideCtx.arc(p[0], p[1], 8, 0, Math.PI * 2); guideCtx.fill(); });
   }
   guideCtx.setLineDash([]);
 }
@@ -5184,6 +5248,36 @@ window.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+<script>
+// ===== 画笔色板弹层（点击色块出现，不再移动工具栏） =====
+(function(){
+  var PRESETS = ['#000000','#ffffff','#e11d48','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#d946ef','#ec4899','#7c3aed','#0ea5e9','#15803d','#b45309','#9b2226','#475569','#78350f','#1f2937'];
+  function buildSwatches(){
+    var g = document.getElementById('swatchGrid'); if (!g) return;
+    g.innerHTML = '';
+    PRESETS.forEach(function(c){
+      var s = document.createElement('button');
+      s.type = 'button'; s.className = 'swatch'; s.style.background = c;
+      s.setAttribute('aria-label', c);
+      s.onclick = function(){ if (window.setBrushColor) setBrushColor(c); var cp = document.getElementById('colorPicker'); if (cp) cp.value = c; closeColorPalette(); };
+      g.appendChild(s);
+    });
+  }
+  function openColorPalette(){ var p = document.getElementById('colorPopover'); if (p) p.style.display = 'block'; }
+  function closeColorPalette(){ var p = document.getElementById('colorPopover'); if (p) p.style.display = 'none'; }
+  window.toggleColorPalette = function(){ var p = document.getElementById('colorPopover'); if (!p) return; if (p.style.display === 'block') closeColorPalette(); else openColorPalette(); };
+  window.closeColorPalette = closeColorPalette;
+  document.addEventListener('click', function(e){
+    var p = document.getElementById('colorPopover'); if (!p || p.style.display !== 'block') return;
+    var t = e.target;
+    if (t && (t.id === 'colorPreview' || (t.closest && (t.closest('#colorPreview') || t.closest('#colorPopover'))))) return;
+    closeColorPalette();
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildSwatches);
+  else buildSwatches();
+})();
+</script>
+
 <style>
 /* ===== 工作室暗色强制覆盖：修复白色 UI 泄漏（不影响 #welcome 欢迎页） ===== */
 .main .guide-btn,.main .palette-actions button,.main .artist-card .palette-actions button,
@@ -5216,6 +5310,17 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .artist-works .aw-title{ color:#a9a3c4!important; }
 .aw-item{ background:rgba(22,20,34,.85)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
 .aw-item:hover{ border-color:#8b5cf6!important; }
+/* 顶部下载按钮（导出高清 PNG） */
+.main .float-dl{ position:absolute; top:12px; right:16px; z-index:55; background:linear-gradient(135deg,#22D3EE,#8B5CF6); color:#fff; border:none; border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(139,92,246,.45); }
+.main .float-dl:hover{ opacity:.92; }
+/* 画笔色板弹层 */
+.main .color-popover{ display:none; position:absolute; left:54px; top:50%; transform:translateY(-50%); z-index:60; width:188px; background:rgba(18,16,28,.98); border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:10px; box-shadow:0 8px 28px rgba(0,0,0,.5); }
+.main .color-popover .cp-title{ font-size:11px; color:#a9a3c4; margin-bottom:8px; }
+.main .color-popover .swatch-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+.main .color-popover .swatch{ width:22px; height:22px; border-radius:6px; border:1px solid rgba(255,255,255,.25); cursor:pointer; padding:0; transition:transform .12s; }
+.main .color-popover .swatch:hover{ transform:scale(1.12); border-color:#fff; }
+.main .color-popover .cp-custom{ display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#a9a3c4; }
+.main .color-popover .cp-custom input[type=color]{ width:30px; height:30px; border:none; background:none; padding:0; cursor:pointer; }
 </style>
 
 </body>
