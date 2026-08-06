@@ -1081,21 +1081,71 @@ body{ background: var(--bg); color: var(--text); }
     <canvas id="welcome-particles"></canvas>
     <div class="welcome-vignette"></div>
 
+    <!-- 蓝图基底：方格纸 + 扫描线 + 边框刻度 -->
+    <div class="bp-paper"></div>
+    <div class="bp-sweep"></div>
+    <div class="bp-ruler bp-ruler-t"></div>
+    <div class="bp-ruler bp-ruler-l"></div>
+
+    <!-- 图纸四角角标（工程制图裁切标记） -->
+    <div class="bp-corner tl"></div><div class="bp-corner tr"></div>
+    <div class="bp-corner bl"></div><div class="bp-corner br"></div>
+
+    <!-- 环境技术标注 -->
+    <div class="bp-meta bp-meta-tl">DWG&nbsp;No.&nbsp;DG-2480-A<br>SCALE&nbsp;1:1&nbsp;&nbsp;UNIT&nbsp;mm<br>PROJ&nbsp;DRAFTGEN&nbsp;/&nbsp;REV&nbsp;C</div>
+    <div class="bp-meta bp-meta-tr">SHEET&nbsp;01&nbsp;OF&nbsp;01<br>ORIGIN&nbsp;X0&nbsp;Y0&nbsp;Z0<br><span id="bpClock">--:--:--</span></div>
+    <div class="bp-meta bp-meta-bl">TOL&nbsp;±0.05&nbsp;&nbsp;∠&nbsp;90°00′<br>MAT&nbsp;·&nbsp;VECTOR&nbsp;INK<br>SURFACE&nbsp;Ra&nbsp;1.6</div>
+
+    <!-- 标题栏（Title Block），工程图右下角规范 -->
+    <div class="bp-titleblock">
+      <div class="tb-cell"><b>DRAWN</b><span>DRAFTGEN&nbsp;ENGINE</span></div>
+      <div class="tb-cell"><b>CHECKED</b><span>AUTO&nbsp;·&nbsp;PASS</span></div>
+      <div class="tb-cell"><b>DATE</b><span id="bpDate">----.--.--</span></div>
+      <div class="tb-cell"><b>STATUS</b><span class="ok">◉&nbsp;READY</span></div>
+    </div>
+
     <div class="welcome-inner">
-      <div class="welcome-ring">
-        <div class="ring r1"></div>
-        <div class="ring r2"></div>
-        <div class="ring r3"></div>
-        <div class="core"></div>
+      <!-- 十字准星 / 装配示意图 -->
+      <div class="bp-schematic">
+        <svg viewBox="0 0 240 240" class="bp-svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="bpg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00E5FF"/><stop offset="100%" stop-color="#90E0EF"/>
+            </linearGradient>
+          </defs>
+          <circle class="bp-dash" cx="120" cy="120" r="104" fill="none" stroke="url(#bpg)" stroke-width="1" stroke-dasharray="6 8"/>
+          <circle class="bp-draw" cx="120" cy="120" r="78" fill="none" stroke="#E0F4FF" stroke-width="1.2"/>
+          <circle class="bp-dash rev" cx="120" cy="120" r="56" fill="none" stroke="#00B4D8" stroke-width="1" stroke-dasharray="2 6"/>
+          <rect class="bp-draw d2" x="72" y="72" width="96" height="96" fill="none" stroke="#E0F4FF" stroke-width="1" stroke-dasharray="340" stroke-dashoffset="340"/>
+          <line x1="120" y1="4" x2="120" y2="46" stroke="#00E5FF" stroke-width="1"/>
+          <line x1="120" y1="194" x2="120" y2="236" stroke="#00E5FF" stroke-width="1"/>
+          <line x1="4" y1="120" x2="46" y2="120" stroke="#00E5FF" stroke-width="1"/>
+          <line x1="194" y1="120" x2="236" y2="120" stroke="#00E5FF" stroke-width="1"/>
+          <line x1="120" y1="96" x2="120" y2="144" stroke="#FF4C4C" stroke-width="1"/>
+          <line x1="96" y1="120" x2="144" y2="120" stroke="#FF4C4C" stroke-width="1"/>
+          <circle class="bp-pulse" cx="120" cy="120" r="5" fill="#00E5FF"/>
+          <text x="120" y="30" class="bp-t">Ø 208</text>
+          <text x="120" y="222" class="bp-t">SECTION A-A</text>
+        </svg>
       </div>
-      <div class="welcome-badge">✦ 一个人的绘画工作室</div>
-      <h1 class="welcome-title">DraftGen</h1>
-      <div class="welcome-sub">A4 场景草稿生成器 · 三分法 / 透视 / 3D</div>
+
+      <div class="welcome-badge">◈&nbsp;&nbsp;S O L O&nbsp;&nbsp;D R A W I N G&nbsp;&nbsp;S T U D I O&nbsp;&nbsp;◈</div>
+      <h1 class="welcome-title" data-text="DraftGen">DraftGen</h1>
+      <div class="bp-dimline"><span class="dl-arrow">◄</span><i></i><b>3508 × 2480 px</b><i></i><span class="dl-arrow">►</span></div>
+      <div class="welcome-sub">场景草稿生成器 · 三分法 / 透视网格 / 黄金分割 / 三角构图</div>
+
+      <div class="bp-specs">
+        <div class="spec"><b>A-001</b><span>构图参考线</span></div>
+        <div class="spec"><b>A-002</b><span>随机草稿引擎</span></div>
+        <div class="spec"><b>A-003</b><span>图层与配色</span></div>
+        <div class="spec"><b>A-004</b><span>高清 PNG 导出</span></div>
+      </div>
+
       <div class="welcome-actions">
         <button class="enter-btn" id="enterBtn" onclick="enterStudio()">进入工作室 <span>→</span></button>
         <button class="why-btn" id="whyBtn" onclick="openWhy()">我们为什么努力？</button>
       </div>
-      <div class="welcome-tip">点击页面任意处可 <b>引爆粒子</b> ✦ 移动鼠标牵引光网</div>
+      <div class="welcome-tip">点击图纸任意处可 <b>引爆粒子</b> ✦ 移动鼠标牵引光网</div>
     </div>
 </div>
 <!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
@@ -1198,8 +1248,8 @@ body{ background: var(--bg); color: var(--text); }
 <!-- Header -->
 <div class="header">
   <h1>🎨 DraftGen 草稿生成器</h1>
-  <button class="orient-btn active" id="btnPortrait" onclick="setOrientation('portrait')">竖版 2480×3508</button>
-  <button class="orient-btn" id="btnLandscape" onclick="setOrientation('landscape')">横版 3508×2480</button>
+  <button class="orient-btn" id="btnPortrait" onclick="setOrientation('portrait')">竖版 2480×3508</button>
+  <button class="orient-btn active" id="btnLandscape" onclick="setOrientation('landscape')">横版 3508×2480</button>
   <div class="spacer"></div>
   <span class="shortcut-hint">B:画笔 E:橡皮 R:随机 [:]:笔刷 Ctrl+Z:撤销</span>
 </div>
@@ -1237,27 +1287,31 @@ body{ background: var(--bg); color: var(--text); }
       <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
     </div>
 
-    <!-- Floating Layer Panel (常驻右下角) -->
-    <div class="layer-floating" id="layerFloating">
-      <div class="lf-header">🗂️ 图层 <button onclick="toggleLayerFloat()" title="折叠/展开">▾</button></div>
-      <div class="lf-body" id="layerFloatList"></div>
-      <div class="lf-actions">
-        <button onclick="addLayer()">+ 新建</button>
-        <button onclick="moveLayerUp()">↑</button>
-        <button onclick="moveLayerDown()">↓</button>
-        <button onclick="deleteLayer()">删除</button>
-      </div>
-    </div>
   </div>
 
   <!-- Right Panel -->
   <div class="right-panel">
+    <!-- 图层书签：贴在右边栏左缘、向外翘出一点，点击滑出 -->
+    <div class="layer-bookmark" id="layerBookmark">
+      <button class="lb-tab" id="lbTab" onclick="toggleLayerFloat()" title="图层 · 点击展开">
+        <span class="lb-ico">🗂</span><span class="lb-txt">图层</span><span class="lb-arrow">‹</span>
+      </button>
+      <div class="lb-panel" id="layerFloating">
+        <div class="lf-header"><span>🗂 图层 LAYERS</span><button onclick="toggleLayerFloat()" title="收起">✕</button></div>
+        <div class="lf-body" id="layerFloatList"></div>
+        <div class="lf-actions">
+          <button onclick="addLayer()">+ 新建</button>
+          <button onclick="moveLayerUp()">↑</button>
+          <button onclick="moveLayerDown()">↓</button>
+          <button onclick="deleteLayer()">删除</button>
+        </div>
+      </div>
+    </div>
     <div class="panel-tabs">
       <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图 · 随机生成</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
-      <div class="tab" data-tab="version" onclick="switchTab('version')">版本</div>
     </div>
 
     <div class="panel-content">
@@ -1505,14 +1559,6 @@ body{ background: var(--bg); color: var(--text); }
       </div>
 
       <!-- Batch Tab -->
-      <!-- Version Tab -->
-      <div class="tab-content" id="tab-version" style="display:none">
-        <div class="panel-section">
-          <h3>版本管理</h3>
-          <button class="action-btn" onclick="saveVersion()">💾 保存当前版本</button>
-          <div class="version-list" id="versionList" style="margin-top:8px"></div>
-        </div>
-      </div>
 
       <!-- Export Tab -->
       <div class="tab-content" id="tab-export" style="display:none">
@@ -1564,8 +1610,8 @@ body{ background: var(--bg); color: var(--text); }
 // ============ STATE ============
 const PORTRAIT = {w:2480, h:3508};
 const LANDSCAPE = {w:3508, h:2480};
-let orientation = 'portrait';
-let canvasW = PORTRAIT.w, canvasH = PORTRAIT.h;
+let orientation = 'landscape';
+let canvasW = LANDSCAPE.w, canvasH = LANDSCAPE.h;
 let scale = 1;
 let currentTool = 'brush';
 let brushColor = '#000000';
@@ -2010,10 +2056,11 @@ function renderLayerList() {
 }
 
 function toggleLayerFloat() {
-  const panel = document.getElementById('layerFloating');
-  panel.classList.toggle('collapsed');
-  const btn = panel.querySelector('.lf-header button');
-  if (btn) btn.textContent = panel.classList.contains('collapsed') ? '▸' : '▾';
+  const bm = document.getElementById('layerBookmark');
+  if (!bm) return;
+  bm.classList.toggle('open');
+  const ar = bm.querySelector('.lb-arrow');
+  if (ar) ar.textContent = bm.classList.contains('open') ? '›' : '‹';
 }
 
 // ============ UNDO ============
@@ -4467,6 +4514,8 @@ async function saveVersion() {
 }
 
 async function loadVersions() {
+  const _vl = document.getElementById('versionList');
+  if (!_vl) return; // 版本功能已移除
   const db = await openDB();
   const versions = await new Promise((resolve, reject) => {
     const tx = db.transaction('versions', 'readonly');
@@ -4739,7 +4788,7 @@ window.addEventListener('resize', () => {
   var fc=document.getElementById('welcome-fresnel');
   var pctx=pc.getContext('2d'), fctx=fc.getContext('2d');
   var DPR=Math.min(window.devicePixelRatio||1,2);
-  var W=0,H=0, hue=200;
+  var W=0,H=0, hue=190;
   var particles=[], orbs=[], sparks=[], bursts=[], stars=[];
   var mouse={x:-9999,y:-9999,active:false};
   var rafId=null;
@@ -4761,12 +4810,12 @@ window.addEventListener('resize', () => {
     for(var i=0;i<N;i++){
       particles.push({ x:Math.random()*W, y:Math.random()*H,
         vx:rand(-0.25,0.25)*DPR, vy:rand(-0.25,0.25)*DPR,
-        r:rand(0.8,2.4)*DPR, a:rand(0.4,1), hueOff:rand(0,60) });
+        r:rand(0.8,2.4)*DPR, a:rand(0.4,1), hueOff:rand(0,34) });
     }
     orbs=[];
     for(var j=0;j<4;j++){
       orbs.push({ x:rand(0,W), y:rand(0,H), vx:rand(-0.12,0.12)*DPR, vy:rand(-0.12,0.12)*DPR,
-        r:rand(160,300)*DPR, hue:rand(180,320) });
+        r:rand(160,300)*DPR, hue:rand(185,208) });
     }
     sparks=[];
     var S=Math.max(30, Math.min(70, Math.round(area/40000)));
@@ -4779,7 +4828,7 @@ window.addEventListener('resize', () => {
     var ST=Math.max(120, Math.min(260, Math.round(area/9000)));
     for(var t=0;t<ST;t++){
       stars.push({ x:Math.random()*W, y:Math.random()*H, r:rand(0.3,1.4)*DPR,
-        ph:rand(0,6.28), sp:rand(0.4,2.2), hue:rand(180,300) });
+        ph:rand(0,6.28), sp:rand(0.4,2.2), hue:rand(184,205) });
     }
   }
   function spawnBurst(x,y){
@@ -5449,7 +5498,230 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @media (prefers-reduced-motion: reduce){
   .main .fx-hero::before,.main .fx-scan,.main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
 }
+
+/* ================================================================
+   图层书签：贴在右边栏左缘、翘出一点，点击滑出
+   ================================================================ */
+.right-panel{ position:relative; }
+.layer-bookmark{ position:absolute; top:120px; right:100%; z-index:70; display:flex; align-items:flex-start; }
+.layer-bookmark .lb-tab{
+  position:relative; z-index:2; margin-right:-1px;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:13px 7px 13px 8px; cursor:pointer; border:none;
+  border-radius:12px 0 0 12px; color:#eaf6ff; font-size:11px; font-weight:800; letter-spacing:1px;
+  background:linear-gradient(180deg,#0f3355,#132D4A 55%,#0A1F38);
+  border-left:1px solid rgba(0,229,255,.45); border-top:1px solid rgba(0,229,255,.3); border-bottom:1px solid rgba(0,229,255,.3);
+  box-shadow:-6px 0 20px rgba(0,0,0,.45), inset 0 0 14px rgba(0,229,255,.14);
+  transition:transform .2s, box-shadow .2s, background .2s;
+}
+.layer-bookmark .lb-tab:hover{ transform:translateX(-4px); box-shadow:-10px 0 26px rgba(0,0,0,.55), 0 0 20px rgba(0,229,255,.5), inset 0 0 18px rgba(0,229,255,.24); background:linear-gradient(180deg,#14456f,#18395c 55%,#0d2742); }
+.layer-bookmark .lb-tab .lb-ico{ font-size:15px; line-height:1; }
+.layer-bookmark .lb-tab .lb-txt{ writing-mode:vertical-rl; text-orientation:upright; letter-spacing:3px; font-size:11px; }
+.layer-bookmark .lb-tab .lb-arrow{ font-size:13px; color:#00E5FF; }
+.layer-bookmark .lb-tab::after{ content:''; position:absolute; left:0; top:8%; bottom:8%; width:2px; border-radius:2px; background:linear-gradient(180deg,transparent,#00E5FF,transparent); box-shadow:0 0 9px #00E5FF; }
+.layer-bookmark .lb-panel{
+  width:0; opacity:0; overflow:hidden; pointer-events:none;
+  border-radius:12px 0 0 12px; transition:width .28s cubic-bezier(.3,.8,.3,1), opacity .2s;
+  background:rgba(10,22,40,.96); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px);
+  border:1px solid rgba(0,229,255,.28); border-right:none;
+  box-shadow:-14px 0 44px rgba(0,0,0,.6), inset 0 0 24px rgba(0,180,216,.08);
+}
+.layer-bookmark.open .lb-panel{ width:216px; opacity:1; pointer-events:auto; }
+.layer-bookmark .lf-header{ display:flex; align-items:center; justify-content:space-between; padding:9px 11px; font-size:11px; font-weight:800; letter-spacing:1px; color:#cfefff; background:rgba(0,180,216,.1); border-bottom:1px solid rgba(0,229,255,.22); }
+.layer-bookmark .lf-header button{ border:none; background:none; cursor:pointer; font-size:13px; color:#8BADC4; }
+.layer-bookmark .lf-header button:hover{ color:#00E5FF; }
+.layer-bookmark .lf-body{ max-height:250px; overflow-y:auto; padding:8px; }
+.layer-bookmark .lf-actions{ display:flex; gap:4px; padding:8px; border-top:1px solid rgba(0,229,255,.18); }
+.layer-bookmark .lf-actions button{ flex:1; padding:6px 2px; border:1px solid rgba(0,229,255,.28)!important; border-radius:7px; background:rgba(19,45,74,.85)!important; cursor:pointer; font-size:10px; color:#cfefff!important; }
+.layer-bookmark .lf-actions button:hover{ background:rgba(0,180,216,.25)!important; border-color:#00E5FF!important; color:#fff!important; }
+
+/* ================================================================
+   蓝图（Cyanotype Blueprint）+ 科幻 HUD 欢迎页
+   参考：普鲁士蓝底 / 白青线 / 方格纸 / 角标 / 尺寸标注 / 等宽字
+   ================================================================ */
+#welcome{
+  background:
+    radial-gradient(120% 90% at 50% 8%, #17456f 0%, #0D2137 45%, #060F1C 100%) !important;
+  color:#E0F4FF;
+  font-family:"JetBrains Mono","IBM Plex Mono","Cascadia Mono","Consolas","SFMono-Regular","Courier New",monospace;
+}
+#welcome-nebula, .welcome-aurora, .welcome-grain, .welcome-vignette{ opacity:.18 !important; }
+
+/* 方格纸：20px 细格 + 100px 粗格 */
+#welcome .bp-paper{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(144,224,239,.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(144,224,239,.09) 1px, transparent 1px),
+    linear-gradient(rgba(0,229,255,.17) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.17) 1px, transparent 1px);
+  background-size:20px 20px, 20px 20px, 100px 100px, 100px 100px;
+  -webkit-mask-image:radial-gradient(130% 110% at 50% 45%, #000 40%, rgba(0,0,0,.35) 78%, transparent 100%);
+  mask-image:radial-gradient(130% 110% at 50% 45%, #000 40%, rgba(0,0,0,.35) 78%, transparent 100%);
+  animation:bpDrift 24s linear infinite;
+}
+@keyframes bpDrift{ to{ background-position:100px 100px,100px 100px,100px 100px,100px 100px; } }
+
+/* 绘图仪扫描光束 */
+#welcome .bp-sweep{
+  position:absolute; left:0; right:0; height:34%; z-index:2; pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(0,229,255,.10) 45%,rgba(0,229,255,.20) 50%,rgba(0,229,255,.10) 55%,transparent);
+  animation:bpSweep 6.5s cubic-bezier(.5,0,.5,1) infinite;
+}
+@keyframes bpSweep{ 0%{top:-36%} 100%{top:110%} }
+
+/* 边框刻度尺 */
+#welcome .bp-ruler{ position:absolute; z-index:3; pointer-events:none; opacity:.5; }
+#welcome .bp-ruler-t{ top:0; left:0; right:0; height:14px;
+  background-image:repeating-linear-gradient(90deg,rgba(144,224,239,.65) 0 1px,transparent 1px 20px),
+                   repeating-linear-gradient(90deg,rgba(0,229,255,.9) 0 1px,transparent 1px 100px);
+  background-size:auto 6px, auto 13px; background-repeat:repeat-x; background-position:0 0; }
+#welcome .bp-ruler-l{ top:0; bottom:0; left:0; width:14px;
+  background-image:repeating-linear-gradient(180deg,rgba(144,224,239,.65) 0 1px,transparent 1px 20px),
+                   repeating-linear-gradient(180deg,rgba(0,229,255,.9) 0 1px,transparent 1px 100px);
+  background-size:6px auto, 13px auto; background-repeat:repeat-y; }
+
+/* 四角 L 形裁切角标 */
+#welcome .bp-corner{ position:absolute; width:42px; height:42px; z-index:4; pointer-events:none; opacity:.85; }
+#welcome .bp-corner.tl{ top:22px; left:22px; border-left:1.5px solid #00E5FF; border-top:1.5px solid #00E5FF; }
+#welcome .bp-corner.tr{ top:22px; right:22px; border-right:1.5px solid #00E5FF; border-top:1.5px solid #00E5FF; }
+#welcome .bp-corner.bl{ bottom:22px; left:22px; border-left:1.5px solid #00E5FF; border-bottom:1.5px solid #00E5FF; }
+#welcome .bp-corner.br{ bottom:22px; right:22px; border-right:1.5px solid #00E5FF; border-bottom:1.5px solid #00E5FF; }
+#welcome .bp-corner{ animation:bpCorner 3.4s ease-in-out infinite; }
+@keyframes bpCorner{ 0%,100%{ box-shadow:0 0 0 rgba(0,229,255,0) } 50%{ box-shadow:0 0 16px rgba(0,229,255,.5) } }
+
+/* 环境技术标注 */
+#welcome .bp-meta{ position:absolute; z-index:5; font-size:9.5px; line-height:1.75; letter-spacing:1.1px;
+  color:#8BADC4; pointer-events:none; text-transform:uppercase; }
+#welcome .bp-meta-tl{ top:38px; left:44px; }
+#welcome .bp-meta-tr{ top:38px; right:44px; text-align:right; }
+#welcome .bp-meta-bl{ bottom:40px; left:44px; }
+#welcome #bpClock{ color:#00E5FF; }
+
+/* 标题栏 Title Block */
+#welcome .bp-titleblock{ position:absolute; right:44px; bottom:38px; z-index:5; display:flex;
+  border:1px solid rgba(0,229,255,.4); border-radius:3px; overflow:hidden; background:rgba(10,22,40,.55);
+  -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+#welcome .bp-titleblock .tb-cell{ padding:6px 12px; border-right:1px solid rgba(0,229,255,.28); display:flex; flex-direction:column; gap:2px; }
+#welcome .bp-titleblock .tb-cell:last-child{ border-right:none; }
+#welcome .bp-titleblock b{ font-size:8px; letter-spacing:1.6px; color:#4A8BA8; font-weight:600; }
+#welcome .bp-titleblock span{ font-size:10px; letter-spacing:.8px; color:#E0F4FF; }
+#welcome .bp-titleblock .ok{ color:#00C853; }
+
+/* 中央装配示意图 */
+#welcome .bp-schematic{ width:214px; height:214px; margin:0 auto 8px; position:relative; }
+#welcome .bp-svg{ width:100%; height:100%; overflow:visible; filter:drop-shadow(0 0 14px rgba(0,229,255,.42)); }
+#welcome .bp-svg .bp-dash{ transform-origin:120px 120px; animation:bpSpin 26s linear infinite; }
+#welcome .bp-svg .bp-dash.rev{ animation:bpSpin 15s linear infinite reverse; }
+@keyframes bpSpin{ to{ transform:rotate(360deg) } }
+#welcome .bp-svg .bp-draw{ stroke-dasharray:500; stroke-dashoffset:500; animation:bpDraw 3.2s ease-out .3s forwards; }
+#welcome .bp-svg .bp-draw.d2{ animation:bpDraw2 2.6s ease-out .9s forwards; }
+@keyframes bpDraw{ to{ stroke-dashoffset:0 } }
+@keyframes bpDraw2{ to{ stroke-dashoffset:0 } }
+#welcome .bp-svg .bp-pulse{ animation:bpPulse 1.9s ease-in-out infinite; transform-origin:120px 120px; }
+@keyframes bpPulse{ 0%,100%{ opacity:.35; r:4 } 50%{ opacity:1; r:7 } }
+#welcome .bp-svg .bp-t{ fill:#8BADC4; font-size:9px; letter-spacing:1.6px; text-anchor:middle;
+  font-family:"JetBrains Mono","Consolas",monospace; }
+
+/* 文案层 */
+#welcome .welcome-inner{ position:relative; z-index:6; }
+#welcome .welcome-badge{
+  display:inline-block; font-size:10.5px !important; letter-spacing:2px !important; color:#00E5FF !important;
+  background:rgba(0,180,216,.09) !important; border:1px solid rgba(0,229,255,.42) !important;
+  border-radius:2px !important; padding:6px 16px !important; margin-bottom:14px;
+  box-shadow:0 0 18px rgba(0,229,255,.22), inset 0 0 12px rgba(0,229,255,.08);
+  text-shadow:0 0 10px rgba(0,229,255,.6);
+}
+#welcome .welcome-title{
+  position:relative; font-family:"JetBrains Mono","Consolas",monospace !important;
+  font-weight:800 !important; letter-spacing:8px !important;
+  color:#E0F4FF !important; -webkit-text-fill-color:#E0F4FF !important; background:none !important;
+  text-shadow:0 0 8px rgba(0,229,255,.75), 0 0 34px rgba(0,180,216,.55), 0 0 70px rgba(0,120,180,.35);
+  animation:bpFlicker 7s infinite;
+}
+@keyframes bpFlicker{
+  0%,92%,100%{ opacity:1 }
+  93%{ opacity:.55 } 94%{ opacity:1 } 96%{ opacity:.7 } 97%{ opacity:1 }
+}
+#welcome .welcome-title::after{
+  content:attr(data-text); position:absolute; left:0; top:0; width:100%;
+  color:#00E5FF; -webkit-text-fill-color:#00E5FF; opacity:0; mix-blend-mode:screen;
+  animation:bpGlitch 5.5s infinite;
+}
+@keyframes bpGlitch{
+  0%,90%,100%{ opacity:0; clip-path:none; transform:none }
+  91%{ opacity:.8; transform:translate(-4px,1px); clip-path:inset(14% 0 58% 0) }
+  93%{ opacity:.8; transform:translate(4px,-1px); clip-path:inset(56% 0 20% 0) }
+  95%{ opacity:0 }
+}
+
+/* 尺寸标注线 */
+#welcome .bp-dimline{ display:flex; align-items:center; justify-content:center; gap:8px; margin:14px auto 4px; max-width:430px; }
+#welcome .bp-dimline i{ flex:1; height:1px; background:linear-gradient(90deg,transparent,#00E5FF,transparent); }
+#welcome .bp-dimline b{ font-size:10px; letter-spacing:2px; color:#00E5FF; white-space:nowrap; text-shadow:0 0 10px rgba(0,229,255,.55); }
+#welcome .bp-dimline .dl-arrow{ font-size:9px; color:#00E5FF; }
+#welcome .welcome-sub{ font-size:12.5px !important; letter-spacing:1.6px !important; color:#8BADC4 !important; font-weight:400 !important; }
+
+/* 规格清单 */
+#welcome .bp-specs{ display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+#welcome .bp-specs .spec{ position:relative; padding:9px 15px; border:1px solid rgba(0,229,255,.26);
+  background:rgba(19,45,74,.4); display:flex; flex-direction:column; gap:3px; align-items:flex-start;
+  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); transition:.22s; }
+#welcome .bp-specs .spec::before, #welcome .bp-specs .spec::after{ content:''; position:absolute; width:7px; height:7px; }
+#welcome .bp-specs .spec::before{ top:-1px; left:-1px; border-left:1.5px solid #00E5FF; border-top:1.5px solid #00E5FF; }
+#welcome .bp-specs .spec::after{ bottom:-1px; right:-1px; border-right:1.5px solid #00E5FF; border-bottom:1.5px solid #00E5FF; }
+#welcome .bp-specs .spec:hover{ background:rgba(0,180,216,.16); border-color:rgba(0,229,255,.6); box-shadow:0 0 20px rgba(0,229,255,.3); transform:translateY(-2px); }
+#welcome .bp-specs .spec b{ font-size:8.5px; letter-spacing:1.6px; color:#4A8BA8; font-weight:600; }
+#welcome .bp-specs .spec span{ font-size:11px; letter-spacing:.6px; color:#E0F4FF; }
+
+/* 按钮：工程图风格方角 + 扫光 */
+#welcome .enter-btn{
+  position:relative; overflow:hidden; border-radius:2px !important;
+  background:rgba(0,180,216,.14) !important; color:#E0F4FF !important;
+  border:1px solid #00E5FF !important; letter-spacing:3px !important; font-weight:700 !important;
+  font-family:"JetBrains Mono","Consolas",monospace !important;
+  box-shadow:0 0 22px rgba(0,229,255,.34), inset 0 0 20px rgba(0,229,255,.1) !important;
+  transition:all .2s !important;
+}
+#welcome .enter-btn::after{ content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(105deg,transparent 34%,rgba(0,229,255,.45) 50%,transparent 66%);
+  transform:translateX(-140%); animation:bpSheen 3.1s ease-in-out infinite; }
+@keyframes bpSheen{ 0%{transform:translateX(-140%)} 60%,100%{transform:translateX(140%)} }
+#welcome .enter-btn:hover{ background:rgba(0,229,255,.28) !important; box-shadow:0 0 34px rgba(0,229,255,.65), inset 0 0 26px rgba(0,229,255,.2) !important; transform:translateY(-2px); }
+#welcome .why-btn{
+  border-radius:2px !important; background:transparent !important; color:#8BADC4 !important;
+  border:1px dashed rgba(144,224,239,.5) !important; letter-spacing:2px !important;
+  font-family:"JetBrains Mono","Consolas",monospace !important;
+}
+#welcome .why-btn:hover{ color:#E0F4FF !important; border-color:#00E5FF !important; border-style:solid !important; box-shadow:0 0 18px rgba(0,229,255,.3) !important; }
+#welcome .welcome-tip{ color:#4A8BA8 !important; font-size:10.5px !important; letter-spacing:1.4px !important; }
+#welcome .welcome-tip b{ color:#00E5FF; }
+
+@media (max-width:900px){
+  #welcome .bp-meta, #welcome .bp-titleblock{ display:none; }
+  #welcome .bp-schematic{ width:150px; height:150px; }
+  #welcome .bp-specs .spec{ padding:7px 11px; }
+}
+@media (prefers-reduced-motion: reduce){
+  #welcome .bp-sweep,#welcome .bp-paper,#welcome .bp-corner,#welcome .welcome-title,
+  #welcome .welcome-title::after,#welcome .enter-btn::after,#welcome .bp-svg .bp-dash{ animation:none !important; }
+}
 </style>
+
+<script>
+/* 蓝图标题栏：实时时间戳 */
+(function(){
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function tick(){
+    var c = document.getElementById('bpClock');
+    var d = document.getElementById('bpDate');
+    var t = new Date();
+    if (c) c.textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ':' + pad(t.getSeconds());
+    if (d) d.textContent = t.getFullYear() + '.' + pad(t.getMonth() + 1) + '.' + pad(t.getDate());
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
 
 <script>
 // ===== 生成按钮火花爆裂 =====
