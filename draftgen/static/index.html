@@ -5768,16 +5768,16 @@ window.addEventListener('DOMContentLoaded', ()=>{
   --bp-line:rgba(120,200,255,.12); --bp-line2:rgba(120,200,255,.24);
 }
 
-/* 头部 → 蓝图标题栏 */
-.main .header, .header{
+/* 头部 → 蓝图标题栏（header 在 .main 外，用全局选择器） */
+.header{
   background:rgba(8,19,31,.92); border-bottom:1px solid rgba(120,200,255,.28);
   box-shadow:0 6px 30px rgba(0,0,0,.4), 0 0 26px rgba(95,208,255,.12);
-  font-family:var(--bp-mono);
+  font-family:'JetBrains Mono','IBM Plex Mono','SFMono-Regular',Consolas,'Liberation Mono',Monaco,monospace;
 }
-.main .header h1{ background:linear-gradient(92deg,#7be0ff,#2aa7e8); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px; }
-.main .header .orient-btn{ border:1px solid rgba(120,200,255,.34); background:rgba(13,33,55,.6); color:var(--text); font-family:var(--bp-mono); letter-spacing:.5px; }
-.main .header .orient-btn:hover, .main .header .orient-btn.active{ background:linear-gradient(135deg,#5fd0ff,#2aa7e8); color:#04121f; border-color:transparent; box-shadow:0 0 14px rgba(95,208,255,.6); }
-.main .header .shortcut-hint{ color:var(--bp-cyan-soft); font-family:var(--bp-mono); letter-spacing:.5px; }
+.header h1{ background:linear-gradient(92deg,#7be0ff,#2aa7e8); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px; }
+.header .orient-btn{ border:1px solid rgba(120,200,255,.34); background:rgba(13,33,55,.6); color:var(--text); font-family:'JetBrains Mono','IBM Plex Mono','SFMono-Regular',Consolas,'Liberation Mono',Monaco,monospace; letter-spacing:.5px; }
+.header .orient-btn:hover, .header .orient-btn.active{ background:linear-gradient(135deg,#5fd0ff,#2aa7e8); color:#04121f; border-color:transparent; box-shadow:0 0 14px rgba(95,208,255,.6); }
+.header .shortcut-hint{ color:rgba(120,200,255,.7); font-family:'JetBrains Mono','IBM Plex Mono','SFMono-Regular',Consolas,'Liberation Mono',Monaco,monospace; letter-spacing:.5px; }
 
 /* 画布区 → 蓝图坐标桌 */
 .main .canvas-area{
