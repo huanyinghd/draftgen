@@ -218,23 +218,33 @@ class SketchEngine {
       });
     }
 
-    // 2) 子簇内部用纯随机分布（临时关闭向主焦点偏移），各簇各自独立
+    // 2) 全局线条预算：焦点处总笔画数硬性控制在 FOCAL_BUDGET 条以内。
+    //    先算出各簇的「理想权重」，再按预算等比缩放，保证疏密关系不变、总量可控。
+    const FOCAL_BUDGET = 5000;          // 焦点处线条总量上限
+    const LINK_N = 60;                  // 簇间稀疏连接线
+    const strokeBudget = Math.max(0, FOCAL_BUDGET - LINK_N);
+
+    const weights = clusters.map(cl => cl.dens * (baseR / (cl.cr + 1)));
+    const wSum = weights.reduce((a, b) => a + b, 0) || 1;
+
     const savedFocal = this.focal;
     this.focal = null;
-    for (const cl of clusters) {
+    clusters.forEach((cl, i) => {
+      const share = Math.floor(strokeBudget * (weights[i] / wSum));
+      if (share < 6) return;
       const x0 = Math.max(0, cl.cx - cl.cr), y0 = Math.max(0, cl.cy - cl.cr);
       const x1 = Math.min(this.W, cl.cx + cl.cr), y1 = Math.min(this.H, cl.cy + cl.cr);
-      // 簇越小、越密，画得越多；簇越大、越疏，画得越少，形成自然错落
-      const nLines = Math.max(18, Math.floor(100 * cl.dens * (baseR / (cl.cr + 1))));
-      const nArc = Math.max(12, Math.floor(55 * cl.dens * (baseR / (cl.cr + 1))));
+      // 约 2/3 直线 + 1/3 弧线，保留原有质感
+      const nLines = Math.max(4, Math.round(share * 0.66));
+      const nArc = Math.max(2, share - nLines);
       const baseAng = rnd.range(0, Math.PI); // 每簇不同主方向
       this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 3], [45, 210], null);
       this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 3], [50, 200], [2, 1, 1, 3], null);
-    }
+    });
     this.focal = savedFocal;
 
     // 3) 稀疏连接：用很淡的线把邻近微簇轻轻串起，保持整体节奏
-    const linkN = rnd.int(35, 80);
+    const linkN = LINK_N;
     for (let i = 0; i < linkN; i++) {
       const a = rnd.pick(clusters), b = rnd.pick(clusters);
       const ax = a.cx + rnd.range(-a.cr, a.cr), ay = a.cy + rnd.range(-a.cr, a.cr);
