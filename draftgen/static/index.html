@@ -1375,34 +1375,11 @@ body{ background: var(--bg); color: var(--text); }
       <!-- Random Tab -->
       <div class="tab-content" id="tab-random" style="display:none">
         <div class="panel-section">
-          <h3>乱线草图生成器（前端 · 纯浏览器 · 超密集线条）</h3>
-          <div class="dense-panel">
-            <label class="ttl">风格（经典作品 / 随机）</label>
-            <select id="dStyle"></select>
-            <label>焦点（三分法）</label>
-            <div class="fp-grid" id="dfpGrid">
-              <button data-dfp="0">① 左上</button>
-              <button data-dfp="1">② 右上</button>
-              <button data-dfp="2">③ 左下</button>
-              <button data-dfp="3">④ 右下</button>
-              <button class="auto active" data-dfp="auto">🎲 自动（随机）</button>
-            </div>
-            <label>元素线条密度</label>
-            <select id="dDensity">
-              <option value="1">标准（每种元素 5000+ 条）</option>
-              <option value="2">狂乱（每种约 10000 条）</option>
-              <option value="3">极致（每种约 15000 条）</option>
-            </select>
-            <label>种子（可选，留空随机，同种子=同图）</label>
-            <input id="dSeed" class="inp" placeholder="例如 12345" />
-            <div class="row" style="margin-top:8px;">
-              <button class="action primary" id="genDense">✦ 生成乱线草图</button>
-            </div>
-            <div class="tips">说明：本模式由 <code>DraftGen.generateRandomScene(...)</code> 在<b>浏览器内</b>实时生成上万条随机线条，画面被线填满。已整合 paint_masterpieces 引擎 + 10 经典笔法 + 随机场景，<b>无需起任何服务</b>。图像直接绘制在下方画布上。</div>
-          </div>
-          <div style="margin-top:12px;">
-            <canvas id="cv" style="max-width:100%;width:100%;border:1px solid var(--border,#d9d3c4);border-radius:8px;background:#0a0a18;"></canvas>
-          </div>
+          <h3>随机草图生成</h3>
+          <p style="font-size:11px;color:var(--text-light);margin-bottom:14px">点击生成，草稿会直接出现在左侧主画布上；可拖动、滚轮缩放，再用「✓ 放入画布」确认。</p>
+          <label class="ttl" style="display:block;margin-bottom:6px;color:var(--text-light);font-size:12px;">风格</label>
+          <select id="dStyle" style="width:100%;margin-bottom:16px;"></select>
+          <button class="action primary big-gen" id="genDense">✦ 生成随机草图</button>
         </div>
       <!-- Trainer Tab -->
       <div class="tab-content" id="tab-trainer" style="display:none">
@@ -5171,37 +5148,38 @@ window.addEventListener('DOMContentLoaded', ()=>{
 <script src="/static/draftgen.js"></script>
 <script>
 (function(){
-  var cv=document.getElementById('cv'); if(!cv) return;
-  var ctx=cv.getContext('2d');
-  var dFocal='auto';
   function fail(msg){ if(window.showToast) showToast(msg); else console.error(msg); }
-  function fillStyleSelect(list){ var sel=document.getElementById('dStyle'); sel.innerHTML='';
+  function fillStyleSelect(list){ var sel=document.getElementById('dStyle'); if(!sel) return; sel.innerHTML='';
     list.forEach(function(s){ var o=document.createElement('option'); o.value=s.key||''; o.textContent=(s.artist?(s.title?s.artist+' — '+s.title:s.artist):s.title); sel.appendChild(o); }); }
   function loadStyles(){ try{
       var list=(typeof DraftGen!=='undefined'&&DraftGen.listStyles)?DraftGen.listStyles():[];
       fillStyleSelect([{key:'',title:'🎲 自动（随机挑经典 / 随机场景）'}].concat(list).concat([{key:'random_scene',artist:'纯随机',title:'随机场景（从零生成）'}]));
     }catch(e){ fail('DraftGen 未加载：请确认 draftgen.js 已正确引入'); } }
-  document.getElementById('dfpGrid').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return;
-    document.querySelectorAll('#dfpGrid button').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); dFocal=b.dataset.dfp; });
-  document.getElementById('genDense').addEventListener('click', function(){ genDense(); });
+
   function genDense(){
     if(typeof DraftGen==='undefined'||!DraftGen.generateRandomScene){ fail('DraftGen 未加载：请确认 draftgen.js 已引入'); return; }
     var btn=document.getElementById('genDense');
-    var style=document.getElementById('dStyle').value||null;
-    var seedRaw=document.getElementById('dSeed').value.trim();
-    var seedNum=parseInt(seedRaw,10);
-    var seed=(seedRaw&&!isNaN(seedNum))?seedNum:null;
-    var density=+document.getElementById('dDensity').value;
-    btn.disabled=true;
+    if(btn) btn.disabled=true;
+    var styleSel=document.getElementById('dStyle');
+    var style=styleSel?styleSel.value:null;
+    fail('⏳ 正在生成随机草图…');
     requestAnimationFrame(function(){ try{
-      var res=DraftGen.generateRandomScene({ seed:seed, styleKey:style, focalIdx: dFocal==='auto'?null:+dFocal, density:density });
-      var canvas=res.canvas, meta=res.meta;
-      var gw=meta.w, gh=meta.h; cv.width=gw; cv.height=gh;
-      var sc=560/Math.max(gw,gh); cv.style.width=(gw*sc)+'px'; cv.style.height=(gh*sc)+'px';
-      ctx.clearRect(0,0,gw,gh); ctx.drawImage(canvas,0,0,gw,gh);
-      btn.disabled=false;
-    }catch(e){ fail('❌ 生成失败：'+e.message); btn.disabled=false; } });
+      // 生成场景（每次随机种子）
+      var res=DraftGen.generateRandomScene({ seed:null, styleKey:style, focalIdx:null, density:2 });
+      var src=res.canvas, w=res.meta.w, h=res.meta.h;
+      // 适配到主画布尺寸（cover 填充），作为浮动对象呈现到左侧主画布
+      var oc=document.createElement('canvas'); oc.width=canvasW; oc.height=canvasH;
+      var octx=oc.getContext('2d');
+      var sc=Math.max(canvasW/w, canvasH/h);
+      var dw=w*sc, dh=h*sc;
+      octx.drawImage(src,(canvasW-dw)/2,(canvasH-dh)/2,dw,dh);
+      if(typeof presentFloat==='function') presentFloat(oc, canvasW/2, canvasH/2);
+      if(btn) btn.disabled=false;
+      fail('✅ 已生成 · 拖动可移动，滚轮缩放，确认后放入画布');
+    }catch(e){ fail('❌ 生成失败：'+e.message); if(btn) btn.disabled=false; } });
   }
+
+  document.getElementById('genDense').addEventListener('click', function(){ genDense(); });
   loadStyles();
 })();
 </script>
@@ -5227,6 +5205,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main .inp{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
 .main .fp-grid button{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
 .main .fp-grid button.auto{ background:rgba(22,20,34,.9)!important; }
+/* 随机草图：精简右栏 + 大按钮 + 暗色下拉 */
+.main #dStyle{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; border-radius:8px; padding:8px 10px; font-size:13px; }
+.main #genDense.big-gen{ width:100%!important; padding:16px!important; font-size:16px!important; border-radius:12px!important; letter-spacing:1px; }
 /* 工作室模态框（position:fixed，挂在 body 下，不在 .main 内） */
 .modal{ background:rgba(18,16,28,.97)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
 .artist-modal{ background:rgba(8,6,14,.7)!important; }
