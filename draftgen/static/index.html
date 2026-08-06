@@ -1398,8 +1398,7 @@ body{ background: var(--bg); color: var(--text); }
             <div class="row" style="margin-top:8px;">
               <button class="action primary" id="genDense">✦ 生成乱线草图</button>
             </div>
-            <div id="denseStatus" class="dense-status">未生成</div>
-            <div class="tips">说明：本模式由 <code>DraftGen.generateRandomScene(...)</code> 在<b>浏览器内</b>实时生成上万条随机线条，画面被线填满。已整合 paint_masterpieces 引擎 + 10 经典笔法 + 随机场景，<b>无需起任何服务</b>。</div>
+            <div class="tips">说明：本模式由 <code>DraftGen.generateRandomScene(...)</code> 在<b>浏览器内</b>实时生成上万条随机线条，画面被线填满。已整合 paint_masterpieces 引擎 + 10 经典笔法 + 随机场景，<b>无需起任何服务</b>。图像直接绘制在下方画布上。</div>
           </div>
           <div style="margin-top:12px;">
             <canvas id="cv" style="max-width:100%;width:100%;border:1px solid var(--border,#d9d3c4);border-radius:8px;background:#0a0a18;"></canvas>
@@ -5175,36 +5174,33 @@ window.addEventListener('DOMContentLoaded', ()=>{
   var cv=document.getElementById('cv'); if(!cv) return;
   var ctx=cv.getContext('2d');
   var dFocal='auto';
-  var dStatus=document.getElementById('denseStatus');
-  function dSetStatus(msg, cls){ dStatus.textContent=msg; dStatus.className='dense-status'+(cls?(' '+cls):''); }
+  function fail(msg){ if(window.showToast) showToast(msg); else console.error(msg); }
   function fillStyleSelect(list){ var sel=document.getElementById('dStyle'); sel.innerHTML='';
     list.forEach(function(s){ var o=document.createElement('option'); o.value=s.key||''; o.textContent=(s.artist?(s.title?s.artist+' — '+s.title:s.artist):s.title); sel.appendChild(o); }); }
   function loadStyles(){ try{
       var list=(typeof DraftGen!=='undefined'&&DraftGen.listStyles)?DraftGen.listStyles():[];
       fillStyleSelect([{key:'',title:'🎲 自动（随机挑经典 / 随机场景）'}].concat(list).concat([{key:'random_scene',artist:'纯随机',title:'随机场景（从零生成）'}]));
-    }catch(e){ dSetStatus('DraftGen 未加载：请确认 draftgen.js 已正确引入','err'); } }
+    }catch(e){ fail('DraftGen 未加载：请确认 draftgen.js 已正确引入'); } }
   document.getElementById('dfpGrid').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return;
     document.querySelectorAll('#dfpGrid button').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); dFocal=b.dataset.dfp; });
   document.getElementById('genDense').addEventListener('click', function(){ genDense(); });
   function genDense(){
-    if(typeof DraftGen==='undefined'||!DraftGen.generateRandomScene){ dSetStatus('DraftGen 未加载：请确认 draftgen.js 已引入','err'); return; }
+    if(typeof DraftGen==='undefined'||!DraftGen.generateRandomScene){ fail('DraftGen 未加载：请确认 draftgen.js 已引入'); return; }
     var btn=document.getElementById('genDense');
     var style=document.getElementById('dStyle').value||null;
     var seedRaw=document.getElementById('dSeed').value.trim();
     var seedNum=parseInt(seedRaw,10);
     var seed=(seedRaw&&!isNaN(seedNum))?seedNum:null;
     var density=+document.getElementById('dDensity').value;
-    btn.disabled=true; dSetStatus('⏳ 正在生成上万条随机线条…（浏览器渲染中）','busy');
+    btn.disabled=true;
     requestAnimationFrame(function(){ try{
-      var t0=performance.now();
       var res=DraftGen.generateRandomScene({ seed:seed, styleKey:style, focalIdx: dFocal==='auto'?null:+dFocal, density:density });
       var canvas=res.canvas, meta=res.meta;
       var gw=meta.w, gh=meta.h; cv.width=gw; cv.height=gh;
       var sc=560/Math.max(gw,gh); cv.style.width=(gw*sc)+'px'; cv.style.height=(gh*sc)+'px';
       ctx.clearRect(0,0,gw,gh); ctx.drawImage(canvas,0,0,gw,gh);
       btn.disabled=false;
-      dSetStatus('✅ 已生成：'+(meta.style||'auto')+' · 焦点'+(meta.focal!=null?meta.focal:'-')+' · '+gw+'×'+gh+' · 密度×'+meta.density+' · '+Math.round(performance.now()-t0)+'ms','ok');
-    }catch(e){ dSetStatus('❌ 生成失败：'+e.message,'err'); btn.disabled=false; } });
+    }catch(e){ fail('❌ 生成失败：'+e.message); btn.disabled=false; } });
   }
   loadStyles();
 })();
@@ -5231,8 +5227,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main .inp{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
 .main .fp-grid button{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
 .main .fp-grid button.auto{ background:rgba(22,20,34,.9)!important; }
-.main .dense-status{ background:rgba(16,14,26,.78)!important; color:#cfc9e6!important; border:1px dashed rgba(255,255,255,.2)!important; }
-.main .dense-status code{ background:rgba(255,255,255,.08)!important; color:#e9e6f5!important; }
 /* 工作室模态框（position:fixed，挂在 body 下，不在 .main 内） */
 .modal{ background:rgba(18,16,28,.97)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
 .artist-modal{ background:rgba(8,6,14,.7)!important; }
