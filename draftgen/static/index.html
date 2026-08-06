@@ -2877,8 +2877,10 @@ async function generateRandomDraft() {
     return;
   }
 
-  const density = parseInt(document.getElementById('lineDensity').value); // 1..3
-  const chaos = parseInt(document.getElementById('chaosLevel').value) / 100;
+  const ldEl = document.getElementById('lineDensity');
+  const clEl = document.getElementById('chaosLevel');
+  const density = ldEl ? parseInt(ldEl.value) : 2;            // 1..3，缺省中密度
+  const chaos = clEl ? parseInt(clEl.value) / 100 : 0.4;
   const counts = [6000, 8000, 10000];                       // 低密度6000 / 中8000 / 高10000
   const seed = Date.now();
   const rng = mulberry32(seed);
@@ -4544,6 +4546,11 @@ function switchTab(tabName) {
   if (el) el.style.display = 'block';
   if (tabName === 'complib') loadCompositionLibrary();
   if (tabName === 'gallery') switchGallery('master');
+  if (tabName === 'random') {
+    // 打开「随机生成草稿」标签即自动生成一张，点击就有图
+    const g = document.getElementById('genDense');
+    if (g && !g.disabled) setTimeout(function () { g.click(); }, 80);
+  }
 }
 
 let currentGallerySub = 'master';
@@ -4560,11 +4567,15 @@ function switchGallery(sub) {
 
 // ============ SLIDERS ============
 function initSliders() {
-  document.getElementById('lineDensity').addEventListener('input', function() {
-    document.getElementById('densityVal').textContent = ['低','中','高'][this.value-1];
+  const ld = document.getElementById('lineDensity');
+  const cl = document.getElementById('chaosLevel');
+  if (ld) ld.addEventListener('input', function() {
+    const dv = document.getElementById('densityVal');
+    if (dv) dv.textContent = ['低','中','高'][this.value-1];
   });
-  document.getElementById('chaosLevel').addEventListener('input', function() {
-    document.getElementById('chaosVal').textContent = this.value;
+  if (cl) cl.addEventListener('input', function() {
+    const cv = document.getElementById('chaosVal');
+    if (cv) cv.textContent = this.value;
   });
 }
 
