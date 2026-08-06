@@ -1287,6 +1287,34 @@ body{ background: var(--bg); color: var(--text); }
       <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
     </div>
 
+    <!-- ===== 蓝图工作台覆盖层（技术制图框） ===== -->
+    <div class="bp-ovl" id="bpOverlay" aria-hidden="true">
+      <span class="bp-corner tl"></span>
+      <span class="bp-corner tr"></span>
+      <span class="bp-corner bl"></span>
+      <span class="bp-corner br"></span>
+      <div class="bp-cross" id="bpCross">
+        <div class="bp-ring"></div>
+        <div class="bp-h"></div>
+        <div class="bp-v"></div>
+        <div class="bp-dot"></div>
+      </div>
+      <div class="bp-dim-x" id="bpDimX">W&nbsp;▸&nbsp;<span id="bpW">3508</span>&nbsp;PX</div>
+      <div class="bp-dim-y" id="bpDimY">H&nbsp;▾&nbsp;<span id="bpH">2480</span>&nbsp;PX</div>
+      <div class="bp-coord" id="bpCoord">
+        <span class="bp-ck">CURSOR</span>
+        <span class="bp-cx">X<b id="bpX">0000</b></span>
+        <span class="bp-cy">Y<b id="bpY">0000</b></span>
+        <span class="bp-ct">TOOL<b id="bpTool">BRUSH</b></span>
+      </div>
+      <div class="bp-stamp" id="bpStamp">
+        <span>DWG&nbsp;No.&nbsp;DG-<span id="bpNo">0001</span></span>
+        <span>SCALE&nbsp;1:1</span>
+        <span>UNITS&nbsp;PX</span>
+        <span>PROJ&nbsp;DRAFTGEN</span>
+      </div>
+    </div>
+
   </div>
 
   <!-- Right Panel -->
@@ -1730,6 +1758,7 @@ function setOrientation(o) {
   // Redraw all layers
   redrawAllLayers();
   if (activeGuide) drawGuide(activeGuide);
+  if (window.refreshBpMeta) window.refreshBpMeta();
   showToast(o === 'portrait' ? '切换为竖版' : '切换为横版');
 }
 
@@ -1746,6 +1775,7 @@ function setTool(tool) {
     drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
   }
   if (tool === 'brush' && selectedPaletteIdx >= 0) showPaletteStrip();
+  if (window.refreshBpMeta) window.refreshBpMeta();
 }
 
 function updateBrushSize(val) {
@@ -5722,6 +5752,159 @@ window.addEventListener('DOMContentLoaded', ()=>{
   #welcome .bp-sweep,#welcome .bp-paper,#welcome .bp-corner,#welcome .welcome-title,
   #welcome .welcome-title::after,#welcome .enter-btn::after,#welcome .bp-svg .bp-dash{ animation:none !important; }
 }
+
+/* ================================================================
+   工作室蓝图主题：普鲁士蓝 + 青色技术线（规矩 · 酷炫）
+   ================================================================ */
+.main{
+  --bg:#08131f; --bg2:#0a1628; --panel:rgba(10,22,40,.80); --card:rgba(13,33,55,.72);
+  --text:#dff1ff; --text-light:#8fb6d6; --border:rgba(120,200,255,.26);
+  --accent:#5fd0ff; --accent-dark:#2a9fd8;
+  --c1:#5fd0ff; --c2:#2aa7e8; --c3:#7be0ff;
+  --grad:linear-gradient(135deg,#5fd0ff,#2aa7e8 58%,#7be0ff);
+  --neon:0 0 18px rgba(95,208,255,.5);
+  --bp-cyan:#5fd0ff; --bp-cyan-soft:rgba(120,200,255,.7);
+  --bp-mono:'JetBrains Mono','IBM Plex Mono','SFMono-Regular',Consolas,'Liberation Mono',Monaco,monospace;
+  --bp-line:rgba(120,200,255,.12); --bp-line2:rgba(120,200,255,.24);
+}
+
+/* 头部 → 蓝图标题栏 */
+.main .header, .header{
+  background:rgba(8,19,31,.92); border-bottom:1px solid rgba(120,200,255,.28);
+  box-shadow:0 6px 30px rgba(0,0,0,.4), 0 0 26px rgba(95,208,255,.12);
+  font-family:var(--bp-mono);
+}
+.main .header h1{ background:linear-gradient(92deg,#7be0ff,#2aa7e8); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px; }
+.main .header .orient-btn{ border:1px solid rgba(120,200,255,.34); background:rgba(13,33,55,.6); color:var(--text); font-family:var(--bp-mono); letter-spacing:.5px; }
+.main .header .orient-btn:hover, .main .header .orient-btn.active{ background:linear-gradient(135deg,#5fd0ff,#2aa7e8); color:#04121f; border-color:transparent; box-shadow:0 0 14px rgba(95,208,255,.6); }
+.main .header .shortcut-hint{ color:var(--bp-cyan-soft); font-family:var(--bp-mono); letter-spacing:.5px; }
+
+/* 画布区 → 蓝图坐标桌 */
+.main .canvas-area{
+  background:
+    radial-gradient(120% 120% at 50% -10%, rgba(18,64,104,.55), transparent 62%),
+    radial-gradient(90% 90% at 8% 100%, rgba(12,46,82,.45), transparent 60%),
+    #07111d;
+}
+.main .canvas-area::before{
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(var(--bp-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-line) 1px, transparent 1px),
+    linear-gradient(var(--bp-line2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-line2) 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px, 110px 110px, 110px 110px;
+  -webkit-mask-image: radial-gradient(125% 115% at 50% 45%, #000 52%, transparent 92%);
+  mask-image: radial-gradient(125% 115% at 50% 45%, #000 52%, transparent 92%);
+  animation: bpDrift 48s linear infinite;
+}
+@keyframes bpDrift{ from{ background-position:0 0,0 0,0 0,0 0; } to{ background-position:22px 22px,22px 22px,110px 110px,110px 110px; } }
+.main .canvas-area::after{
+  content:''; position:absolute; left:0; right:0; top:-42%; height:42%; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg,transparent, rgba(95,208,255,.14), transparent);
+  animation: bpSweep 7.5s linear infinite;
+}
+@keyframes bpSweep{ 0%{ top:-42% } 100%{ top:112% } }
+
+/* 绘图-sheet：白色印样 + 蓝图网格 */
+.main .canvas-wrapper{
+  border:1px solid rgba(120,200,255,.45);
+  border-radius:4px; overflow:hidden;
+  box-shadow:0 0 0 1px rgba(120,200,255,.14), 0 26px 70px rgba(0,0,0,.6), 0 0 64px rgba(95,208,255,.18);
+}
+.main .canvas-wrapper::after{
+  content:''; position:absolute; inset:0; z-index:25; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(40,120,180,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40,120,180,.06) 1px, transparent 1px);
+  background-size:24px 24px; mix-blend-mode:multiply;
+}
+
+/* 右侧面板 → 蓝图信息栏 */
+.main .right-panel{
+  background:
+    linear-gradient(180deg, rgba(10,26,46,.94), rgba(7,17,29,.96)),
+    #07111d;
+  border-left:1px solid rgba(120,200,255,.28);
+  box-shadow:-20px 0 60px rgba(0,0,0,.45), 0 0 30px rgba(95,208,255,.10);
+}
+.main .panel-tabs{ background:rgba(8,19,31,.5); border-bottom:1px solid rgba(120,200,255,.22); }
+.main .panel-tabs .tab{
+  border:1px solid var(--border); color:var(--text-light); background:rgba(13,33,55,.5);
+  font-family:var(--bp-mono); letter-spacing:.5px; border-radius:6px;
+}
+.main .panel-tabs .tab:hover{ color:var(--text); border-color:rgba(95,208,255,.5); box-shadow:0 0 12px rgba(95,208,255,.25); transform:translateY(-1px); }
+.main .panel-tabs .tab.active{ color:#04121f; border-color:transparent; background:linear-gradient(135deg,#7be0ff,#2aa7e8); box-shadow:0 0 16px rgba(95,208,255,.6); font-weight:700; }
+.main .panel-section h3{ color:var(--text); font-family:var(--bp-mono); letter-spacing:1px; }
+.main .panel-section h3::before{ content:'[ '; width:auto; height:auto; background:none; border-radius:0; box-shadow:none; color:var(--bp-cyan); }
+.main .panel-section h3::after{ content:' ]'; color:var(--bp-cyan); }
+.main .panel-section p{ color:var(--text-light); }
+
+/* 画笔面板 → 青色 */
+.main .brush-panel .bp-label{ color:#8fb6d6; letter-spacing:1px; font-family:var(--bp-mono); }
+.main .brush-panel .bp-hex{ color:#dff1ff; }
+.main .brush-panel .bp-native{ background:rgba(95,208,255,.16); border:1px solid rgba(95,208,255,.45); color:#dff1ff; font-family:var(--bp-mono); }
+.main .brush-panel .bp-native:hover{ background:rgba(95,208,255,.3); box-shadow:0 0 14px rgba(95,208,255,.45); }
+.main #swatchGrid .swatch{ border:1px solid rgba(120,200,255,.3); }
+.main #swatchGrid .swatch:hover{ border-color:#7be0ff; box-shadow:0 0 12px rgba(95,208,255,.4); }
+.main #swatchGrid .swatch.on{ border:2px solid #7be0ff; box-shadow:0 0 0 2px #2aa7e8, 0 0 14px rgba(95,208,255,.85); }
+.main .brush-panel .slider-row{ color:#8fb6d6; font-family:var(--bp-mono); }
+.main .brush-panel .slider-row input[type=range]{ accent-color:#5fd0ff; }
+.main .brush-panel .slider-row .val{ color:#dff1ff; }
+.main .brush-panel .bp-actions .action-btn{ background:rgba(13,33,55,.7); border:1px solid rgba(120,200,255,.3); color:var(--text); font-family:var(--bp-mono); }
+.main .brush-panel .bp-actions .action-btn:hover{ border-color:rgba(95,208,255,.55); box-shadow:0 0 12px rgba(95,208,255,.3); }
+
+/* 浮动工具栏（铅笔/橡皮）→ 蓝图胶囊 */
+.main .float-toolbar.slim{
+  background:rgba(10,26,46,.82); border:1px solid rgba(120,200,255,.3); border-radius:16px;
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  box-shadow:0 10px 30px rgba(0,0,0,.5), 0 0 22px rgba(95,208,255,.18); padding:8px; gap:8px;
+}
+.main .float-toolbar.slim .tool-btn{
+  width:44px; height:44px; font-size:21px; border-radius:13px;
+  background:rgba(13,33,55,.7); border:1px solid rgba(120,200,255,.22); color:var(--text);
+}
+.main .float-toolbar.slim .tool-btn:hover{ background:rgba(95,208,255,.16); border-color:rgba(95,208,255,.55); box-shadow:0 0 14px rgba(95,208,255,.4); transform:translateY(-1px); }
+.main .float-toolbar.slim .tool-btn.active{ background:linear-gradient(135deg,#7be0ff,#2aa7e8); color:#04121f; border-color:transparent; box-shadow:0 0 22px rgba(95,208,255,.8); }
+
+/* 下载按钮 → 蓝图 */
+.main .float-dl{ background:linear-gradient(135deg,#2aa7e8,#5fd0ff); color:#04121f; border:none; border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--bp-mono); box-shadow:0 4px 16px rgba(95,208,255,.45); letter-spacing:.5px; }
+
+/* 生成工具条 → 蓝图 */
+.main .gen-toolbar{
+  background:rgba(8,19,31,.92); color:var(--bp-cyan); border:1px solid rgba(120,200,255,.35);
+  font-family:var(--bp-mono); box-shadow:0 0 18px rgba(95,208,255,.22);
+}
+.main .gen-toolbar button{ background:linear-gradient(135deg,#2aa7e8,#5fd0ff); color:#04121f; font-weight:700; }
+.main .gen-toolbar button.cancel{ background:linear-gradient(135deg,#e0575b,#ff8a8d); color:#1a0606; }
+.main .gen-toolbar .hint{ opacity:.7; }
+
+/* ===== 蓝图工作台覆盖层（技术制图框） ===== */
+.bp-ovl{ position:absolute; inset:0; z-index:30; pointer-events:none; font-family:var(--bp-mono); color:var(--bp-cyan); }
+.bp-corner{ position:absolute; width:26px; height:26px; border:1px solid rgba(120,200,255,.55); }
+.bp-corner.tl{ left:14px; top:14px; border-right:0; border-bottom:0; }
+.bp-corner.tr{ right:14px; top:14px; border-left:0; border-bottom:0; }
+.bp-corner.bl{ left:14px; bottom:14px; border-right:0; border-top:0; }
+.bp-corner.br{ right:14px; bottom:14px; border-left:0; border-top:0; }
+.bp-cross{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:130px; height:130px; }
+.bp-cross .bp-ring{ position:absolute; inset:0; border:1px dashed rgba(120,200,255,.4); border-radius:50%; animation:bpSpin 18s linear infinite; }
+.bp-cross .bp-h{ position:absolute; left:-62px; right:-62px; top:50%; height:1px; background:linear-gradient(90deg,transparent,rgba(120,200,255,.55),transparent); }
+.bp-cross .bp-v{ position:absolute; top:-62px; bottom:-62px; left:50%; width:1px; background:linear-gradient(180deg,transparent,rgba(120,200,255,.55),transparent); }
+.bp-cross .bp-dot{ position:absolute; left:50%; top:50%; width:7px; height:7px; transform:translate(-50%,-50%); border-radius:50%; background:#5fd0ff; box-shadow:0 0 12px #5fd0ff; animation:bpPulse 2.4s ease-in-out infinite; }
+@keyframes bpSpin{ to{ transform:rotate(360deg); } }
+@keyframes bpPulse{ 0%,100%{ box-shadow:0 0 6px #5fd0ff; } 50%{ box-shadow:0 0 18px #5fd0ff; } }
+.bp-dim-x{ position:absolute; top:16px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
+.bp-dim-y{ position:absolute; left:84px; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
+.bp-coord{ position:absolute; right:16px; bottom:16px; display:flex; gap:14px; align-items:center; font-size:10px; letter-spacing:1.5px; background:rgba(7,17,29,.78); border:1px solid rgba(120,200,255,.32); border-radius:4px; padding:7px 12px; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.bp-coord .bp-cx b, .bp-coord .bp-cy b, .bp-coord .bp-ct b{ color:#bfe9ff; font-variant-numeric:tabular-nums; margin-left:4px; }
+.bp-coord .bp-ck{ color:var(--bp-cyan-soft); }
+.bp-stamp{ position:absolute; left:16px; bottom:16px; display:flex; flex-direction:column; gap:2px; font-size:9px; letter-spacing:1.5px; color:rgba(143,182,214,.85); background:rgba(7,17,29,.62); border:1px solid rgba(120,200,255,.22); border-radius:4px; padding:6px 9px; }
+
+@media (prefers-reduced-motion: reduce){
+  .bp-ovl *{ animation:none !important; }
+  .main .canvas-area::before, .main .canvas-area::after{ animation:none !important; }
+}
+
 </style>
 
 <script>
@@ -5776,5 +5959,34 @@ window.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+<script>
+/* 蓝图工作台 HUD：坐标 / 尺寸 / 工具实时刷新 */
+(function(){
+  var area=document.getElementById('canvasArea');
+  var wrap=document.getElementById('canvasWrapper');
+  var elX=document.getElementById('bpX'), elY=document.getElementById('bpY');
+  var elW=document.getElementById('bpW'), elH=document.getElementById('bpH');
+  var elTool=document.getElementById('bpTool'), elNo=document.getElementById('bpNo');
+  function pad(n){ n=Math.max(0,Math.round(n)); n=String(n); while(n.length<4) n='0'+n; return n; }
+  if(area){
+    area.addEventListener('mousemove', function(e){
+      var r=wrap.getBoundingClientRect();
+      if(elX) elX.textContent=pad(e.clientX-r.left);
+      if(elY) elY.textContent=pad(e.clientY-r.top);
+    });
+    area.addEventListener('mouseleave', function(){ if(elX)elX.textContent='0000'; if(elY)elY.textContent='0000'; });
+  }
+  window.refreshBpMeta=function(){
+    try{
+      if(elW && typeof canvasW!=='undefined') elW.textContent=canvasW;
+      if(elH && typeof canvasH!=='undefined') elH.textContent=canvasH;
+      if(elTool && typeof currentTool!=='undefined') elTool.textContent=String(currentTool||'brush').toUpperCase();
+    }catch(err){}
+  };
+  if(elNo){ elNo.textContent=pad(1+Math.floor(Math.random()*9998)); }
+  function init(){ if(window.refreshBpMeta) window.refreshBpMeta(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 </body>
 </html>
