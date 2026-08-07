@@ -76,8 +76,8 @@ class SketchEngine {
   _biasedPos(x0, y0, x1, y1) {
     if (!this.focal) return [this.rng.range(x0, x1), this.rng.range(y0, y1)];
     const [fx, fy] = this.focal;
-    if (this.rng.next() < 0.28) {
-      const t = this.rng.range(0.1, 0.48);
+    if (this.rng.next() < 0.2) {
+      const t = this.rng.range(0.08, 0.4);
       const rx = this.rng.range(x0, x1);
       const ry = this.rng.range(y0, y1);
       return [rx + (fx - rx) * t, ry + (fy - ry) * t];
@@ -208,8 +208,8 @@ class SketchEngine {
     const count = rnd.int(9, 17);
     for (let i = 0; i < count; i++) {
       const ang = rnd.range(0, Math.PI * 2);
-      // 距离分布：大部分离焦点不远，但允许少量外围稀疏点
-      const dist = rnd.range(baseR * 0.05, baseR * 1.35);
+      // 距离分布：大部分离焦点不远，但允许少量外围稀疏点（扩散更广，避免黑芯）
+      const dist = rnd.range(baseR * 0.05, baseR * 1.9);
       clusters.push({
         cx: fx + Math.cos(ang) * dist,
         cy: fy + Math.sin(ang) * dist,
@@ -238,8 +238,8 @@ class SketchEngine {
       const nLines = Math.max(4, Math.round(share * 0.66));
       const nArc = Math.max(2, share - nLines);
       const baseAng = rnd.range(0, Math.PI); // 每簇不同主方向
-      this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 2], [13, 60], null);
-      this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 2], [15, 56], [2, 1, 1, 3], null);
+      this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 2], [11, 50], null);
+      this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 2], [13, 48], [2, 1, 1, 3], null);
     });
     this.focal = savedFocal;
 
