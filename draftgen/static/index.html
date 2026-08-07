@@ -1318,7 +1318,7 @@ body{ background: var(--bg); color: var(--text); }
         <!-- ===== 全息投影：随机构图生成器（JARVIS 风格） ===== -->
         <div class="holo-hero" id="fxHero">
           <div class="holo-inner">
-            <div class="holo-stage">
+            <div class="holo-stage holo-btn" id="holoStage" tabindex="0" role="button" aria-label="点击生成随机草图">
               <div class="holo-beam"></div>
               <div class="holo-grid-floor"></div>
               <div class="holo-core">
@@ -1336,6 +1336,10 @@ body{ background: var(--bg); color: var(--text); }
               <div class="holo-base"></div>
               <div class="holo-scan"></div>
               <div class="holo-flicker"></div>
+              <div class="holo-cta" aria-hidden="true">
+                <span class="holo-cta-text">随机生成草图</span>
+                <div class="holo-blinds"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
               <div class="holo-hud">
                 <span class="hh-l">COMPOSITION&nbsp;ENGINE</span>
                 <span class="hh-r">SCAN&nbsp;●&nbsp;ACTIVE</span>
@@ -5344,6 +5348,23 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 
   document.getElementById('genDense').addEventListener('click', function(){ genDense(); });
+  // 光球（全息舞台）本身也是「生成随机草图」按钮
+  var hStage = document.getElementById('holoStage');
+  if (hStage) {
+    hStage.addEventListener('click', function (e) {
+      if (e.target.closest('.holo-hud')) return;
+      var core = this.querySelector('.holo-core');
+      genDense();
+      if (core) {
+        core.style.transition = 'filter .18s ease';
+        core.style.filter = 'brightness(2) drop-shadow(0 0 18px #00e5ff)';
+        setTimeout(function () { core.style.filter = ''; }, 240);
+      }
+    });
+    hStage.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+    });
+  }
   loadStyles();
 })();
 </script>
@@ -5494,6 +5515,30 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main .holo-scan::after{ content:''; position:absolute; left:0; right:0; height:40%; background:linear-gradient(180deg,transparent, rgba(0,229,255,.18), transparent); animation:holoScan 3.4s linear infinite; }
 @keyframes holoScan{ 0%{ top:-40% } 100%{ top:112% } }
 .main .holo-flicker{ position:absolute; inset:0; pointer-events:none; background:rgba(0,229,255,.04); mix-blend-mode:screen; animation:holoFlicker 4.5s steps(1) infinite; }
+/* 光球 → 可点击按钮 */
+.main .holo-stage.holo-btn{ cursor:pointer; outline:none; }
+.main .holo-stage.holo-btn:focus-visible{ box-shadow:inset 0 0 0 2px #00e5ff, 0 0 22px rgba(0,229,255,.55); }
+/* 百叶窗式 CTA：间断性浮现「随机生成草图」 */
+.main .holo-cta{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:6; pointer-events:none; text-align:center; }
+.main .holo-cta-text{ display:block; font-family:var(--bp-mono); font-weight:900; font-size:19px; letter-spacing:5px; color:#eafdff;
+  text-shadow:0 0 16px rgba(0,229,255,.95), 0 0 30px rgba(0,229,255,.55); white-space:nowrap; padding:4px 6px; }
+.main .holo-blinds{ position:absolute; left:-8px; right:-8px; top:-8px; bottom:-8px; display:flex; flex-direction:column; pointer-events:none; }
+.main .holo-blinds i{ flex:1; background:linear-gradient(180deg,#072a45,#041a30); border-top:1px solid rgba(0,229,255,.30); border-bottom:1px solid rgba(0,229,255,.12);
+  transform:scaleY(1); transform-origin:center; box-shadow:0 0 10px rgba(0,0,0,.45) inset; animation:holoBlinds 6s ease-in-out infinite; }
+.main .holo-blinds i:nth-child(1){ animation-delay:0s }
+.main .holo-blinds i:nth-child(2){ animation-delay:.05s }
+.main .holo-blinds i:nth-child(3){ animation-delay:.10s }
+.main .holo-blinds i:nth-child(4){ animation-delay:.15s }
+.main .holo-blinds i:nth-child(5){ animation-delay:.20s }
+.main .holo-blinds i:nth-child(6){ animation-delay:.25s }
+.main .holo-blinds i:nth-child(7){ animation-delay:.30s }
+.main .holo-blinds i:nth-child(8){ animation-delay:.35s }
+@keyframes holoBlinds{
+  0%,30%{ transform:scaleY(1); }
+  45%{ transform:scaleY(0); }
+  72%{ transform:scaleY(0); }
+  85%,100%{ transform:scaleY(1); }
+}
 @keyframes holoFlicker{ 0%,100%{opacity:.5} 3%{opacity:.15} 6%{opacity:.7} 9%{opacity:.3} 12%{opacity:.6} 50%{opacity:.45} 72%{opacity:.2} 74%{opacity:.65} }
 .main .holo-hud{ position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:2px 8px; padding:6px 9px; font-family:var(--bp-mono); font-size:8.5px; letter-spacing:1.1px; color:#9fe8ff; text-shadow:0 0 8px rgba(0,229,255,.55); pointer-events:none; }
 .main .holo-hud .hh-r{ color:#7df9ff; }
@@ -5568,6 +5613,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @media (prefers-reduced-motion: reduce){
   .main .holo-orb,.main .holo-orbit,.main .holo-reticle,.main .holo-arc,.main .holo-base,.main .holo-beam,.main .holo-scan,.main .holo-flicker,
   .main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
+  .main .holo-blinds i{ animation:none!important; transform:scaleY(0)!important; }
 }
 
 /* ================================================================
@@ -5697,7 +5743,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
   font-family:"JetBrains Mono","Consolas",monospace; }
 
 /* 文案层 */
-#welcome .welcome-inner{ position:relative; z-index:6; }
+#welcome .welcome-inner{ position:relative; z-index:6; animation:welcomeIn 1.05s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes welcomeIn{ from{ opacity:0; transform:translateY(20px); } to{ opacity:1; transform:none; } }
 #welcome .welcome-badge{
   display:inline-block; font-size:10.5px !important; letter-spacing:2px !important; color:#00E5FF !important;
   background:rgba(0,180,216,.09) !important; border:1px solid rgba(0,229,255,.42) !important;
@@ -5777,7 +5824,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 }
 @media (prefers-reduced-motion: reduce){
   #welcome .bp-sweep,#welcome .bp-paper,#welcome .bp-corner,#welcome .welcome-title,
-  #welcome .welcome-title::after,#welcome .enter-btn::after,#welcome .bp-svg .bp-dash{ animation:none !important; }
+  #welcome .welcome-title::after,#welcome .enter-btn::after,#welcome .bp-svg .bp-dash,#welcome .welcome-inner{ animation:none !important; }
 }
 
 /* ================================================================
