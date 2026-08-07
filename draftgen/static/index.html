@@ -1068,6 +1068,28 @@ body{ background: var(--bg); color: var(--text); }
 <div class="main">
   <!-- Canvas Area -->
   <div class="canvas-area" id="canvasArea">
+
+    <!-- ===== 钢铁侠工作室全息背景（蓝图 + JARVIS 风格，含景深视差） ===== -->
+    <div class="studio-fx" id="studioFx" aria-hidden="true">
+      <div class="s-layer s-fog"></div>
+      <div class="s-layer s-grid"><div class="gs"></div></div>
+      <div class="s-layer s-globe">
+        <div class="sphere"></div>
+        <div class="cage">
+          <div class="m m1"></div><div class="m m2"></div><div class="m m3"></div>
+          <div class="m m4"></div><div class="m m5"></div><div class="m m6"></div>
+          <div class="p p1"></div><div class="p p2"></div><div class="p p3"></div><div class="p p4"></div>
+        </div>
+        <div class="s-orbits">
+          <div class="o o1"></div><div class="o o2"></div><div class="o o3"></div>
+        </div>
+        <div class="s-core"></div>
+      </div>
+      <div class="s-layer s-scan"></div>
+      <div class="s-layer s-particles"></div>
+      <div class="s-layer s-halo"></div>
+    </div>
+
     <div class="canvas-wrapper" id="canvasWrapper">
       <canvas id="bgCanvas"></canvas>
       <canvas id="guideCanvas" class="guide-canvas"></canvas>
@@ -5719,6 +5741,90 @@ window.addEventListener('DOMContentLoaded', ()=>{
 }
 @keyframes bpSweep{ 0%{ top:-42% } 100%{ top:112% } }
 
+/* ===== 钢铁侠工作室全息背景（蓝图 + JARVIS 风格 · 景深视差） ===== */
+.studio-fx{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.studio-fx .s-layer{ position:absolute; inset:0; will-change:transform; transform: translate3d(0,0,0); transition: transform .14s linear; }
+/* 景深视差：鼠标移动时各层按深度位移，制造强烈纵深 */
+.studio-fx .s-fog{ transform: none; }
+.studio-fx .s-globe{ transform: translate3d(calc(var(--mx,0) * -16px), calc(var(--my,0) * -11px), 0); }
+.studio-fx .s-grid{ transform: translate3d(calc(var(--mx,0) * 38px), calc(var(--my,0) * 20px), 0); }
+.studio-fx .s-scan{ transform: translate3d(calc(var(--mx,0) * 9px), 0, 0); }
+.studio-fx .s-particles{ transform: translate3d(calc(var(--mx,0) * 58px), calc(var(--my,0) * 40px), 0); }
+.studio-fx .s-halo{ transform: translate3d(calc(var(--mx,0) * 11px), calc(var(--my,0) * 8px), 0); }
+
+/* 深度雾化：边缘压暗，强化纵深 */
+.studio-fx .s-fog{ background: radial-gradient(130% 120% at 50% 46%, transparent 36%, rgba(3,10,18,.86) 100%); }
+/* 全屏辉光：画布后方被全息投影照亮 */
+.studio-fx .s-halo{ background: radial-gradient(40% 40% at 50% 50%, rgba(0,229,255,.14), transparent 70%); }
+
+/* 全息线框球（工作室中心装置） */
+.studio-fx .s-globe{ left:50%; top:51%; width:560px; height:560px; margin:-280px 0 0 -280px; }
+.studio-fx .s-globe .sphere{ position:absolute; inset:0; border-radius:50%;
+  background: radial-gradient(circle at 38% 34%, rgba(125,249,255,.16), rgba(0,150,210,.05) 46%, transparent 68%);
+  box-shadow: 0 0 90px rgba(0,229,255,.20), inset 0 0 70px rgba(0,229,255,.15); }
+.studio-fx .s-globe .cage{ position:absolute; inset:0; transform-style:preserve-3d; animation: sSpin 48s linear infinite; }
+.studio-fx .s-globe .m{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(0,229,255,.20); }
+.studio-fx .s-globe .m2{ transform: rotateY(30deg); }
+.studio-fx .s-globe .m3{ transform: rotateY(60deg); }
+.studio-fx .s-globe .m4{ transform: rotateY(90deg); }
+.studio-fx .s-globe .m5{ transform: rotateY(120deg); }
+.studio-fx .s-globe .m6{ transform: rotateY(150deg); }
+.studio-fx .s-globe .p{ position:absolute; left:50%; top:50%; border-radius:50%; border:1px solid rgba(125,249,255,.16); transform: translate(-50%,-50%) rotateX(74deg); }
+.studio-fx .s-globe .p1{ width:100%; height:100%; }
+.studio-fx .s-globe .p2{ width:72%; height:72%; }
+.studio-fx .s-globe .p3{ width:44%; height:44%; }
+.studio-fx .s-globe .p4{ width:18%; height:18%; }
+.studio-fx .s-globe .s-core{ position:absolute; left:50%; top:50%; width:60px; height:60px; margin:-30px 0 0 -30px; border-radius:50%;
+  background: radial-gradient(circle, #d7fbff, rgba(0,229,255,.6) 45%, transparent 72%);
+  box-shadow: 0 0 40px rgba(0,229,255,.6); animation: sPulse 3.6s ease-in-out infinite; }
+
+/* 轨道环（突破画布，环绕整个工作区） */
+.studio-fx .s-orbits{ position:absolute; inset:0; }
+.studio-fx .s-orbits .o{ position:absolute; left:50%; top:51%; border-radius:50%; border:1px solid rgba(0,229,255,.30); }
+.studio-fx .s-orbits .o1{ width:760px; height:760px; margin:-380px 0 0 -380px; transform: rotateX(74deg); animation: sOrbit 28s linear infinite; }
+.studio-fx .s-orbits .o2{ width:920px; height:920px; margin:-460px 0 0 -460px; border-style:dashed; border-color:rgba(125,249,255,.20); transform: rotateX(74deg); animation: sOrbit 40s linear infinite reverse; }
+.studio-fx .s-orbits .o3{ width:1080px; height:1080px; margin:-540px 0 0 -540px; border-color:rgba(0,229,255,.13); transform: rotateX(74deg); animation: sOrbit 56s linear infinite; }
+
+/* 透视网格地平面 */
+.studio-fx .s-grid .gs{ position:absolute; left:-25%; right:-25%; bottom:-12%; height:54%;
+  background-image:
+    linear-gradient(rgba(0,229,255,.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.22) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(440px) rotateX(74deg);
+  transform-origin: bottom center;
+  -webkit-mask-image: linear-gradient(to top, #000 6%, transparent 86%);
+          mask-image: linear-gradient(to top, #000 6%, transparent 86%);
+  opacity:.55; }
+
+/* 扫描线 */
+.studio-fx .s-scan{ background: repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 1px, transparent 1px 4px); opacity:.5; }
+.studio-fx .s-scan::after{ content:''; position:absolute; left:0; right:0; top:0; height:30%;
+  background:linear-gradient(180deg, transparent, rgba(0,229,255,.12), transparent); animation: sScan 7s linear infinite; }
+
+/* 悬浮微粒（前景，景深最强） */
+.studio-fx .s-particles{ background-repeat:no-repeat; opacity:.85;
+  background-image:
+    radial-gradient(2px 2px at 16% 24%, rgba(125,249,255,.85), transparent),
+    radial-gradient(1.6px 1.6px at 72% 16%, rgba(0,229,255,.70), transparent),
+    radial-gradient(1.4px 1.4px at 84% 62%, rgba(125,249,255,.80), transparent),
+    radial-gradient(1.8px 1.8px at 30% 78%, rgba(0,229,255,.65), transparent),
+    radial-gradient(1.4px 1.4px at 58% 40%, rgba(125,249,255,.75), transparent),
+    radial-gradient(1.2px 1.2px at 44% 12%, rgba(0,229,255,.70), transparent),
+    radial-gradient(1.6px 1.6px at 90% 34%, rgba(125,249,255,.70), transparent),
+    radial-gradient(1.2px 1.2px at 8% 54%, rgba(0,229,255,.60), transparent);
+  animation: sFloat 13s ease-in-out infinite alternate; }
+
+@keyframes sSpin{ to{ transform: rotateY(360deg); } }
+@keyframes sOrbit{ from{ transform: rotateX(74deg) rotate(0); } to{ transform: rotateX(74deg) rotate(360deg); } }
+@keyframes sScan{ 0%{ top:-30% } 100%{ top:100% } }
+@keyframes sPulse{ 0%,100%{ transform: scale(.9); opacity:.8 } 50%{ transform: scale(1.12); opacity:1 } }
+@keyframes sFloat{ from{ transform: translateY(0) } to{ transform: translateY(-14px) } }
+@media (prefers-reduced-motion: reduce){
+  .studio-fx .s-globe .cage, .studio-fx .s-orbits .o, .studio-fx .s-scan::after,
+  .studio-fx .s-globe .s-core, .studio-fx .s-particles{ animation:none !important; }
+}
+
 /* 绘图-sheet：白色印样 + 蓝图网格 */
 .main .canvas-wrapper{
   border:1px solid rgba(120,200,255,.45);
@@ -5891,6 +5997,33 @@ window.addEventListener('DOMContentLoaded', ()=>{
   if(elNo){ elNo.textContent=pad(1+Math.floor(Math.random()*9998)); }
   function init(){ if(window.refreshBpMeta) window.refreshBpMeta(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<script>
+/* 钢铁侠工作室背景：景深视差（鼠标驱动，平滑跟随） */
+(function(){
+  var area=document.getElementById('canvasArea');
+  if(!area) return;
+  var tx=0, ty=0, cx=0, cy=0;
+  function onMove(e){
+    var r=area.getBoundingClientRect();
+    var nx=((e.clientX-r.left)/r.width - .5)*2;
+    var ny=((e.clientY-r.top)/r.height - .5)*2;
+    tx=Math.max(-1, Math.min(1, nx));
+    ty=Math.max(-1, Math.min(1, ny));
+  }
+  // 全局监听，使鼠标移到画布或面板上方时背景都有纵深反应
+  window.addEventListener('mousemove', onMove, {passive:true});
+  area.addEventListener('mouseleave', function(){ tx=0; ty=0; });
+  function loop(){
+    cx += (tx-cx)*0.06;
+    cy += (ty-cy)*0.06;
+    area.style.setProperty('--mx', cx.toFixed(3));
+    area.style.setProperty('--my', cy.toFixed(3));
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
