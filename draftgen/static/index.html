@@ -1276,12 +1276,6 @@ body{ background: var(--bg); color: var(--text); }
       <span class="bp-corner br"></span>
       <div class="bp-dim-x" id="bpDimX">W&nbsp;▸&nbsp;<span id="bpW">3508</span>&nbsp;PX</div>
       <div class="bp-dim-y" id="bpDimY">H&nbsp;▾&nbsp;<span id="bpH">2480</span>&nbsp;PX</div>
-      <div class="bp-coord" id="bpCoord">
-        <span class="bp-ck">CURSOR</span>
-        <span class="bp-cx">X<b id="bpX">0000</b></span>
-        <span class="bp-cy">Y<b id="bpY">0000</b></span>
-        <span class="bp-ct">TOOL<b id="bpTool">BRUSH</b></span>
-      </div>
       <div class="bp-stamp" id="bpStamp">
         <span>DWG&nbsp;No.&nbsp;DG-<span id="bpNo">0001</span></span>
         <span>SCALE&nbsp;1:1</span>
@@ -1321,13 +1315,35 @@ body{ background: var(--bg); color: var(--text); }
       <!-- Compose Tab -->
       <div class="tab-content" id="tab-compose">
         <!-- ===== 炸裂 Hero：随机草图生成器 ===== -->
-        <div class="fx-hero" id="fxHero">
-          <div class="fx-hero-inner">
-            <div class="fx-orb o1"></div><div class="fx-orb o2"></div><div class="fx-orb o3"></div>
-            <div class="fx-grid"></div>
-            <div class="fx-scan"></div>
-            <div class="fx-noise"></div>
-            <div class="fx-body">
+        <!-- ===== 全息投影：随机构图生成器（JARVIS 风格） ===== -->
+        <div class="holo-hero" id="fxHero">
+          <div class="holo-inner">
+            <div class="holo-stage">
+              <div class="holo-beam"></div>
+              <div class="holo-grid-floor"></div>
+              <div class="holo-core">
+                <div class="holo-orb">
+                  <div class="ring m m0"></div><div class="ring m m1"></div><div class="ring m m2"></div>
+                  <div class="ring m m3"></div><div class="ring m m4"></div><div class="ring m m5"></div>
+                  <div class="ring p p0"></div><div class="ring p p1"></div><div class="ring p p2"></div>
+                  <div class="ring p p3"></div><div class="ring p p4"></div>
+                </div>
+                <div class="holo-orbit o1"></div>
+                <div class="holo-orbit o2"></div>
+                <div class="holo-reticle"></div>
+                <div class="holo-arc"></div>
+              </div>
+              <div class="holo-base"></div>
+              <div class="holo-scan"></div>
+              <div class="holo-flicker"></div>
+              <div class="holo-hud">
+                <span class="hh-l">COMPOSITION&nbsp;ENGINE</span>
+                <span class="hh-r">SCAN&nbsp;●&nbsp;ACTIVE</span>
+                <span class="hh-bl">SYS&nbsp;::&nbsp;DRAFTGEN</span>
+                <span class="hh-br">PROJ&nbsp;::&nbsp;RANDOM</span>
+              </div>
+            </div>
+            <div class="holo-body">
               <div class="fx-kicker"><i class="dot"></i>DRAFTGEN ／ COMPOSITION ENGINE<i class="dot"></i></div>
               <div class="fx-title" data-text="随机构图生成器">随机构图生成器</div>
               <p class="fx-sub">一键在左侧主画布生成草稿 · 拖动移动 · 滚轮缩放 · 「✓ 放入画布」确认</p>
@@ -5425,41 +5441,73 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 /* ================= 炸裂 Hero：随机构图生成器 ================= */
 .main #tab-compose{ position:relative; }
-.main .fx-hero{ position:relative; border-radius:20px; padding:2px; overflow:hidden; margin-bottom:16px; isolation:isolate;
-  box-shadow:0 20px 55px rgba(0,0,0,.6), 0 0 34px rgba(139,92,246,.3); }
-.main .fx-hero::before{ content:''; position:absolute; z-index:0; left:50%; top:50%; width:200%; height:200%; transform:translate(-50%,-50%);
-  background:conic-gradient(from 0deg,#22d3ee,#8b5cf6,#ec4899,#f59e0b,#22d3ee); animation:fxspin 5s linear infinite; }
-@keyframes fxspin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
-.main .fx-hero-inner{ position:relative; z-index:1; border-radius:18px; overflow:hidden; padding:16px 14px 16px;
-  background:linear-gradient(165deg,rgba(12,10,22,.97),rgba(26,17,46,.97) 55%,rgba(10,18,30,.97)); }
-.main .fx-body{ position:relative; z-index:4; }
-.main .fx-orb{ position:absolute; border-radius:50%; filter:blur(30px); opacity:.5; pointer-events:none; z-index:0; }
-.main .fx-orb.o1{ width:150px; height:150px; background:#22d3ee; left:-46px; top:-46px; animation:fxfloat1 9s ease-in-out infinite; }
-.main .fx-orb.o2{ width:170px; height:170px; background:#8b5cf6; right:-56px; top:20%; animation:fxfloat2 11s ease-in-out infinite; }
-.main .fx-orb.o3{ width:130px; height:130px; background:#ec4899; left:22%; bottom:-52px; animation:fxfloat3 8s ease-in-out infinite; }
-@keyframes fxfloat1{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(26px,20px) scale(1.18)} }
-@keyframes fxfloat2{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-22px,26px) scale(.85)} }
-@keyframes fxfloat3{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(18px,-22px) scale(1.22)} }
-.main .fx-grid{ position:absolute; inset:0; z-index:1; pointer-events:none;
-  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
-  background-size:22px 22px;
-  -webkit-mask-image:radial-gradient(120% 90% at 50% 35%,#000 30%,transparent 78%);
-  mask-image:radial-gradient(120% 90% at 50% 35%,#000 30%,transparent 78%); }
-.main .fx-scan{ position:absolute; left:0; right:0; height:42%; z-index:2; pointer-events:none;
-  background:linear-gradient(180deg,transparent,rgba(34,211,238,.16),rgba(139,92,246,.1),transparent); animation:fxscan 3.8s linear infinite; }
-@keyframes fxscan{ 0%{ top:-45% } 100%{ top:112% } }
-.main .fx-noise{ position:absolute; inset:0; z-index:3; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
-  background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.6) 0 1px,transparent 1px 3px); }
+/* ===== 全息投影 Hero（钢铁侠 JARVIS 风格 · 蓝图青色） ===== */
+.main .holo-hero{ position:relative; border-radius:18px; overflow:hidden; margin-bottom:16px; isolation:isolate;
+  box-shadow:0 18px 50px rgba(0,0,0,.55), 0 0 26px rgba(0,229,255,.20); border:1px solid rgba(0,229,255,.22); }
+.main .holo-inner{ position:relative; border-radius:17px; overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 0%, #07243d 0%, #051426 55%, #03101c 100%); }
+.main .holo-stage{ position:relative; height:200px; overflow:hidden;
+  background:
+    radial-gradient(58% 78% at 50% 40%, rgba(0,229,255,.16), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(0,229,255,.045) 0 1px, transparent 1px 3px); }
+.main .holo-grid-floor{ position:absolute; left:-25%; right:-25%; bottom:-12%; height:56%;
+  background-image:linear-gradient(rgba(0,229,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.35) 1px,transparent 1px);
+  background-size:24px 24px, 24px 24px;
+  transform:perspective(240px) rotateX(70deg); transform-origin:bottom center; opacity:.38;
+  -webkit-mask-image:linear-gradient(transparent 4%, #000 78%); mask-image:linear-gradient(transparent 4%, #000 78%); }
+.main .holo-beam{ position:absolute; left:50%; bottom:6px; width:140px; height:150px; transform:translateX(-50%);
+  background:linear-gradient(to top, rgba(0,229,255,.32), rgba(0,229,255,.05) 60%, transparent);
+  clip-path:polygon(47% 100%, 53% 100%, 82% 0, 18% 0); filter:blur(.5px); animation:holoBeam 3.6s ease-in-out infinite; }
+@keyframes holoBeam{ 0%,100%{opacity:.55} 50%{opacity:.95} }
+.main .holo-core{ position:absolute; left:50%; top:44%; transform:translate(-50%,-50%); width:150px; height:150px; }
+.main .holo-orb{ position:absolute; inset:0; transform-style:preserve-3d; animation:holoSpin 15s linear infinite; }
+@keyframes holoSpin{ from{ transform:rotateX(-14deg) rotateY(0) } to{ transform:rotateX(-14deg) rotateY(360deg) } }
+.main .holo-orb .ring{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(0,229,255,.5); box-shadow:0 0 6px rgba(0,229,255,.35) inset; }
+.main .holo-orb .m0{ transform:rotateY(0deg) } .main .holo-orb .m1{ transform:rotateY(30deg) }
+.main .holo-orb .m2{ transform:rotateY(60deg) } .main .holo-orb .m3{ transform:rotateY(90deg) }
+.main .holo-orb .m4{ transform:rotateY(120deg) } .main .holo-orb .m5{ transform:rotateY(150deg) }
+.main .holo-orb .p0{ transform:rotateX(90deg); border-color:rgba(140,210,255,.75); box-shadow:0 0 12px rgba(0,229,255,.55) inset; }
+.main .holo-orb .p1{ transform:rotateX(90deg) translateZ(42px) scale(.85) }
+.main .holo-orb .p2{ transform:rotateX(90deg) translateZ(-42px) scale(.85) }
+.main .holo-orb .p3{ transform:rotateX(90deg) translateZ(70px) scale(.5) }
+.main .holo-orb .p4{ transform:rotateX(90deg) translateZ(-70px) scale(.5) }
+.main .holo-orbit{ position:absolute; inset:-12px; border-radius:50%; border:1px solid rgba(0,229,255,.4); }
+.main .holo-orbit.o1{ transform:rotateX(72deg) rotateZ(0deg); animation:holoOrbit1 11s linear infinite; }
+@keyframes holoOrbit1{ to{ transform:rotateX(72deg) rotateZ(360deg) } }
+.main .holo-orbit.o2{ inset:-26px; border-style:dashed; border-color:rgba(130,200,255,.3); transform:rotateX(72deg) rotateZ(0deg); animation:holoOrbit2 17s linear infinite reverse; }
+@keyframes holoOrbit2{ to{ transform:rotateX(72deg) rotateZ(360deg) } }
+.main .holo-reticle{ position:absolute; inset:6px; border-radius:50%; border:1px dashed rgba(0,229,255,.4); animation:holoRet 9s linear infinite; pointer-events:none; }
+.main .holo-reticle::before, .main .holo-reticle::after{ content:''; position:absolute; background:rgba(0,229,255,.55); }
+.main .holo-reticle::before{ left:50%; top:-5px; bottom:-5px; width:1px; transform:translateX(-50%) }
+.main .holo-reticle::after{ top:50%; left:-5px; right:-5px; height:1px; transform:translateY(-50%) }
+@keyframes holoRet{ to{ transform:rotate(360deg) } }
+.main .holo-arc{ position:absolute; left:50%; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); border-radius:50%;
+  background:radial-gradient(circle,#eaffff 0%,#00e5ff 45%,rgba(0,229,255,.2) 70%,transparent 75%);
+  box-shadow:0 0 16px #00e5ff, 0 0 38px rgba(0,229,255,.6); animation:holoArc 2.4s ease-in-out infinite; }
+@keyframes holoArc{ 0%,100%{ transform:translate(-50%,-50%) scale(.9); opacity:.85 } 50%{ transform:translate(-50%,-50%) scale(1.18); opacity:1 } }
+.main .holo-base{ position:absolute; left:50%; bottom:6px; width:86px; height:13px; transform:translateX(-50%); border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(0,229,255,.7), rgba(0,229,255,.12) 60%, transparent 75%);
+  box-shadow:0 0 16px rgba(0,229,255,.6); }
+.main .holo-base::after{ content:''; position:absolute; left:50%; top:50%; width:50px; height:50px; transform:translate(-50%,-50%); border-radius:50%; border:1px solid rgba(0,229,255,.5); animation:holoBase 5s linear infinite; }
+@keyframes holoBase{ to{ transform:translate(-50%,-50%) rotate(360deg) } }
+.main .holo-scan{ position:absolute; inset:0; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px); }
+.main .holo-scan::after{ content:''; position:absolute; left:0; right:0; height:40%; background:linear-gradient(180deg,transparent, rgba(0,229,255,.18), transparent); animation:holoScan 3.4s linear infinite; }
+@keyframes holoScan{ 0%{ top:-40% } 100%{ top:112% } }
+.main .holo-flicker{ position:absolute; inset:0; pointer-events:none; background:rgba(0,229,255,.04); mix-blend-mode:screen; animation:holoFlicker 4.5s steps(1) infinite; }
+@keyframes holoFlicker{ 0%,100%{opacity:.5} 3%{opacity:.15} 6%{opacity:.7} 9%{opacity:.3} 12%{opacity:.6} 50%{opacity:.45} 72%{opacity:.2} 74%{opacity:.65} }
+.main .holo-hud{ position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:2px 8px; padding:6px 9px; font-family:var(--bp-mono); font-size:8.5px; letter-spacing:1.1px; color:#9fe8ff; text-shadow:0 0 8px rgba(0,229,255,.55); pointer-events:none; }
+.main .holo-hud .hh-r{ color:#7df9ff; }
+.main .holo-body{ position:relative; z-index:4; padding:14px 14px 16px; }
 .main .fx-kicker{ display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:2.4px; color:#8ee7f7; opacity:.9; margin-bottom:7px; font-weight:700; }
-.main .fx-kicker .dot{ width:5px; height:5px; border-radius:50%; background:#22d3ee; box-shadow:0 0 10px #22d3ee; animation:fxblink 1.4s ease-in-out infinite; }
+.main .fx-kicker .dot{ width:5px; height:5px; border-radius:50%; background:#00e5ff; box-shadow:0 0 10px #00e5ff; animation:fxblink 1.4s ease-in-out infinite; }
 @keyframes fxblink{ 0%,100%{opacity:.25; transform:scale(.7)} 50%{opacity:1; transform:scale(1.25)} }
 .main .fx-title{ position:relative; font-size:23px; font-weight:900; letter-spacing:2px; line-height:1.15;
-  background:linear-gradient(92deg,#22d3ee,#8b5cf6,#ec4899,#f59e0b,#22d3ee); background-size:320% auto;
+  background:linear-gradient(92deg,#aef6ff,#00e5ff,#22d3ee,#aef6ff); background-size:300% auto;
   -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
-  animation:fxflow 4.5s linear infinite; filter:drop-shadow(0 0 14px rgba(139,92,246,.55)); }
-@keyframes fxflow{ to{ background-position:320% center; } }
+  animation:fxflow 5s linear infinite; filter:drop-shadow(0 0 14px rgba(0,229,255,.6)); }
+@keyframes fxflow{ to{ background-position:300% center; } }
 .main .fx-title::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%;
-  color:#22d3ee; -webkit-text-fill-color:#22d3ee; background:none; mix-blend-mode:screen; opacity:0; animation:fxglitch 6s infinite; }
+  color:#00e5ff; -webkit-text-fill-color:#00e5ff; background:none; mix-blend-mode:screen; opacity:0; animation:fxglitch 6s infinite; }
 @keyframes fxglitch{
   0%,88%,100%{ opacity:0; transform:none; clip-path:none; }
   89%{ opacity:.85; transform:translate(-3px,1px); clip-path:inset(12% 0 62% 0); }
@@ -5467,24 +5515,24 @@ window.addEventListener('DOMContentLoaded', ()=>{
   93%{ opacity:.7; transform:translate(-2px,0); clip-path:inset(34% 0 44% 0); }
   95%{ opacity:0; }
 }
-.main .fx-sub{ font-size:11px; color:#a9a3c4!important; margin:7px 0 12px; line-height:1.65; }
+.main .fx-sub{ font-size:11px; color:#bfe9ff!important; margin:7px 0 12px; line-height:1.65; }
 .main .fx-label{ display:block; font-size:9.5px; letter-spacing:2px; color:#8ee7f7; margin-bottom:6px; font-weight:700; }
-.main .fx-select-wrap{ position:relative; border-radius:11px; padding:1px; background:linear-gradient(120deg,#22d3ee,#8b5cf6,#ec4899); background-size:220% auto; animation:fxflow 6s linear infinite; }
-.main .fx-select-wrap #dStyle{ width:100%; border:none!important; border-radius:10px; background:rgba(10,8,18,.94)!important; color:#e9e6f5!important; padding:10px 11px!important; font-size:13px; outline:none; }
+.main .fx-select-wrap{ position:relative; border-radius:11px; padding:1px; background:linear-gradient(120deg,#00e5ff,#22d3ee,#2b8bff); background-size:220% auto; animation:fxflow 6s linear infinite; }
+.main .fx-select-wrap #dStyle{ width:100%; border:none!important; border-radius:10px; background:rgba(4,16,28,.94)!important; color:#dff6ff!important; padding:10px 11px!important; font-size:13px; outline:none; }
 .main #genDense.fx-gen{ position:relative; display:block; width:100%; margin-top:13px; border:none; border-radius:14px;
-  padding:17px 12px!important; font-size:16px!important; font-weight:900; letter-spacing:3px; color:#fff; cursor:pointer; overflow:hidden;
-  background:linear-gradient(115deg,#22d3ee,#8b5cf6,#ec4899,#f59e0b,#22d3ee); background-size:320% auto;
-  animation:fxflow 3s linear infinite, fxpulse 2.2s ease-in-out infinite; transition:transform .14s; }
-@keyframes fxpulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,.6), 0 10px 30px rgba(0,0,0,.55); } 50%{ box-shadow:0 0 0 12px rgba(139,92,246,0), 0 12px 34px rgba(0,0,0,.6); } }
+  padding:17px 12px!important; font-size:16px!important; font-weight:900; letter-spacing:3px; color:#03121f!important; cursor:pointer; overflow:hidden;
+  background:linear-gradient(115deg,#7df9ff,#00e5ff,#22d3ee,#7df9ff); background-size:300% auto;
+  animation:fxflow 3.2s linear infinite, fxpulse 2.2s ease-in-out infinite; transition:transform .14s; }
+@keyframes fxpulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(0,229,255,.55), 0 10px 30px rgba(0,0,0,.55); } 50%{ box-shadow:0 0 0 10px rgba(0,229,255,0), 0 12px 34px rgba(0,0,0,.6); } }
 .main #genDense.fx-gen::before{ content:''; position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(105deg,transparent 32%,rgba(255,255,255,.6) 50%,transparent 68%); transform:translateX(-130%); animation:fxsheen 2.8s ease-in-out infinite; }
+  background:linear-gradient(105deg,transparent 32%,rgba(255,255,255,.55) 50%,transparent 68%); transform:translateX(-130%); animation:fxsheen 2.8s ease-in-out infinite; }
 @keyframes fxsheen{ 0%{transform:translateX(-130%)} 55%,100%{transform:translateX(130%)} }
-.main #genDense.fx-gen .fx-gen-t{ position:relative; z-index:2; text-shadow:0 2px 10px rgba(0,0,0,.45); }
+.main #genDense.fx-gen .fx-gen-t{ position:relative; z-index:2; text-shadow:0 1px 6px rgba(0,40,60,.4); }
 .main #genDense.fx-gen:hover{ transform:translateY(-2px) scale(1.015); }
 .main #genDense.fx-gen:active{ transform:scale(.97); }
-.main #genDense.fx-gen[disabled]{ filter:grayscale(.5) brightness(.8); animation:none; cursor:progress; }
+.main #genDense.fx-gen[disabled]{ filter:grayscale(.4) brightness(.85); animation:none; cursor:progress; }
 .main .fx-bars{ display:flex; align-items:flex-end; gap:3px; height:20px; margin-top:12px; opacity:.7; }
-.main .fx-bars i{ flex:1; height:20%; border-radius:2px; background:linear-gradient(180deg,#22d3ee,#8b5cf6); animation:fxbar 1.15s ease-in-out infinite; }
+.main .fx-bars i{ flex:1; height:20%; border-radius:2px; background:linear-gradient(180deg,#7df9ff,#00e5ff); animation:fxbar 1.15s ease-in-out infinite; }
 @keyframes fxbar{ 0%,100%{ height:18% } 50%{ height:100% } }
 .main .fx-bars i:nth-child(3n){ animation-duration:.85s } .main .fx-bars i:nth-child(3n+1){ animation-duration:1.45s }
 .main .fx-bars i:nth-child(2){animation-delay:.08s} .main .fx-bars i:nth-child(3){animation-delay:.16s} .main .fx-bars i:nth-child(4){animation-delay:.24s}
@@ -5498,19 +5546,19 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 /* 分隔条 */
 .main .fx-sep{ display:flex; align-items:center; gap:9px; margin:4px 0 14px; }
-.main .fx-sep span{ flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(139,92,246,.75),transparent); }
-.main .fx-sep b{ font-size:9.5px; letter-spacing:2.4px; color:#8ee7f7; font-weight:800; white-space:nowrap; text-shadow:0 0 12px rgba(34,211,238,.6); }
+.main .fx-sep span{ flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent); }
+.main .fx-sep b{ font-size:9.5px; letter-spacing:2.4px; color:#9fe8ff; font-weight:800; white-space:nowrap; text-shadow:0 0 12px rgba(0,229,255,.6); }
 
-/* 构图按钮：霓虹扫光 */
+/* 构图按钮：全息扫光 */
 .main #tab-compose .guide-btn{ position:relative; overflow:hidden; z-index:0; transition:transform .16s, box-shadow .2s, border-color .2s; }
 .main #tab-compose .guide-btn::after{ content:''; position:absolute; inset:0; pointer-events:none;
   background:linear-gradient(100deg,transparent 34%,rgba(255,255,255,.3) 50%,transparent 66%); transform:translateX(-140%); transition:transform .6s ease; }
 .main #tab-compose .guide-btn:hover::after{ transform:translateX(140%); }
-.main #tab-compose .guide-btn:hover{ transform:translateY(-2px); border-color:#22d3ee!important;
-  box-shadow:0 0 18px rgba(34,211,238,.5), inset 0 0 16px rgba(34,211,238,.14); color:#fff!important; }
-.main #tab-compose .guide-btn.active{ background:linear-gradient(135deg,#22d3ee,#8b5cf6 60%,#ec4899)!important; background-size:200% auto!important;
-  border-color:transparent!important; color:#fff!important; font-weight:800; animation:fxflow 3.5s linear infinite, fxactive 2s ease-in-out infinite; }
-@keyframes fxactive{ 0%,100%{ box-shadow:0 0 14px rgba(139,92,246,.55) } 50%{ box-shadow:0 0 26px rgba(236,72,153,.8) } }
+.main #tab-compose .guide-btn:hover{ transform:translateY(-2px); border-color:#00e5ff!important;
+  box-shadow:0 0 18px rgba(0,229,255,.5), inset 0 0 16px rgba(0,229,255,.14); color:#fff!important; }
+.main #tab-compose .guide-btn.active{ background:linear-gradient(135deg,#00e5ff,#22d3ee 60%,#2b8bff)!important; background-size:200% auto!important;
+  border-color:transparent!important; color:#04121f!important; font-weight:800; animation:fxflow 3.5s linear infinite, fxactive 2s ease-in-out infinite; }
+@keyframes fxactive{ 0%,100%{ box-shadow:0 0 14px rgba(0,229,255,.55) } 50%{ box-shadow:0 0 26px rgba(0,229,255,.85) } }
 .main #tab-compose .panel-section h3{ text-transform:none; }
 .main #tab-compose .panel-section h3::before{ animation:fxblink 2s ease-in-out infinite; }
 
@@ -5518,7 +5566,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .fx-spark{ position:fixed; width:7px; height:7px; border-radius:50%; pointer-events:none; z-index:9999; will-change:transform,opacity; }
 
 @media (prefers-reduced-motion: reduce){
-  .main .fx-hero::before,.main .fx-scan,.main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
+  .main .holo-orb,.main .holo-orbit,.main .holo-reticle,.main .holo-arc,.main .holo-base,.main .holo-beam,.main .holo-scan,.main .holo-flicker,
+  .main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
 }
 
 /* ================================================================
@@ -5868,9 +5917,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @keyframes bpPulse{ 0%,100%{ box-shadow:0 0 6px #5fd0ff; } 50%{ box-shadow:0 0 18px #5fd0ff; } }
 .bp-dim-x{ position:absolute; top:16px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
 .bp-dim-y{ position:absolute; left:84px; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
-.bp-coord{ position:absolute; right:16px; bottom:16px; display:flex; gap:14px; align-items:center; font-size:10px; letter-spacing:1.5px; background:rgba(7,17,29,.78); border:1px solid rgba(120,200,255,.32); border-radius:4px; padding:7px 12px; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
-.bp-coord .bp-cx b, .bp-coord .bp-cy b, .bp-coord .bp-ct b{ color:#bfe9ff; font-variant-numeric:tabular-nums; margin-left:4px; }
-.bp-coord .bp-ck{ color:var(--bp-cyan-soft); }
 .bp-stamp{ position:absolute; left:16px; bottom:16px; display:flex; flex-direction:column; gap:2px; font-size:9px; letter-spacing:1.5px; color:rgba(143,182,214,.85); background:rgba(7,17,29,.62); border:1px solid rgba(120,200,255,.22); border-radius:4px; padding:6px 9px; }
 
 @media (prefers-reduced-motion: reduce){
