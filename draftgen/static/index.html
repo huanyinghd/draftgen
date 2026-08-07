@@ -762,7 +762,7 @@ body{ background: var(--bg); color: var(--text); }
     radial-gradient(1000px 700px at 90% 20%, rgba(0,229,255,.10), transparent 55%),
     radial-gradient(900px 900px at 50% 100%, rgba(20,120,180,.16), transparent 55%),
     #07111d;
-  transition: opacity .7s ease, transform .7s ease, filter .7s ease;
+  transition: opacity .55s ease, filter .55s ease;
 }
 #welcome::before{ display:none !important; }
 @keyframes hueShift{ from{ filter: blur(52px) saturate(165%) hue-rotate(0deg); } to{ filter: blur(52px) saturate(165%) hue-rotate(360deg); } }
@@ -820,7 +820,7 @@ body{ background: var(--bg); color: var(--text); }
 .welcome-actions{ display:flex; gap:16px; margin-top:36px; flex-wrap:wrap; justify-content:center; align-items:center; }
 .welcome-actions .enter-btn{ margin-top:0; }
 @keyframes fadeUp{ from{ opacity:0; transform: translateY(18px); } to{ opacity:1; transform: translateY(0); } }
-#welcome.leave{ opacity:0; transform: scale(1.06); filter: blur(8px); pointer-events:none; }
+#welcome.leave{ opacity:0; filter: blur(10px); pointer-events:none; }
 
 @media (prefers-reduced-motion: reduce){
   #fx-bg::before, .welcome-ring, .welcome-title, .header h1, .enter-btn::before{ animation: none !important; }
@@ -1072,6 +1072,7 @@ body{ background: var(--bg); color: var(--text); }
     <!-- ===== 钢铁侠工作室全息背景（蓝图 + JARVIS 风格，含景深视差） ===== -->
     <div class="studio-fx" id="studioFx" aria-hidden="true">
       <div class="s-layer s-fog"></div>
+      <div class="s-layer s-ggrid"></div>
       <div class="s-layer s-grid"><div class="gs"></div></div>
       <div class="s-layer s-globe">
         <div class="sphere"></div>
@@ -5755,15 +5756,25 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .studio-fx .s-particles{ transform: translate3d(calc(var(--mx,0) * 58px), calc(var(--my,0) * 40px), 0); }
 .studio-fx .s-hud{ transform: translate3d(calc(var(--mx,0) * 26px), calc(var(--my,0) * 18px), 0); }
 .studio-fx .s-halo{ transform: translate3d(calc(var(--mx,0) * 11px), calc(var(--my,0) * 8px), 0); }
+.studio-fx .s-ggrid{ transform: translate3d(calc(var(--mx,0) * 20px), calc(var(--my,0) * 13px), 0); }
 
 /* 深度雾化：边缘压暗，强化纵深 */
 .studio-fx .s-fog{ background: radial-gradient(130% 120% at 50% 46%, transparent 36%, rgba(3,10,18,.86) 100%); }
 /* 全屏辉光：画布后方被全息投影照亮 */
 .studio-fx .s-halo{ background: radial-gradient(60% 60% at 50% 50%, rgba(0,229,255,.24), transparent 65%); }
+/* 渐变黑色方格线：强化轨道弧与角弧的科技蓝图质感 */
+.studio-fx .s-ggrid{
+  background-image:
+    linear-gradient(rgba(7,14,22,.20) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7,14,22,.20) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(125% 120% at 50% 50%, #000 56%, rgba(0,0,0,0) 100%);
+          mask-image: radial-gradient(125% 120% at 50% 50%, #000 56%, rgba(0,0,0,0) 100%);
+}
 
 /* HUD 角弧：四个角的大型全息弧线 */
 .studio-fx .s-hud{ inset:18px; }
-.studio-fx .s-hud .h{ position:absolute; width:160px; height:160px; border:2px solid rgba(0,229,255,.55); box-shadow:0 0 24px rgba(0,229,255,.30), 0 0 6px rgba(0,229,255,.35) inset; }
+.studio-fx .s-hud .h{ position:absolute; width:160px; height:160px; border:2px solid rgba(0,229,255,.6); box-shadow:0 0 28px rgba(0,229,255,.42), 0 0 10px rgba(0,229,255,.5) inset, 0 0 46px rgba(0,229,255,.12); }
 .studio-fx .s-hud .tl{ left:0; top:0; border-right:0; border-bottom:0; border-top-left-radius:160px; }
 .studio-fx .s-hud .tr{ right:0; top:0; border-left:0; border-bottom:0; border-top-right-radius:160px; }
 .studio-fx .s-hud .bl{ left:0; bottom:0; border-right:0; border-top:0; border-bottom-left-radius:160px; }
