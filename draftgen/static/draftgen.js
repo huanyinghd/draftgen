@@ -76,8 +76,8 @@ class SketchEngine {
   _biasedPos(x0, y0, x1, y1) {
     if (!this.focal) return [this.rng.range(x0, x1), this.rng.range(y0, y1)];
     const [fx, fy] = this.focal;
-    if (this.rng.next() < 0.6) {
-      const t = this.rng.range(0.25, 0.92);
+    if (this.rng.next() < 0.35) {
+      const t = this.rng.range(0.12, 0.55);
       const rx = this.rng.range(x0, x1);
       const ry = this.rng.range(y0, y1);
       return [rx + (fx - rx) * t, ry + (fy - ry) * t];
