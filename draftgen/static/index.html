@@ -815,20 +815,7 @@ body{ background: var(--bg); color: var(--text); }
 .enter-btn:hover .arrow{ transform: translateX(5px); }
 .welcome-hints{ margin-top:26px; font-size:11px; color:var(--text-light); letter-spacing:1px; animation: fadeUp .8s .45s both; }
 .welcome-actions{ display:flex; gap:16px; margin-top:36px; flex-wrap:wrap; justify-content:center; align-items:center; }
-.welcome-actions .enter-btn, .welcome-actions .why-btn{ margin-top:0; }
-.why-btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:12px; cursor:pointer;
-  padding:16px 38px; border:none; border-radius:999px;
-  font-size:16px; font-weight:800; color:#a5f3fc;
-  background: rgba(34,211,238,.10); background-size:200% auto;
-  box-shadow: inset 0 0 0 1px rgba(34,211,238,.55), 0 10px 40px rgba(34,211,238,.25);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  letter-spacing:2px; transition: all .25s; position:relative; overflow:hidden;
-  animation: fadeUp .8s .3s both;
-}
-.why-btn::before{ content:''; position:absolute; inset:0; background: linear-gradient(120deg, transparent, rgba(255,255,255,.5), transparent); transform: translateX(-120%) skewX(-20deg); }
-.why-btn:hover{ transform: translateY(-3px) scale(1.03); background: rgba(34,211,238,.2); box-shadow: inset 0 0 0 1px rgba(34,211,238,.7), 0 16px 56px rgba(34,211,238,.5); }
-.why-btn:hover::before{ animation: shimmer .9s; }
+.welcome-actions .enter-btn{ margin-top:0; }
 @keyframes fadeUp{ from{ opacity:0; transform: translateY(18px); } to{ opacity:1; transform: translateY(0); } }
 #welcome.leave{ opacity:0; transform: scale(1.06); filter: blur(8px); pointer-events:none; }
 
@@ -892,56 +879,6 @@ body{ background: var(--bg); color: var(--text); }
   text-align:center; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; }
 .proc-thumb.active{ border-color: var(--c2); box-shadow: var(--neon); }
 .proc-controls{ display:flex; gap:6px; flex-wrap:wrap; }
-
-/* ===== WIN98 retro player: 我们为什么努力？ ===== */
-.welcome-actions{ display:flex; gap:16px; justify-content:center; align-items:center; flex-wrap:wrap; margin-top:22px; }
-.why-btn{
-  margin-top:0; display:inline-flex; align-items:center; gap:8px;
-  padding:11px 22px; border-radius:999px; cursor:pointer;
-  font:600 15px/1 'Segoe UI',system-ui,sans-serif; letter-spacing:.5px;
-  color:#e8f0ff; background:rgba(20,24,48,.45);
-  border:1px solid rgba(34,211,238,.5);
-  box-shadow:0 0 18px rgba(34,211,238,.35), inset 0 0 12px rgba(34,211,238,.12);
-  backdrop-filter:blur(8px); transition:.25s;
-}
-.why-btn:hover{ transform:translateY(-2px); border-color:rgba(236,72,153,.7);
-  box-shadow:0 0 26px rgba(236,72,153,.5), inset 0 0 14px rgba(236,72,153,.15); color:#fff; }
-.why-btn:active{ transform:translateY(0) scale(.97); }
-
-.why-window{
-  position:absolute; z-index:50; left:50%; top:50%;
-  width:min(640px,92vw); transform:translate(-50%,-50%) scale(.9);
-  opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s cubic-bezier(.2,.9,.3,1.2);
-  /* classic win98 3D bevel */
-  background:#c0c0c0;
-  border:2px solid; border-color:#ffffff #000000 #000000 #ffffff;
-  box-shadow:1px 1px 0 #808080, 2px 2px 0 #404040, 0 30px 80px rgba(0,0,0,.6);
-}
-.why-window.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
-.why-titlebar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:3px 4px 3px 6px;
-  background:linear-gradient(90deg,#000080,#1084d0);
-  border-bottom:1px solid #000000;
-}
-.why-title{ color:#fff; font:700 12px/1 'MS Sans Serif',Tahoma,sans-serif; letter-spacing:.3px; text-shadow:1px 1px 0 #000; }
-.why-close{
-  width:18px; height:16px; line-height:14px; text-align:center; cursor:pointer;
-  background:#c0c0c0; color:#000; font:700 11px/1 'Marlett',Tahoma,sans-serif;
-  border:2px solid; border-color:#ffffff #000000 #000000 #ffffff;
-}
-.why-close:active{ border-color:#000000 #ffffff #ffffff #000000; }
-.why-client{
-  padding:6px; background:#000; border-top:1px solid #dfdfdf;
-  border:2px solid; border-color:#808080 #ffffff #ffffff #808080; margin:3px;
-}
-.why-video{ display:block; width:100%; height:auto; background:#000; image-rendering:auto; }
-.why-caption{
-  margin-top:6px; padding:6px 4px; text-align:center; color:#f4f4f4;
-  font:600 13px/1.5 'MS Sans Serif',Tahoma,sans-serif;
-  background:#000080; border:2px solid; border-color:#4040a0 #1a1a66 #1a1a66 #4040a0;
-  text-shadow:1px 1px 0 #000;
-}
 
 /* ===== DraftGen 本地欢迎页 + 乱线模块样式（覆盖） ===== */
   /* ===== 欢迎页（粒子核心） ===== */
@@ -1010,12 +947,6 @@ body{ background: var(--bg); color: var(--text); }
     background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent); transform:skewX(-20deg);
     animation:sheen 3.6s ease-in-out infinite; }
   @keyframes sheen{ 0%{left:-60%} 60%,100%{left:130%} }
-  .why-btn{ display:inline-flex; align-items:center; justify-content:center; cursor:pointer; border:none;
-    background:rgba(34,211,238,.08); color:#a5f3fc; padding:14px 38px; border-radius:999px;
-    font-size:16px; font-weight:700; letter-spacing:2px;
-    box-shadow: inset 0 0 0 1px rgba(34,211,238,.55), 0 8px 30px rgba(34,211,238,.18);
-    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:.2s; }
-  .why-btn:hover{ background:rgba(34,211,238,.18); box-shadow:0 0 22px rgba(34,211,238,.35); }
   .welcome-tip{ margin-top:26px; font-size:12px; color:#6b7299; letter-spacing:1px; }
   .welcome-tip b{ color:#a78bfa; }
   .welcome-out{ opacity:0 !important; transform:scale(1.05); transition:opacity .8s ease, transform .8s ease; pointer-events:none; }
@@ -1117,23 +1048,9 @@ body{ background: var(--bg); color: var(--text); }
 
       <div class="welcome-actions">
         <button class="enter-btn" id="enterBtn" onclick="enterStudio()">进入工作室 <span>→</span></button>
-        <button class="why-btn" id="whyBtn" onclick="openWhy()">我们为什么努力？</button>
       </div>
     </div>
 </div>
-<!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
-  <div class="why-window" id="whyWindow" style="display:none">
-    <div class="why-titlebar">
-      <span class="why-title">🎬 我们为什么努力？ — media player</span>
-      <button class="why-close" type="button" onclick="closeWhy()" aria-label="关闭">✕</button>
-    </div>
-    <div class="why-client">
-      <video id="whyVideo" class="why-video"
-             src="https://upload.wikimedia.org/wikipedia/commons/9/93/Sunrise_time_lapse.webm"
-             autoplay muted loop playsinline preload="auto"></video>
-      <div class="why-caption">每一次日出，都是世界又一次相信明天。<br>你落下的每一笔，也是在为某个更好的自己翻篇。</div>
-    </div>
-  </div>
 
 <!-- 艺术家对话框 -->
 <div class="artist-modal" id="artistModal" style="display:none" onclick="if(event.target===this)closeArtistModal()">
@@ -4990,7 +4907,7 @@ window.addEventListener('resize', () => {
   wel.addEventListener('mouseleave',function(){ mouse.active=false; mouse.x=-9999; mouse.y=-9999;
     if(welcomeBg) welcomeBg.style.transform='translate(0,0) scale(1.04)'; });
   wel.addEventListener('click',function(e){
-    if(e.target.closest('.enter-btn')||e.target.closest('.why-btn')||e.target.closest('.win98')) return;
+    if(e.target.closest('.enter-btn')) return;
     var r=wel.getBoundingClientRect(); spawnBurst((e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR);
   });
 
@@ -5000,24 +4917,6 @@ window.addEventListener('resize', () => {
   resize();
   rafId=requestAnimationFrame(frame);
 })();
-function openWhy() {
-  var win = document.getElementById('whyWindow');
-  var vid = document.getElementById('whyVideo');
-  if (!win) return;
-  win.style.display = 'block';
-  void win.offsetWidth; // force reflow so the transition runs
-  win.classList.add('show');
-  if (vid) { try { vid.currentTime = 0; var p = vid.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
-}
-function closeWhy() {
-  var win = document.getElementById('whyWindow');
-  var vid = document.getElementById('whyVideo');
-  if (!win) return;
-  win.classList.remove('show');
-  if (vid) { try { vid.pause(); } catch (e) {} }
-  setTimeout(function () { win.style.display = 'none'; }, 320);
-}
-
 function enterStudio() {
   var w = document.getElementById('welcome');
   if (!w || w.classList.contains('leave')) return;
@@ -5834,12 +5733,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
   transform:translateX(-140%); animation:bpSheen 3.1s ease-in-out infinite; }
 @keyframes bpSheen{ 0%{transform:translateX(-140%)} 60%,100%{transform:translateX(140%)} }
 #welcome .enter-btn:hover{ background:rgba(0,229,255,.28) !important; box-shadow:0 0 34px rgba(0,229,255,.65), inset 0 0 26px rgba(0,229,255,.2) !important; transform:translateY(-2px); }
-#welcome .why-btn{
-  border-radius:2px !important; background:transparent !important; color:#8BADC4 !important;
-  border:1px dashed rgba(144,224,239,.5) !important; letter-spacing:2px !important;
-  font-family:"JetBrains Mono","Consolas",monospace !important;
-}
-#welcome .why-btn:hover{ color:#E0F4FF !important; border-color:#00E5FF !important; border-style:solid !important; box-shadow:0 0 18px rgba(0,229,255,.3) !important; }
 #welcome .welcome-tip{ color:#4A8BA8 !important; font-size:10.5px !important; letter-spacing:1.4px !important; }
 #welcome .welcome-tip b{ color:#00E5FF; }
 
