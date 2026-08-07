@@ -1086,7 +1086,7 @@ body{ background: var(--bg); color: var(--text); }
         <div class="s-core"></div>
       </div>
       <div class="s-layer s-scan"></div>
-      <div class="s-layer s-particles"></div>
+      <div class="s-layer s-particles"><div class="pp"></div></div>
       <div class="s-layer s-halo"></div>
     </div>
 
@@ -5803,7 +5803,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   background:linear-gradient(180deg, transparent, rgba(0,229,255,.12), transparent); animation: sScan 7s linear infinite; }
 
 /* 悬浮微粒（前景，景深最强） */
-.studio-fx .s-particles{ background-repeat:no-repeat; opacity:.85;
+.studio-fx .s-particles .pp{ position:absolute; inset:0; background-repeat:no-repeat; opacity:.85;
   background-image:
     radial-gradient(2px 2px at 16% 24%, rgba(125,249,255,.85), transparent),
     radial-gradient(1.6px 1.6px at 72% 16%, rgba(0,229,255,.70), transparent),
@@ -5822,7 +5822,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @keyframes sFloat{ from{ transform: translateY(0) } to{ transform: translateY(-14px) } }
 @media (prefers-reduced-motion: reduce){
   .studio-fx .s-globe .cage, .studio-fx .s-orbits .o, .studio-fx .s-scan::after,
-  .studio-fx .s-globe .s-core, .studio-fx .s-particles{ animation:none !important; }
+  .studio-fx .s-globe .s-core, .studio-fx .s-particles .pp{ animation:none !important; }
 }
 
 /* 绘图-sheet：白色印样 + 蓝图网格 */
