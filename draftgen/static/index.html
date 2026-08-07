@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>草稿生成器 DraftGen</title>
 <style>
 :root {
@@ -880,90 +883,7 @@ body{ background: var(--bg); color: var(--text); }
 .proc-thumb.active{ border-color: var(--c2); box-shadow: var(--neon); }
 .proc-controls{ display:flex; gap:6px; flex-wrap:wrap; }
 
-/* ===== DraftGen 本地欢迎页 + 乱线模块样式（覆盖） ===== */
-  /* ===== 欢迎页（粒子核心） ===== */
-  #welcome{ position:fixed; inset:0; z-index:1000; overflow:hidden; user-select:none;
-    background:radial-gradient(125% 125% at 50% 28%, #15153a 0%, #0a0a18 55%, #040409 100%); }
-  #welcome-nebula{ position:absolute; inset:-12%; pointer-events:none;
-    background:url('https://upload.wikimedia.org/wikipedia/commons/6/68/Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg') center/cover no-repeat;
-    opacity:.32; filter:saturate(1.18) brightness(.82) contrast(1.05);
-    transform:scale(1.06); animation:nebPan 64s ease-in-out infinite alternate; }
-  @keyframes nebPan{ from{transform:scale(1.06) translate(0,0)} to{transform:scale(1.14) translate(-2%,-2%)} }
-  .welcome-aurora{ position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; opacity:.6;
-    background:
-      radial-gradient(42% 32% at 18% 18%, rgba(34,211,238,.26), transparent 70%),
-      radial-gradient(48% 36% at 82% 24%, rgba(139,92,246,.30), transparent 70%),
-      radial-gradient(52% 42% at 50% 92%, rgba(236,72,153,.24), transparent 70%);
-    animation:auroraShift 19s ease-in-out infinite alternate; }
-  @keyframes auroraShift{ from{filter:hue-rotate(0deg) translateY(0)} to{filter:hue-rotate(45deg) translateY(-14px)} }
-  #welcome-particles, #welcome-fresnel{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-  #welcome-fresnel{ mix-blend-mode:screen; }
-  /* 视差背景层（星云/极光随鼠标做景深） */
-  .welcome-bg{ position:absolute; inset:0; pointer-events:none; will-change:transform;
-    transition:transform .35s cubic-bezier(.22,.61,.36,1); }
-  /* 电影感颗粒质感 */
-  .welcome-grain{ position:absolute; inset:0; pointer-events:none; opacity:.07; mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size:160px 160px; animation:grainShift 6s steps(6) infinite; }
-  @keyframes grainShift{ 0%{transform:translate(0,0)} 20%{transform:translate(-4%,3%)} 40%{transform:translate(3%,-2%)}
-    60%{transform:translate(-2%,-4%)} 80%{transform:translate(4%,2%)} 100%{transform:translate(0,0)} }
-  .welcome-vignette{ position:absolute; inset:0; pointer-events:none;
-    background:radial-gradient(120% 100% at 50% 44%, transparent 38%, rgba(0,0,0,.58) 100%); }
-  .welcome-inner{ position:relative; z-index:5; height:100%; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; text-align:center; padding:24px; }
-  .welcome-ring{ position:relative; width:172px; height:172px; margin-bottom:26px; }
-  .welcome-ring .ring{ position:absolute; inset:0; border-radius:50%; }
-  .welcome-ring .r1{ border:1.5px solid rgba(139,92,246,.5);
-    box-shadow:0 0 26px rgba(139,92,246,.4) inset,0 0 26px rgba(139,92,246,.3);
-    animation:spin 14s linear infinite; }
-  .welcome-ring .r1::before{ content:''; position:absolute; top:-4px; left:50%; width:9px;height:9px;margin-left:-4.5px;
-    border-radius:50%; background:#a78bfa; box-shadow:0 0 14px #a78bfa; }
-  .welcome-ring .r2{ inset:18px; border:1px dashed rgba(34,211,238,.5); animation:spin 9s linear infinite reverse; }
-  .welcome-ring .r2::before{ content:''; position:absolute; bottom:-3px; left:28%; width:7px;height:7px;border-radius:50%;
-    background:#22d3ee; box-shadow:0 0 11px #22d3ee; }
-  .welcome-ring .r3{ inset:42px; border:1px solid rgba(236,72,153,.45); animation:spin 23s linear infinite; }
-  .welcome-ring .core{ position:absolute; inset:64px; border-radius:50%;
-    background:radial-gradient(circle,#fff, rgba(139,92,246,.7) 38%, rgba(34,211,238,.25) 68%, transparent 75%);
-    filter:blur(2px); animation:pulse 3.2s ease-in-out infinite; }
-  @keyframes spin{ to{transform:rotate(360deg)} }
-  @keyframes pulse{ 0%,100%{transform:scale(.92);opacity:.85} 50%{transform:scale(1.08);opacity:1} }
-  .welcome-badge{ font-size:13px; letter-spacing:3px; color:#c4b5fd; margin-bottom:14px;
-    padding:6px 16px; border:1px solid rgba(139,92,246,.42); border-radius:999px;
-    background:rgba(139,92,246,.1); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
-  .welcome-title{ font-size:clamp(46px,12vw,118px); margin:0; font-weight:800; letter-spacing:6px;
-    background:linear-gradient(135deg,#22d3ee,#8b5cf6 45%,#ec4899); -webkit-background-clip:text; background-clip:text;
-    color:transparent; animation:titleGlow 5s ease-in-out infinite; }
-  @keyframes titleGlow{ 0%,100%{filter:drop-shadow(0 0 18px rgba(139,92,246,.45))} 50%{filter:drop-shadow(0 0 36px rgba(236,72,153,.6))} }
-  .welcome-sub{ font-size:15px; color:#aab1cc; margin-top:10px; letter-spacing:2px; }
-  .welcome-actions{ display:flex; gap:16px; margin-top:34px; flex-wrap:wrap; justify-content:center; }
-  .enter-btn{ position:relative; cursor:pointer; border:none; padding:14px 38px; border-radius:999px;
-    font-size:16px; font-weight:700; color:#fff; letter-spacing:2px; overflow:hidden;
-    background:linear-gradient(135deg,#7c3aed,#db2777); box-shadow:0 8px 30px rgba(124,58,237,.5);
-    transition:transform .2s, box-shadow .2s; }
-  .enter-btn span{ display:inline-block; transition:transform .2s; margin-left:6px; }
-  .enter-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 46px rgba(219,39,119,.6); }
-  .enter-btn:hover span{ transform:translateX(6px); }
-  .enter-btn::after{ content:''; position:absolute; top:0; left:-60%; width:50%; height:100%;
-    background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent); transform:skewX(-20deg);
-    animation:sheen 3.6s ease-in-out infinite; }
-  @keyframes sheen{ 0%{left:-60%} 60%,100%{left:130%} }
-  .welcome-tip{ margin-top:26px; font-size:12px; color:#6b7299; letter-spacing:1px; }
-  .welcome-tip b{ color:#a78bfa; }
-  .welcome-out{ opacity:0 !important; transform:scale(1.05); transition:opacity .8s ease, transform .8s ease; pointer-events:none; }
-
-  /* win98 复古播放器 */
-  .win98{ position:absolute; z-index:30; width:440px; max-width:92vw; left:50%; top:50%;
-    transform:translate(-50%,-50%) scale(.9); opacity:0; pointer-events:none; transition:.25s;
-    background:#c0c0c0; border:2px solid; border-color:#fff #404040 #404040 #fff; box-shadow:0 20px 55px rgba(0,0,0,.6); }
-  .win98.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
-  .win98 .bar{ display:flex; align-items:center; justify-content:space-between; padding:3px 5px;
-    background:linear-gradient(90deg,#1c4ed8,#3b82f6); color:#fff; font-size:12px; font-weight:700; }
-  .win98 .bar .x{ width:18px;height:16px; background:#c0c0c0; color:#000; border:1px solid;
-    border-color:#fff #404040 #404040 #fff; cursor:pointer; display:flex;align-items:center;justify-content:center; font-weight:700; line-height:1; }
-  .win98 .screen{ background:#000; padding:4px; }
-  .win98 video{ width:100%; display:block; background:#000; }
-  .win98 .status{ font-size:11px; padding:3px 6px; background:#c0c0c0; color:#222; border-top:1px solid #808080; }
-  /* ===== 乱线草图生成器（前端 · DraftGen） ===== */
+/* ===== 乱线草图生成器（前端 · DraftGen） ===== */
   .inp{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;
     box-sizing:border-box;background:#fff;color:var(--ink);}
   .dense-panel{border-color:var(--accent);box-shadow:0 0 0 1px rgba(139,92,246,.18);}
