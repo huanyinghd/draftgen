@@ -220,7 +220,7 @@ class SketchEngine {
 
     // 2) 全局线条预算：焦点处总笔画数硬性控制在 FOCAL_BUDGET 条以内。
     //    先算出各簇的「理想权重」，再按预算等比缩放，保证疏密关系不变、总量可控。
-    const FOCAL_BUDGET = 5000;          // 焦点处线条总量上限
+    const FOCAL_BUDGET = 2000;          // 焦点处线条总量上限
     const LINK_N = 60;                  // 簇间稀疏连接线
     const strokeBudget = Math.max(0, FOCAL_BUDGET - LINK_N);
 
@@ -238,8 +238,8 @@ class SketchEngine {
       const nLines = Math.max(4, Math.round(share * 0.66));
       const nArc = Math.max(2, share - nLines);
       const baseAng = rnd.range(0, Math.PI); // 每簇不同主方向
-      this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 3], [45, 210], null);
-      this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 3], [50, 200], [2, 1, 1, 3], null);
+      this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 2], [22, 120], null);
+      this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 2], [24, 110], [2, 1, 1, 3], null);
     });
     this.focal = savedFocal;
 
@@ -250,7 +250,7 @@ class SketchEngine {
       const ax = a.cx + rnd.range(-a.cr, a.cr), ay = a.cy + rnd.range(-a.cr, a.cr);
       const bx = b.cx + rnd.range(-b.cr, b.cr), by = b.cy + rnd.range(-b.cr, b.cr);
       const col = this._colorPick();
-      const al = rnd.int(25, 110);
+      const al = rnd.int(14, 65);
       ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(al / 255).toFixed(3)})`;
       ctx.lineWidth = rnd.int(1, 2);
       ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
