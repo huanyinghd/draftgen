@@ -1352,8 +1352,7 @@ body{ background: var(--bg); color: var(--text); }
               <p class="fx-sub">一键在左侧主画布生成草稿 · 拖动移动 · 滚轮缩放 · 「✓ 放入画布」确认</p>
               <label class="fx-label">风格 STYLE</label>
               <div class="fx-select-wrap"><select id="dStyle" class="fx-select"></select></div>
-              <button class="action primary big-gen fx-gen" id="genDense"><span class="fx-gen-t">✦ 生成随机草图</span></button>
-              <div class="fx-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="fx-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
             </div>
           </div>
         </div>
@@ -4693,6 +4692,7 @@ function switchTab(tabName) {
     window.__composeAutoGenDone = true;
     const g = document.getElementById('genDense');
     if (g && !g.disabled) setTimeout(function () { g.click(); }, 120);
+    else setTimeout(function () { if (typeof genDense === 'function') genDense(); }, 120);
   }
 }
 
@@ -5346,7 +5346,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }catch(e){ fail('❌ 生成失败：'+e.message); if(btn) btn.disabled=false; } });
   }
 
-  document.getElementById('genDense').addEventListener('click', function(){ genDense(); });
+  var genBtn = document.getElementById('genDense');
+  if (genBtn) genBtn.addEventListener('click', function(){ genDense(); });
   // 光球（全息舞台）本身也是「生成随机草图」按钮
   var hStage = document.getElementById('holoStage');
   if (hStage) {
