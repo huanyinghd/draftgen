@@ -5759,15 +5759,15 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* 深度雾化：边缘压暗，强化纵深 */
 .studio-fx .s-fog{ background: radial-gradient(130% 120% at 50% 46%, transparent 36%, rgba(3,10,18,.86) 100%); }
 /* 全屏辉光：画布后方被全息投影照亮 */
-.studio-fx .s-halo{ background: radial-gradient(55% 55% at 50% 50%, rgba(0,229,255,.18), transparent 68%); }
+.studio-fx .s-halo{ background: radial-gradient(60% 60% at 50% 50%, rgba(0,229,255,.24), transparent 65%); }
 
 /* HUD 角弧：四个角的大型全息弧线 */
 .studio-fx .s-hud{ inset:18px; }
-.studio-fx .s-hud .h{ position:absolute; width:110px; height:110px; border:1px solid rgba(0,229,255,.38); box-shadow:0 0 18px rgba(0,229,255,.18); }
-.studio-fx .s-hud .tl{ left:0; top:0; border-right:0; border-bottom:0; border-top-left-radius:110px; }
-.studio-fx .s-hud .tr{ right:0; top:0; border-left:0; border-bottom:0; border-top-right-radius:110px; }
-.studio-fx .s-hud .bl{ left:0; bottom:0; border-right:0; border-top:0; border-bottom-left-radius:110px; }
-.studio-fx .s-hud .br{ right:0; bottom:0; border-left:0; border-top:0; border-bottom-right-radius:110px; }
+.studio-fx .s-hud .h{ position:absolute; width:160px; height:160px; border:2px solid rgba(0,229,255,.55); box-shadow:0 0 24px rgba(0,229,255,.30), 0 0 6px rgba(0,229,255,.35) inset; }
+.studio-fx .s-hud .tl{ left:0; top:0; border-right:0; border-bottom:0; border-top-left-radius:160px; }
+.studio-fx .s-hud .tr{ right:0; top:0; border-left:0; border-bottom:0; border-top-right-radius:160px; }
+.studio-fx .s-hud .bl{ left:0; bottom:0; border-right:0; border-top:0; border-bottom-left-radius:160px; }
+.studio-fx .s-hud .br{ right:0; bottom:0; border-left:0; border-top:0; border-bottom-right-radius:160px; }
 
 /* 全息线框球（工作室中心装置） */
 .studio-fx .s-globe{ left:50%; top:51%; width:560px; height:560px; margin:-280px 0 0 -280px; }
@@ -5800,8 +5800,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* 透视网格地平面 */
 .studio-fx .s-grid .gs{ position:absolute; left:-25%; right:-25%; bottom:-12%; height:54%;
   background-image:
-    linear-gradient(rgba(0,229,255,.22) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,.22) 1px, transparent 1px);
+    linear-gradient(rgba(0,229,255,.34) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.34) 1px, transparent 1px);
   background-size: 48px 48px;
   transform: perspective(440px) rotateX(74deg);
   transform-origin: bottom center;
