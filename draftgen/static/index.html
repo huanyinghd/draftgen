@@ -1072,15 +1072,6 @@ body{ background: var(--bg); color: var(--text); }
 
 <!-- ============ WELCOME PAGE ============ -->
   <div id="welcome">
-    <div class="welcome-bg" id="welcomeBg">
-      <div id="welcome-nebula"></div>
-      <div class="welcome-aurora"></div>
-    </div>
-    <div class="welcome-grain"></div>
-    <canvas id="welcome-fresnel"></canvas>
-    <canvas id="welcome-particles"></canvas>
-    <div class="welcome-vignette"></div>
-
     <!-- 蓝图基底：方格纸 + 扫描线 + 边框刻度 -->
     <div class="bp-paper"></div>
     <div class="bp-sweep"></div>
@@ -1094,7 +1085,6 @@ body{ background: var(--bg); color: var(--text); }
     <!-- 环境技术标注 -->
     <div class="bp-meta bp-meta-tl">DWG&nbsp;No.&nbsp;DG-2480-A<br>SCALE&nbsp;1:1&nbsp;&nbsp;UNIT&nbsp;mm<br>PROJ&nbsp;DRAFTGEN&nbsp;/&nbsp;REV&nbsp;C</div>
     <div class="bp-meta bp-meta-tr">SHEET&nbsp;01&nbsp;OF&nbsp;01<br>ORIGIN&nbsp;X0&nbsp;Y0&nbsp;Z0<br><span id="bpClock">--:--:--</span></div>
-    <div class="bp-meta bp-meta-bl">TOL&nbsp;±0.05&nbsp;&nbsp;∠&nbsp;90°00′<br>MAT&nbsp;·&nbsp;VECTOR&nbsp;INK<br>SURFACE&nbsp;Ra&nbsp;1.6</div>
 
     <!-- 标题栏（Title Block），工程图右下角规范 -->
     <div class="bp-titleblock">
@@ -1132,20 +1122,11 @@ body{ background: var(--bg); color: var(--text); }
       <div class="welcome-badge">◈&nbsp;&nbsp;S O L O&nbsp;&nbsp;D R A W I N G&nbsp;&nbsp;S T U D I O&nbsp;&nbsp;◈</div>
       <h1 class="welcome-title" data-text="DraftGen">DraftGen</h1>
       <div class="bp-dimline"><span class="dl-arrow">◄</span><i></i><b>3508 × 2480 px</b><i></i><span class="dl-arrow">►</span></div>
-      <div class="welcome-sub">场景草稿生成器 · 三分法 / 透视网格 / 黄金分割 / 三角构图</div>
-
-      <div class="bp-specs">
-        <div class="spec"><b>A-001</b><span>构图参考线</span></div>
-        <div class="spec"><b>A-002</b><span>随机草稿引擎</span></div>
-        <div class="spec"><b>A-003</b><span>图层与配色</span></div>
-        <div class="spec"><b>A-004</b><span>高清 PNG 导出</span></div>
-      </div>
 
       <div class="welcome-actions">
         <button class="enter-btn" id="enterBtn" onclick="enterStudio()">进入工作室 <span>→</span></button>
         <button class="why-btn" id="whyBtn" onclick="openWhy()">我们为什么努力？</button>
       </div>
-      <div class="welcome-tip">点击图纸任意处可 <b>引爆粒子</b> ✦ 移动鼠标牵引光网</div>
     </div>
 </div>
 <!-- ============ WIN98 Retro Player: 我们为什么努力？ ============ -->
@@ -1293,12 +1274,6 @@ body{ background: var(--bg); color: var(--text); }
       <span class="bp-corner tr"></span>
       <span class="bp-corner bl"></span>
       <span class="bp-corner br"></span>
-      <div class="bp-cross" id="bpCross">
-        <div class="bp-ring"></div>
-        <div class="bp-h"></div>
-        <div class="bp-v"></div>
-        <div class="bp-dot"></div>
-      </div>
       <div class="bp-dim-x" id="bpDimX">W&nbsp;▸&nbsp;<span id="bpW">3508</span>&nbsp;PX</div>
       <div class="bp-dim-y" id="bpDimY">H&nbsp;▾&nbsp;<span id="bpH">2480</span>&nbsp;PX</div>
       <div class="bp-coord" id="bpCoord">
@@ -4832,6 +4807,7 @@ window.addEventListener('resize', () => {
   var wel=document.getElementById('welcome'); if(!wel) return;
   var pc=document.getElementById('welcome-particles');
   var fc=document.getElementById('welcome-fresnel');
+  if(!pc || !fc) return; // 蓝图版已移除粒子系统，跳过
   var pctx=pc.getContext('2d'), fctx=fc.getContext('2d');
   var DPR=Math.min(window.devicePixelRatio||1,2);
   var W=0,H=0, hue=190;
@@ -5591,7 +5567,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
   color:#E0F4FF;
   font-family:"JetBrains Mono","IBM Plex Mono","Cascadia Mono","Consolas","SFMono-Regular","Courier New",monospace;
 }
-#welcome-nebula, .welcome-aurora, .welcome-grain, .welcome-vignette{ opacity:.18 !important; }
+/* 仅保留蓝图风格：关闭原始霓虹极光伪元素 */
+#welcome::before{ display:none !important; }
+#welcome-nebula, .welcome-aurora, .welcome-grain, .welcome-vignette{ display:none !important; }
 
 /* 方格纸：20px 细格 + 100px 粗格 */
 #welcome .bp-paper{
@@ -5886,11 +5864,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .bp-corner.tr{ right:14px; top:14px; border-left:0; border-bottom:0; }
 .bp-corner.bl{ left:14px; bottom:14px; border-right:0; border-top:0; }
 .bp-corner.br{ right:14px; bottom:14px; border-left:0; border-top:0; }
-.bp-cross{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:130px; height:130px; }
-.bp-cross .bp-ring{ position:absolute; inset:0; border:1px dashed rgba(120,200,255,.4); border-radius:50%; animation:bpSpin 18s linear infinite; }
-.bp-cross .bp-h{ position:absolute; left:-62px; right:-62px; top:50%; height:1px; background:linear-gradient(90deg,transparent,rgba(120,200,255,.55),transparent); }
-.bp-cross .bp-v{ position:absolute; top:-62px; bottom:-62px; left:50%; width:1px; background:linear-gradient(180deg,transparent,rgba(120,200,255,.55),transparent); }
-.bp-cross .bp-dot{ position:absolute; left:50%; top:50%; width:7px; height:7px; transform:translate(-50%,-50%); border-radius:50%; background:#5fd0ff; box-shadow:0 0 12px #5fd0ff; animation:bpPulse 2.4s ease-in-out infinite; }
 @keyframes bpSpin{ to{ transform:rotate(360deg); } }
 @keyframes bpPulse{ 0%,100%{ box-shadow:0 0 6px #5fd0ff; } 50%{ box-shadow:0 0 18px #5fd0ff; } }
 .bp-dim-x{ position:absolute; top:16px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
