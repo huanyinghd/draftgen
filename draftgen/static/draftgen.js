@@ -76,8 +76,8 @@ class SketchEngine {
   _biasedPos(x0, y0, x1, y1) {
     if (!this.focal) return [this.rng.range(x0, x1), this.rng.range(y0, y1)];
     const [fx, fy] = this.focal;
-    if (this.rng.next() < 0.35) {
-      const t = this.rng.range(0.12, 0.55);
+    if (this.rng.next() < 0.28) {
+      const t = this.rng.range(0.1, 0.48);
       const rx = this.rng.range(x0, x1);
       const ry = this.rng.range(y0, y1);
       return [rx + (fx - rx) * t, ry + (fy - ry) * t];
@@ -238,8 +238,8 @@ class SketchEngine {
       const nLines = Math.max(4, Math.round(share * 0.66));
       const nArc = Math.max(2, share - nLines);
       const baseAng = rnd.range(0, Math.PI); // 每簇不同主方向
-      this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 2], [15, 78], null);
-      this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 2], [17, 72], [2, 1, 1, 3], null);
+      this.addLines([x0, y0, x1, y1], nLines, baseAng, Math.PI, [3, cl.cr * 1.6], [1, 2], [13, 60], null);
+      this.addArcs([x0, y0, x1, y1], nArc, [3, cl.cr * 0.8], [1, 2], [15, 56], [2, 1, 1, 3], null);
     });
     this.focal = savedFocal;
 
@@ -250,7 +250,7 @@ class SketchEngine {
       const ax = a.cx + rnd.range(-a.cr, a.cr), ay = a.cy + rnd.range(-a.cr, a.cr);
       const bx = b.cx + rnd.range(-b.cr, b.cr), by = b.cy + rnd.range(-b.cr, b.cr);
       const col = this._colorPick();
-      const al = rnd.int(10, 48);
+      const al = rnd.int(8, 40);
       ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(al / 255).toFixed(3)})`;
       ctx.lineWidth = rnd.int(1, 2);
       ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
