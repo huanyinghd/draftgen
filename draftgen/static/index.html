@@ -1337,8 +1337,7 @@ body{ background: var(--bg); color: var(--text); }
               <div class="holo-scan"></div>
               <div class="holo-flicker"></div>
               <div class="holo-cta" aria-hidden="true">
-                <span class="holo-cta-text">随机生成草图</span>
-                <div class="holo-blinds"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <span class="holo-cta-text" data-text="随机生成草图">随机生成草图</span>
               </div>
               <div class="holo-hud">
                 <span class="hh-l">COMPOSITION&nbsp;ENGINE</span>
@@ -5518,26 +5517,59 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* 光球 → 可点击按钮 */
 .main .holo-stage.holo-btn{ cursor:pointer; outline:none; }
 .main .holo-stage.holo-btn:focus-visible{ box-shadow:inset 0 0 0 2px #00e5ff, 0 0 22px rgba(0,229,255,.55); }
-/* 百叶窗式 CTA：间断性浮现「随机生成草图」 */
+/* 故障式 CTA：间断性浮现「随机生成草图」 */
 .main .holo-cta{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:6; pointer-events:none; text-align:center; }
-.main .holo-cta-text{ display:block; font-family:var(--bp-mono); font-weight:900; font-size:19px; letter-spacing:5px; color:#eafdff;
-  text-shadow:0 0 16px rgba(0,229,255,.95), 0 0 30px rgba(0,229,255,.55); white-space:nowrap; padding:4px 6px; }
-.main .holo-blinds{ position:absolute; left:-8px; right:-8px; top:-8px; bottom:-8px; display:flex; flex-direction:column; pointer-events:none; }
-.main .holo-blinds i{ flex:1; background:linear-gradient(180deg,#072a45,#041a30); border-top:1px solid rgba(0,229,255,.30); border-bottom:1px solid rgba(0,229,255,.12);
-  transform:scaleY(1); transform-origin:center; box-shadow:0 0 10px rgba(0,0,0,.45) inset; animation:holoBlinds 6s ease-in-out infinite; }
-.main .holo-blinds i:nth-child(1){ animation-delay:0s }
-.main .holo-blinds i:nth-child(2){ animation-delay:.05s }
-.main .holo-blinds i:nth-child(3){ animation-delay:.10s }
-.main .holo-blinds i:nth-child(4){ animation-delay:.15s }
-.main .holo-blinds i:nth-child(5){ animation-delay:.20s }
-.main .holo-blinds i:nth-child(6){ animation-delay:.25s }
-.main .holo-blinds i:nth-child(7){ animation-delay:.30s }
-.main .holo-blinds i:nth-child(8){ animation-delay:.35s }
-@keyframes holoBlinds{
-  0%,30%{ transform:scaleY(1); }
-  45%{ transform:scaleY(0); }
-  72%{ transform:scaleY(0); }
-  85%,100%{ transform:scaleY(1); }
+.main .holo-cta-text{ position:relative; display:inline-block; font-family:var(--bp-mono); font-weight:900; font-size:19px; letter-spacing:5px; color:#eafdff;
+  text-shadow:0 0 16px rgba(0,229,255,.95), 0 0 30px rgba(0,229,255,.55), 2px 0 rgba(255,46,110,.35), -2px 0 rgba(0,229,255,.35);
+  white-space:nowrap; padding:4px 6px; animation:holoTextShow 6s steps(1,end) infinite; }
+.main .holo-cta-text::before,
+.main .holo-cta-text::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%; text-align:center; pointer-events:none; opacity:0; }
+.main .holo-cta-text::before{ color:#ff2e6e; text-shadow:0 0 10px rgba(255,46,110,.8); animation:holoGlitchA 6s steps(1,end) infinite; }
+.main .holo-cta-text::after{ color:#00e5ff; text-shadow:0 0 10px rgba(0,229,255,.8); animation:holoGlitchB 6s steps(1,end) infinite; }
+/* 整体间断性浮现：约 8% ~ 72% 可见 */
+@keyframes holoTextShow{
+  0%,7%{ opacity:0; transform:translateX(0); }
+  8%{ opacity:1; transform:translateX(-6px); }
+  9%{ opacity:.45; transform:translateX(6px); }
+  10%{ opacity:1; transform:translateX(0); }
+  68%{ opacity:1; transform:translateX(0); }
+  71%{ opacity:.4; transform:translateX(5px); }
+  72%{ opacity:0; transform:translateX(-4px); }
+  100%{ opacity:0; }
+}
+/* 红色错位切片 */
+@keyframes holoGlitchA{
+  0%,7%,100%{ opacity:0; }
+  8%{ opacity:.9; clip-path:inset(12% 0 60% 0); transform:translate(-5px,1px); }
+  11%{ opacity:0; }
+  13%{ opacity:.9; clip-path:inset(55% 0 18% 0); transform:translate(5px,-1px); }
+  16%{ opacity:0; }
+  40%{ opacity:0; }
+  42%{ opacity:.85; clip-path:inset(30% 0 45% 0); transform:translate(-3px,0); }
+  45%{ opacity:0; }
+  60%{ opacity:0; }
+  62%{ opacity:.9; clip-path:inset(8% 0 70% 0); transform:translate(3px,2px); }
+  65%{ opacity:0; }
+  68%{ opacity:0; }
+  70%{ opacity:.85; clip-path:inset(48% 0 22% 0); transform:translate(-2px,-1px); }
+  72%,100%{ opacity:0; }
+}
+/* 青色错位切片（错开节奏） */
+@keyframes holoGlitchB{
+  0%,7%,100%{ opacity:0; }
+  9%{ opacity:.9; clip-path:inset(20% 0 55% 0); transform:translate(5px,-1px); }
+  12%{ opacity:0; }
+  14%{ opacity:.9; clip-path:inset(62% 0 12% 0); transform:translate(-5px,1px); }
+  17%{ opacity:0; }
+  38%{ opacity:0; }
+  40%{ opacity:.85; clip-path:inset(44% 0 30% 0); transform:translate(3px,1px); }
+  43%{ opacity:0; }
+  58%{ opacity:0; }
+  60%{ opacity:.9; clip-path:inset(14% 0 66% 0); transform:translate(-3px,-2px); }
+  63%{ opacity:0; }
+  69%{ opacity:0; }
+  71%{ opacity:.85; clip-path:inset(36% 0 38% 0); transform:translate(2px,0); }
+  73%,100%{ opacity:0; }
 }
 @keyframes holoFlicker{ 0%,100%{opacity:.5} 3%{opacity:.15} 6%{opacity:.7} 9%{opacity:.3} 12%{opacity:.6} 50%{opacity:.45} 72%{opacity:.2} 74%{opacity:.65} }
 .main .holo-hud{ position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:2px 8px; padding:6px 9px; font-family:var(--bp-mono); font-size:8.5px; letter-spacing:1.1px; color:#9fe8ff; text-shadow:0 0 8px rgba(0,229,255,.55); pointer-events:none; }
@@ -5613,7 +5645,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @media (prefers-reduced-motion: reduce){
   .main .holo-orb,.main .holo-orbit,.main .holo-reticle,.main .holo-arc,.main .holo-base,.main .holo-beam,.main .holo-scan,.main .holo-flicker,
   .main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
-  .main .holo-blinds i{ animation:none!important; transform:scaleY(0)!important; }
+  .main .holo-cta-text{ animation:none!important; opacity:1!important; }
+  .main .holo-cta-text::before, .main .holo-cta-text::after{ animation:none!important; opacity:0!important; }
 }
 
 /* ================================================================
