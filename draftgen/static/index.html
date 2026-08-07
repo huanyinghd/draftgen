@@ -785,7 +785,7 @@ body{ background: var(--bg); color: var(--text); }
   -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 25%, transparent 75%);
           mask-image: radial-gradient(circle at 50% 45%, #000 25%, transparent 75%);
 }
-#welcome-particles{ position:absolute; inset:0; z-index:2; }
+#welcome-particles{ position:absolute; inset:0; z-index:2; pointer-events:none; }
 #welcome-fresnel{ position:absolute; inset:0; z-index:3; pointer-events:none; mix-blend-mode:screen; }
 .welcome-ring{
   position:relative; width:180px; height:180px; margin:0 auto 30px; border-radius:50%;
@@ -1077,6 +1077,10 @@ body{ background: var(--bg); color: var(--text); }
     <div class="bp-sweep"></div>
     <div class="bp-ruler bp-ruler-t"></div>
     <div class="bp-ruler bp-ruler-l"></div>
+
+    <!-- 蓝图星点 / 星座粒子层（青色，点击引爆） -->
+    <canvas id="welcome-particles"></canvas>
+    <canvas id="welcome-fresnel"></canvas>
 
     <!-- 图纸四角角标（工程制图裁切标记） -->
     <div class="bp-corner tl"></div><div class="bp-corner tr"></div>
@@ -4803,10 +4807,10 @@ window.addEventListener('resize', () => {
   var wel=document.getElementById('welcome'); if(!wel) return;
   var pc=document.getElementById('welcome-particles');
   var fc=document.getElementById('welcome-fresnel');
-  if(!pc || !fc) return; // 蓝图版已移除粒子系统，跳过
+  if(!pc || !fc) return; // 画布缺失则跳过粒子系统
   var pctx=pc.getContext('2d'), fctx=fc.getContext('2d');
   var DPR=Math.min(window.devicePixelRatio||1,2);
-  var W=0,H=0, hue=190;
+  var W=0,H=0, hue=192; // 锁定蓝图青色，不随帧变色
   var particles=[], orbs=[], sparks=[], bursts=[], stars=[];
   var mouse={x:-9999,y:-9999,active:false};
   var rafId=null;
@@ -4859,7 +4863,7 @@ window.addEventListener('resize', () => {
   }
 
   function frame(){
-    hue=(hue+0.15)%360;
+    // hue 固定为蓝图青色，不随帧变色（避免彩虹霓虹感）
 
     // 菲涅尔柔光球
     fctx.clearRect(0,0,W,H);
@@ -4877,7 +4881,7 @@ window.addEventListener('resize', () => {
       var b=orbs[o]; b.x+=b.vx; b.y+=b.vy;
       if(b.x<-b.r)b.x=W+b.r; if(b.x>W+b.r)b.x=-b.r;
       if(b.y<-b.r)b.y=H+b.r; if(b.y>H+b.r)b.y=-b.r;
-      var h=(b.hue+hue*0.3)%360;
+      var h=b.hue;
       var g=fctx.createRadialGradient(b.x,b.y,b.r*0.1,b.x,b.y,b.r);
       g.addColorStop(0,'hsla('+h+',90%,65%,0.16)');
       g.addColorStop(0.5,'hsla('+h+',90%,60%,0.07)');
@@ -4895,7 +4899,7 @@ window.addEventListener('resize', () => {
       if(sp.y<-10){ sp.y=H+10; sp.x=Math.random()*W; }
       var tw=0.5+0.5*Math.sin(sp.ph);
       pctx.save(); pctx.globalAlpha=sp.a*tw;
-      var sh=(hue+180)%360;
+      var sh=hue+rand(-12,12);
       pctx.fillStyle='hsl('+sh+',100%,80%)';
       pctx.shadowBlur=8*DPR; pctx.shadowColor='hsl('+sh+',100%,80%)';
       pctx.beginPath(); pctx.arc(sp.x,sp.y,sp.r,0,Math.PI*2); pctx.fill(); pctx.restore();
