@@ -1236,6 +1236,14 @@ body{ background: var(--bg); color: var(--text); }
           <div class="slider-row"><label>混沌度</label><input type="range" id="chaosLevel" min="0" max="100" value="42" oninput="var v=document.getElementById('chaosVal');if(v)v.textContent=this.value+'%'"><span class="val" id="chaosVal">42%</span></div>
           <div class="slider-row"><label>可能性</label><input type="range" id="possibilityLevel" min="0" max="4" value="2" oninput="var v=document.getElementById('possibVal');if(v)v.textContent=this.value"><span class="val" id="possibVal">2</span></div>
           <button class="action-btn" onclick="generateRandomDraft()">生成乱线草稿</button>
+          <div class="guide-row" style="margin-top:8px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-light);flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="guideLines"> 透视辅助线</label>
+            <select id="guideMode" style="font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:#fff;color:#333">
+              <option value="one">一点透视</option>
+              <option value="two">两点透视</option>
+            </select>
+            <span style="opacity:.7">建筑 / 景深参考</span>
+          </div>
         </div>
         <h3>基础构图参考线</h3>
           <div class="guide-grid">
@@ -2829,10 +2837,90 @@ function paintScribble(oc, opts) {
 
   const TAU = 6.2832;
 
-  // ===== 2) 主线条层（只在主焦点附近保持高密度，越远越稀疏）=====
+  // 一笔：直线占比很少；大量曲线 / 麻花 / 圆 / 三角 / 不规则弯曲线
+  function sketchStroke(ctx, x0, y0, isCluster) {
+    const typePick = rng();
+    const w = 1 + Math.floor(rng() * 2);
+    const a = (isCluster ? 0.42 : 0.14) + rng() * (isCluster ? 0.48 : 0.14);
+    ctx.strokeStyle = colorPick() + a.toFixed(2) + ')';
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    if (typePick < 0.20) {
+      // 直线（少量）
+      let ang;
+      if (P.radial) { const f = focals.length ? focals[Math.floor(rng()*focals.length)] : {x:W/2,y:H/2}; ang = Math.atan2(y0-f.y, x0-f.x) + (rng()*2-1)*P.sp; }
+      else if (P.vertical) ang = -1.5708 + (rng()*2-1)*P.sp;
+      else { ang = P.ang + (rng()*2-1)*P.sp; if (P.chaotic) ang += (rng()*2-1)*chaos*1.6; }
+      let len = ((chaos*0.5+0.5)*minSide*0.02) + rng()*minSide*0.18;
+      if (isCluster) len *= 0.6;
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x0 + Math.cos(ang)*len, y0 + Math.sin(ang)*len);
+    } else if (typePick < 0.45) {
+      // 弯曲曲线（随机扰动路径）
+      let ang = rng()*6.2832;
+      let len = minSide*(0.04 + rng()*0.16);
+      if (isCluster) len *= 0.7;
+      const steps = 4 + Math.floor(rng()*4);
+      let cx = x0, cy = y0;
+      ctx.moveTo(x0, y0);
+      for (let s = 0; s < steps; s++) {
+        cx += Math.cos(ang)*len/steps + (rng()*2-1)*minSide*0.03;
+        cy += Math.sin(ang)*len/steps + (rng()*2-1)*minSide*0.03;
+        ang += (rng()*2-1)*0.6;
+        ctx.lineTo(cx, cy);
+      }
+    } else if (typePick < 0.62) {
+      // 麻花线（沿轴来回扭转）
+      let ang = rng()*6.2832;
+      let len = minSide*(0.06 + rng()*0.14);
+      const steps = 12 + Math.floor(rng()*6);
+      const amp = minSide*(0.008 + rng()*0.02);
+      ctx.moveTo(x0, y0);
+      for (let s = 1; s <= steps; s++) {
+        const t = s/steps;
+        const perp = ang + 1.5708;
+        const off = Math.sin(t*Math.PI*4 + rng()*0.4) * amp;
+        const bx = x0 + Math.cos(ang)*len*t;
+        const by = y0 + Math.sin(ang)*len*t;
+        ctx.lineTo(bx + Math.cos(perp)*off, by + Math.sin(perp)*off);
+      }
+    } else if (typePick < 0.78) {
+      // 圆形 / 椭圆（部分环）
+      const r = minSide*(0.01 + rng()*0.05);
+      const a0 = rng()*6.2832;
+      const sweep = 6.2832*(0.45 + rng()*0.55);
+      ctx.ellipse(x0, y0, r*(0.7 + rng()*0.6), r, rng()*6.2832, a0, a0 + sweep);
+    } else if (typePick < 0.90) {
+      // 三角形
+      const r = minSide*(0.02 + rng()*0.06);
+      const a0 = rng()*6.2832;
+      const rot = (rng()*2-1)*0.6;
+      for (let i = 0; i <= 3; i++) {
+        const aa = a0 + rot + i/3*6.2832;
+        const px = x0 + Math.cos(aa)*r, py = y0 + Math.sin(aa)*r;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+    } else {
+      // 不规则弯曲线（角度大幅游走）
+      let ang = rng()*6.2832;
+      let len = minSide*(0.05 + rng()*0.15);
+      const steps = 6 + Math.floor(rng()*8);
+      let cx = x0, cy = y0;
+      ctx.moveTo(x0, y0);
+      for (let s = 0; s < steps; s++) {
+        ang += (rng()*2-1)*1.3;
+        cx += Math.cos(ang)*len/steps;
+        cy += Math.sin(ang)*len/steps;
+        ctx.lineTo(cx, cy);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // ===== 2) 主线条层（以曲线为主，直线极少；成团概率降低，远处更稀疏）=====
   for (let k = 0; k < total; k++) {
-    let x0, y0, ang;
-    const cluster = focals.length && rng() < 0.62;
+    const cluster = focals.length && rng() < 0.40;   // 降低成团直线概率
+    let x0, y0;
     if (cluster) {
       const f = focals[Math.floor(rng() * focals.length)];
       const spread = (0.06 + 0.10 * rng()) * minSide;
@@ -2846,25 +2934,7 @@ function paintScribble(oc, opts) {
     const density = densityAt(x0, y0);
     if (rng() > density) continue;
 
-    if (P.radial) {
-      const f = cluster ? focals[Math.floor(rng() * focals.length)] : { x: W/2, y: H/2 };
-      ang = Math.atan2(y0 - f.y, x0 - f.x) + (rng() * 2 - 1) * P.sp;
-    } else if (P.vertical) {
-      ang = -1.5708 + (rng() * 2 - 1) * P.sp;
-    } else {
-      ang = P.ang + (rng() * 2 - 1) * P.sp;
-      if (P.chaotic) ang += (rng() * 2 - 1) * chaos * 1.6;
-    }
-    let len = ((chaos * 0.5 + 0.5) * minSide * 0.02) + rng() * minSide * 0.18;
-    if (cluster) len *= 0.6;
-    const w = 1 + Math.floor(rng() * 2);
-    const a = (cluster ? 0.42 : 0.14) + rng() * (cluster ? 0.48 : 0.14);
-    ctx.strokeStyle = colorPick() + a.toFixed(2) + ')';
-    ctx.lineWidth = w;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.lineTo(x0 + Math.cos(ang) * len, y0 + Math.sin(ang) * len);
-    ctx.stroke();
+    sketchStroke(ctx, x0, y0, cluster);
   }
 
   // ===== 3) 圆弧 / 曲线层 =====
@@ -2921,12 +2991,12 @@ function drawConstruction(ctx, f, W, H, rng) {
   ctx.moveTo(pts[0][0], pts[0][1]);
   for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
   ctx.closePath(); ctx.stroke();
-  const rays = 3 + Math.floor(rng()*3);
-  ctx.strokeStyle = 'rgba(70,110,170,0.30)';
+  const rays = rng() < 0.5 ? 0 : 1;   // 大幅减少放射直线
+  ctx.strokeStyle = 'rgba(70,110,170,0.18)';
   for (let k = 0; k < rays; k++) {
     const a = rng()*6.2832;
     ctx.beginPath(); ctx.moveTo(f.x, f.y);
-    ctx.lineTo(f.x + Math.cos(a)*Math.min(W,H)*0.4, f.y + Math.sin(a)*Math.min(W,H)*0.4);
+    ctx.lineTo(f.x + Math.cos(a)*Math.min(W,H)*0.3, f.y + Math.sin(a)*Math.min(W,H)*0.3);
     ctx.stroke();
   }
   ctx.restore();
@@ -2977,6 +3047,49 @@ function drawSubjectGerm(ctx, f, style, rng, minSide) {
     ctx.beginPath(); ctx.moveTo(px,py);
     for (let k = 0; k < n; k++) { px += (rng()*2-1)*sz*1.1; py += (rng()*2-1)*sz*1.1; ctx.lineTo(px,py); }
     ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// —— 透视辅助线：为场景景深 / 建筑物提供一点或两点透视参考 ——
+function drawGuideLines(ctx, W, H, rng, mode) {
+  const horizonY = H * (0.30 + rng() * 0.40);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.font = '13px sans-serif';
+  // 地平线（虚线）
+  ctx.strokeStyle = 'rgba(55,105,165,0.55)';
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([12, 9]);
+  ctx.beginPath(); ctx.moveTo(0, horizonY); ctx.lineTo(W, horizonY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(55,105,165,0.65)';
+  ctx.fillText('地平线', 14, horizonY - 8);
+
+  function vanishingLines(vpx, vpy, n, col) {
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1.1;
+    for (let k = 0; k < n; k++) {
+      const ex = rng() * W;
+      const ey = rng() < 0.5 ? rng() * horizonY : horizonY + rng() * (H - horizonY);
+      ctx.beginPath(); ctx.moveTo(vpx, vpy); ctx.lineTo(ex, ey); ctx.stroke();
+    }
+    // 灭点十字标记
+    ctx.strokeStyle = 'rgba(55,105,165,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(vpx, vpy, 5, 0, 6.2832); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(vpx-9, vpy); ctx.lineTo(vpx+9, vpy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(vpx, vpy-9); ctx.lineTo(vpx, vpy+9); ctx.stroke();
+  }
+
+  if (mode === 'two') {
+    const vpx1 = W * (0.12 + rng()*0.16);
+    const vpx2 = W * (0.72 + rng()*0.16);
+    vanishingLines(vpx1, horizonY, 4 + Math.floor(rng()*3), 'rgba(55,105,165,0.30)');
+    vanishingLines(vpx2, horizonY, 4 + Math.floor(rng()*3), 'rgba(55,105,165,0.30)');
+  } else {
+    const vpx = W * (0.32 + rng()*0.36);
+    vanishingLines(vpx, horizonY, 5 + Math.floor(rng()*4), 'rgba(55,105,165,0.36)');
   }
   ctx.restore();
 }
@@ -3077,9 +3190,15 @@ async function generateRandomDraft() {
   const rng = mulberry32(seed);
   const count = counts[density - 1] + Math.floor(rng() * 300); // 落在 2200~5100 区间
 
+  const guideEl = document.getElementById('guideLines');
+  const guidesOn = !!(guideEl && guideEl.checked);
+  const guideModeEl = document.getElementById('guideMode');
+  const guideMode = guideModeEl ? guideModeEl.value : 'one';
+
   octx.save();
   octx.lineCap = 'round';
   octx.lineJoin = 'round';
+  if (guidesOn) drawGuideLines(octx, canvasW, canvasH, rng, guideMode);
   paintScribble(oc, { rng, chaos, layout: currentLayout, style: draftType, count, possibility: (function(){ var e=document.getElementById('possibilityLevel'); return e?parseInt(e.value)||0:1; })() });
   octx.restore();
 
