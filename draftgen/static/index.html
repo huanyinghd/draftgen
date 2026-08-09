@@ -6828,7 +6828,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .hud-tag{ position:absolute; font-size:9px; letter-spacing:1.5px; color:#7fe9ff; text-shadow:0 0 8px rgba(0,229,255,.6); white-space:nowrap; }
 .hud-tl{ left:54px; top:16px; }
 .hud-tr{ right:54px; top:16px; text-align:right; }
-.hud-bl{ left:54px; bottom:16px; }
 .hud-bar{ position:absolute; left:50%; top:12px; transform:translateX(-50%); display:flex; gap:14px; align-items:center; font-size:9px; letter-spacing:2px; color:#9fefff; text-shadow:0 0 8px rgba(0,229,255,.6); background:rgba(6,14,28,.55); border:1px solid rgba(0,229,255,.25); border-radius:20px; padding:4px 14px; }
 .hud-bar b{ color:#ff2e97; }
 .hud-bar .dot{ width:6px; height:6px; border-radius:50%; background:#39ff14; box-shadow:0 0 8px #39ff14; animation:hudBlink 1.6s ease-in-out infinite; }
@@ -6966,13 +6965,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
       glow.style.transform='translate('+gx+'px,'+gy+'px) translate(-50%,-50%)';
       requestAnimationFrame(gl); })();
   }
-  var clock=document.getElementById('hudClock'), node=document.getElementById('hudNode'), bl=document.getElementById('hudBl');
+  var clock=document.getElementById('hudClock'), node=document.getElementById('hudNode');
   function pad(n){ return n<10?'0'+n:''+n; }
   function tick(){
     var d=new Date();
     if(clock) clock.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
     if(node) node.textContent='DG-'+pad(d.getHours())+pad(d.getMinutes());
-    if(bl) bl.textContent='RENDER '+(95+Math.floor(Math.random()*5))+'%';
   }
   tick(); setInterval(tick, 1000);
 })();
