@@ -5953,9 +5953,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
   function shortStyleLabel(s){
     if(s.label) return s.label;
     var a=s.artist||'', t=s.title||'';
-    if(t && t.length<=6) return t;
-    if(a && a.length<=6) return a;
-    return (t||a||'?').slice(0,6);
+    var v=t||a||'?';
+    if(v.length<=4) return v;
+    return v.slice(0,4);
   }
   function buildStyleCircuit(list){
     var box=document.getElementById('scBalls'); if(!box) return;
@@ -6269,7 +6269,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main .style-circuit .sc-toplead{ position:absolute; left:50%; top:2px; width:2px; height:14px; transform:translateX(-50%); background:linear-gradient(180deg,#00e5ff,rgba(0,229,255,0)); box-shadow:0 0 8px #00e5ff; }
 .main .style-circuit .sc-bus{ position:absolute; left:26px; right:26px; top:16px; height:2px; background:linear-gradient(90deg,rgba(0,229,255,0),rgba(0,229,255,.6),rgba(0,229,255,0)); }
 .main .style-circuit .sc-balls{ position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:18px 12px; justify-content:center; margin-top:14px; }
-.main .sc-ball{ position:relative; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9.5px; line-height:1.08; padding:3px; background:rgba(4,16,28,.92); border:1.5px solid rgba(0,229,255,.45); color:#cdeefb; cursor:pointer; transition:.15s; }
+.main .sc-ball{ position:relative; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:8px; line-height:1; letter-spacing:.2px; padding:3px; background:rgba(4,16,28,.92); border:1.5px solid rgba(0,229,255,.45); color:#cdeefb; cursor:pointer; transition:.15s; }
 .main .sc-ball::before{ content:''; position:absolute; left:50%; top:-20px; transform:translateX(-50%); width:2px; height:20px; background:rgba(0,229,255,.5); }
 .main .sc-ball:hover{ border-color:#00e5ff; box-shadow:0 0 14px rgba(0,229,255,.5); color:#eafdff; }
 .main .sc-ball.active{ background:linear-gradient(135deg,#00e5ff,#22d3ee); color:#04121f; border-color:#aef6ff; font-weight:800; box-shadow:0 0 18px rgba(0,229,255,.85); }
