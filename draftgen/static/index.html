@@ -964,6 +964,13 @@ window.PAINTINGS={
 <div id="fx-bg"></div>
 <div id="fx-grid"></div>
 <div id="cursor-glow"></div>
+<!-- 开机扫描装饰层（一次性） -->
+<div class="scifi-boot" id="scifiBoot" aria-hidden="true">
+  <div class="sb-sweep"></div>
+  <div class="sb-ring"></div>
+  <div class="sb-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="sb-text" id="sbText">INITIALIZING&nbsp;HOLO&nbsp;STAGE</div>
+</div>
 <div id="fx-scanline"></div>
 
 <!-- ============ WELCOME PAGE ============ -->
@@ -1141,6 +1148,13 @@ window.PAINTINGS={
       <div class="s-layer s-halo"></div>
     </div>
 
+    <!-- ===== 新增强化：视差星场 + 合成波透视网格地板 ===== -->
+    <div class="scifi-stars" id="scifiStars" aria-hidden="true"></div>
+    <div class="scifi-floor" aria-hidden="true">
+      <div class="sf-grid"></div>
+      <div class="sf-glow"></div>
+    </div>
+
     <div class="canvas-wrapper" id="canvasWrapper">
       <canvas id="bgCanvas"></canvas>
       <canvas id="guideCanvas" class="guide-canvas"></canvas>
@@ -1194,9 +1208,18 @@ window.PAINTINGS={
         <span>SYS&nbsp;<b id="hudClock">--:--:--</b></span>
         <span>MODE&nbsp;<b>RANDOM</b></span>
         <span>NODE&nbsp;<b id="hudNode">DG-0001</b></span>
+        <span class="hud-eq" id="hudEq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
       </div>
       <div class="hud-tag hud-tl" id="hudTl">COMPOSITION GRID // ACTIVE</div>
       <div class="hud-tag hud-tr" id="hudTr">SCAN&nbsp;●&nbsp;LIVE</div>
+      <!-- 雷达扫描 -->
+      <div class="hud-radar" aria-hidden="true">
+        <div class="hr-sweep"></div>
+        <span class="hr-blip b1"></span><span class="hr-blip b2"></span><span class="hr-blip b3"></span>
+        <div class="hr-ring r1"></div><div class="hr-ring r2"></div><div class="hr-ring r3"></div>
+      </div>
+      <!-- 底部滚动数据条 -->
+      <div class="hud-ticker" aria-hidden="true"><div class="ht-track" id="hudTicker">SYSTEM NOMINAL · NEURAL COMPOSITION ENGINE ONLINE · RENDER CLUSTER 12/12 READY · LATENCY 3ms · ENTROPY FIELD STABLE · STYLE MATRIX SYNCED · HOLO STAGE ARMED · DRAW BUFFERS FLUSHED ·</div></div>
     </div>
 
   </div>
@@ -1243,8 +1266,11 @@ window.PAINTINGS={
                   <div class="ring p p0"></div><div class="ring p p1"></div><div class="ring p p2"></div>
                   <div class="ring p p3"></div><div class="ring p p4"></div>
                 </div>
-                <div class="holo-orbit o1"></div>
-                <div class="holo-orbit o2"></div>
+                <div class="holo-pulse hp1"></div>
+                <div class="holo-pulse hp2"></div>
+                <div class="holo-pulse hp3"></div>
+                <div class="holo-orbit o1"><span class="holo-sat s1"></span><span class="holo-sat s2"></span></div>
+                <div class="holo-orbit o2"><span class="holo-sat s3"></span><span class="holo-sat s4"></span></div>
                 <div class="holo-reticle"></div>
                 <div class="holo-arc"></div>
               </div>
@@ -6840,6 +6866,130 @@ window.addEventListener('DOMContentLoaded', ()=>{
   #fx-scanline::after, #cursor-glow{ animation:none !important; }
 }
 
+/* ============ 科幻 3.0 强化特效 ============ */
+/* ---- 视差星场 ---- */
+.scifi-stars{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,.9), transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 20%, rgba(160,230,255,.9), transparent 60%),
+    radial-gradient(1px 1px at 40% 70%, rgba(255,200,255,.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 85% 60%, rgba(180,255,220,.9), transparent 60%),
+    radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,.7), transparent 60%),
+    radial-gradient(1px 1px at 10% 80%, rgba(200,220,255,.8), transparent 60%),
+    radial-gradient(1.5px 1.5px at 90% 15%, rgba(255,180,255,.8), transparent 60%);
+  background-repeat:no-repeat;
+  animation: starTwinkle 4s ease-in-out infinite, starDrift 60s linear infinite;
+}
+@keyframes starTwinkle{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+@keyframes starDrift{ 0%{ background-position:0 0,0 0,0 0,0 0,0 0,0 0,0 0; } 100%{ background-position:0 -40px,0 -60px,0 -30px,0 -50px,0 -25px,0 -70px,0 -45px; } }
+
+/* ---- 合成波透视网格地板 ---- */
+.scifi-floor{ position:absolute; left:0; right:0; bottom:0; height:42%; z-index:1; pointer-events:none; overflow:hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 55%);
+  mask-image: linear-gradient(180deg, transparent, #000 55%); }
+.scifi-floor .sf-grid{ position:absolute; left:-50%; right:-50%; bottom:-10%; top:-40%;
+  background-image:
+    linear-gradient(rgba(0,229,255,.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,92,255,.45) 1px, transparent 1px);
+  background-size: 46px 46px;
+  transform: perspective(340px) rotateX(68deg);
+  transform-origin: 50% 100%;
+  animation: floorScroll 3.2s linear infinite; }
+@keyframes floorScroll{ 0%{ background-position:0 0; } 100%{ background-position:0 46px; } }
+.scifi-floor .sf-glow{ position:absolute; left:0; right:0; bottom:0; height:55%;
+  background: radial-gradient(120% 100% at 50% 100%, rgba(0,229,255,.18), transparent 70%); }
+
+/* ---- HUD 雷达扫描 ---- */
+.hud-radar{ position:absolute; right:18px; bottom:18px; width:84px; height:84px; border-radius:50%;
+  border:1px solid rgba(0,229,255,.35); background: radial-gradient(circle, rgba(0,40,60,.35), rgba(0,12,24,.15) 70%, transparent);
+  box-shadow: inset 0 0 18px rgba(0,229,255,.25), 0 0 14px rgba(0,229,255,.18); overflow:hidden; }
+.hud-radar .hr-ring{ position:absolute; border:1px solid rgba(0,229,255,.22); border-radius:50%; }
+.hud-radar .r1{ inset:18%; } .hud-radar .r2{ inset:38%; } .hud-radar .r3{ inset:58%; }
+.hud-radar .hr-sweep{ position:absolute; inset:0; border-radius:50%;
+  background: conic-gradient(from 0deg, rgba(57,255,20,.0) 0deg, rgba(57,255,20,.45) 38deg, rgba(57,255,20,0) 60deg);
+  animation: radarSpin 3.4s linear infinite; }
+@keyframes radarSpin{ to{ transform:rotate(360deg); } }
+.hud-radar .hr-blip{ position:absolute; width:5px; height:5px; border-radius:50%; background:#7dff9f; box-shadow:0 0 8px #7dff9f; opacity:0; }
+.hud-radar .b1{ left:30%; top:34%; animation: blip 3.4s 0.6s ease-in-out infinite; }
+.hud-radar .b2{ left:62%; top:58%; animation: blip 3.4s 1.8s ease-in-out infinite; }
+.hud-radar .b3{ left:48%; top:24%; animation: blip 3.4s 2.6s ease-in-out infinite; }
+@keyframes blip{ 0%,100%{ opacity:0; } 8%{ opacity:1; } 40%{ opacity:.2; } }
+
+/* ---- HUD 遥测等化器 ---- */
+.hud-eq{ display:inline-flex; gap:2px; align-items:flex-end; height:12px; margin-left:4px; }
+.hud-eq i{ width:2.5px; height:30%; background:linear-gradient(180deg,#ff2e97,#00e5ff); border-radius:1px; animation: eqBounce 1s ease-in-out infinite; }
+.hud-eq i:nth-child(2){ animation-duration:.7s } .hud-eq i:nth-child(3){ animation-duration:1.3s } .hud-eq i:nth-child(4){ animation-duration:.9s }
+.hud-eq i:nth-child(5){ animation-duration:1.5s } .hud-eq i:nth-child(6){ animation-duration:.6s } .hud-eq i:nth-child(7){ animation-duration:1.1s }
+.hud-eq i:nth-child(8){ animation-duration:.8s } .hud-eq i:nth-child(9){ animation-duration:1.4s } .hud-eq i:nth-child(10){ animation-duration:.75s }
+@keyframes eqBounce{ 0%,100%{ height:20%; } 50%{ height:100%; } }
+
+/* ---- 底部滚动数据条 ---- */
+.hud-ticker{ position:absolute; left:0; right:0; bottom:0; height:18px; overflow:hidden;
+  background: linear-gradient(90deg, rgba(0,229,255,.10), rgba(124,92,255,.06)); border-top:1px solid rgba(0,229,255,.22); }
+.hud-ticker .ht-track{ position:absolute; white-space:nowrap; font-family:var(--bp-mono); font-size:8.5px; letter-spacing:1.5px; color:#8fe7ff;
+  text-shadow:0 0 6px rgba(0,229,255,.5); top:4px; left:0; animation: tickerScroll 22s linear infinite; }
+@keyframes tickerScroll{ 0%{ transform:translateX(100%); } 100%{ transform:translateX(-100%); } }
+
+/* ---- Hero 行星脉冲能量环 + 卫星 ---- */
+.holo-core{ position:relative; }
+.holo-pulse{ position:absolute; left:50%; top:50%; border-radius:50%; border:1px solid rgba(0,229,255,.5);
+  transform:translate(-50%,-50%); animation: pulseRing 3.6s ease-out infinite; pointer-events:none; }
+.holo-pulse.hp1{ width:120px; height:120px; }
+.holo-pulse.hp2{ width:120px; height:120px; animation-delay:1.2s; border-color:rgba(124,92,255,.5); }
+.holo-pulse.hp3{ width:120px; height:120px; animation-delay:2.4s; border-color:rgba(255,46,151,.45); }
+@keyframes pulseRing{ 0%{ width:70px; height:70px; opacity:.9; } 100%{ width:200px; height:200px; opacity:0; } }
+.holo-sat{ position:absolute; top:50%; left:50%; width:7px; height:7px; border-radius:50%;
+  background:#00e5ff; box-shadow:0 0 10px #00e5ff; transform-origin:0 0; }
+.holo-orbit.o1{ animation: holoOrbit 9s linear infinite; }
+.holo-orbit.o2{ animation: holoOrbit 13s linear infinite reverse; }
+.holo-orbit.o1 .s1{ transform: rotate(0deg) translateX(60px); }
+.holo-orbit.o1 .s2{ transform: rotate(180deg) translateX(60px); background:#ff2e97; box-shadow:0 0 10px #ff2e97; }
+.holo-orbit.o2 .s3{ transform: rotate(90deg) translateX(78px); background:#9cff6b; box-shadow:0 0 10px #9cff6b; }
+.holo-orbit.o2 .s4{ transform: rotate(270deg) translateX(78px); background:#ffd54a; box-shadow:0 0 10px #ffd54a; }
+@keyframes holoOrbit{ to{ transform:rotate(360deg); } }
+
+/* ---- 标题故障 / 霓虹闪烁 ---- */
+.fx-title{ position:relative; animation: titleFlicker 5s steps(60) infinite; }
+.fx-title::before, .fx-title::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden; opacity:0; }
+.fx-title:hover::before{ opacity:.85; color:#ff2e97; clip-path: inset(0 0 62% 0); animation: glitchTop .5s steps(2) infinite; }
+.fx-title:hover::after{ opacity:.85; color:#00e5ff; clip-path: inset(58% 0 0 0); animation: glitchBot .5s steps(2) infinite; }
+@keyframes titleFlicker{ 0%,100%{ opacity:1; } 92%{ opacity:1; } 93%{ opacity:.65; } 94%{ opacity:1; } 97%{ opacity:.8; } }
+@keyframes glitchTop{ 0%{ transform:translate(0,0); } 50%{ transform:translate(-3px,-1px); } 100%{ transform:translate(2px,0); } }
+@keyframes glitchBot{ 0%{ transform:translate(0,0); } 50%{ transform:translate(3px,1px); } 100%{ transform:translate(-2px,0); } }
+
+/* ---- 风格电路能量流动 ---- */
+.style-circuit .sc-bus, .style-circuit .sc-toplead{ position:relative; }
+.style-circuit .sc-bus::after, .style-circuit .sc-toplead::after{ content:''; position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent, rgba(0,229,255,.9), transparent); background-size:40% 100%;
+  background-repeat:no-repeat; animation: circuitFlow 2.4s linear infinite; mix-blend-mode:screen; }
+.style-circuit .sc-toplead::after{ background: linear-gradient(180deg, transparent, rgba(124,92,255,.9), transparent); background-size:100% 40%; }
+@keyframes circuitFlow{ 0%{ background-position:-40% 0; } 100%{ background-position:140% 0; } }
+
+/* ---- 开机扫描（一次性） ---- */
+.scifi-boot{ position:fixed; inset:0; z-index:9500; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background: radial-gradient(circle at 50% 50%, rgba(0,20,40,.55), rgba(0,5,12,.92)); transition:opacity .8s ease 1.6s; }
+.scifi-boot.done{ opacity:0; }
+.scifi-boot .sb-sweep{ position:absolute; left:0; right:0; height:3px; top:0; background:linear-gradient(90deg, transparent, #00e5ff, transparent);
+  box-shadow:0 0 16px #00e5ff; animation: bootSweep 1.4s ease-in-out 1; }
+@keyframes bootSweep{ 0%{ top:0; opacity:0; } 10%{ opacity:1; } 90%{ opacity:1; } 100%{ top:100%; opacity:0; } }
+.scifi-boot .sb-ring{ width:120px; height:120px; border-radius:50%; border:2px solid rgba(0,229,255,.35); border-top-color:#00e5ff;
+  box-shadow:0 0 24px rgba(0,229,255,.4); animation: radarSpin 1s linear infinite; }
+.scifi-boot .sb-bars{ display:flex; gap:4px; align-items:flex-end; height:26px; margin-top:18px; }
+.scifi-boot .sb-bars i{ width:4px; background:linear-gradient(180deg,#00e5ff,#ff2e97); border-radius:2px; animation: eqBounce .8s ease-in-out infinite; }
+.scifi-boot .sb-bars i:nth-child(odd){ animation-duration:.6s } .scifi-boot .sb-bars i:nth-child(3n){ animation-duration:1s }
+.scifi-boot .sb-text{ margin-top:16px; font-family:var(--bp-mono); font-size:11px; letter-spacing:3px; color:#9fefff; text-shadow:0 0 10px rgba(0,229,255,.6); }
+
+/* 角标脉冲 */
+.hud-corner{ animation: hudCornerPulse 2.4s ease-in-out infinite; }
+@keyframes hudCornerPulse{ 0%,100%{ filter: drop-shadow(0 0 4px rgba(0,229,255,.5)); } 50%{ filter: drop-shadow(0 0 12px rgba(0,229,255,.95)); } }
+.bp-corner{ animation: hudCornerPulse 3s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce){
+  .scifi-stars, .scifi-floor .sf-grid, .hud-radar .hr-sweep, .hud-eq i, .hud-ticker .ht-track,
+  .holo-pulse, .holo-orbit, .fx-title, .style-circuit .sc-bus::after, .style-circuit .sc-toplead::after,
+  .scifi-boot .sb-sweep, .scifi-boot .sb-ring, .scifi-boot .sb-bars i, .hud-corner, .bp-corner{ animation:none !important; }
+}
+
 </style>
 
 <script>
@@ -6973,6 +7123,35 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if(node) node.textContent='DG-'+pad(d.getHours())+pad(d.getMinutes());
   }
   tick(); setInterval(tick, 1000);
+})();
+</script>
+
+<script>
+/* 科幻 3.0：开机扫描序列 + 程序化星场 */
+(function(){
+  // 开机扫描：约 2.4s 后淡出移除
+  var boot=document.getElementById('scifiBoot');
+  if(boot){
+    var phases=['INITIALIZING HOLO STAGE','CALIBRATING NEURAL GRID','SYNCING STYLE MATRIX','STAGE ARMED · READY'];
+    var sbText=document.getElementById('sbText'); var pi=0;
+    var ph=setInterval(function(){ pi++; if(sbText&&phases[pi]) sbText.innerHTML=phases[pi].replace(/ /g,'&nbsp;'); if(pi>=phases.length-1) clearInterval(ph); }, 600);
+    setTimeout(function(){ boot.classList.add('done'); }, 2400);
+    setTimeout(function(){ if(boot&&boot.parentNode) boot.parentNode.removeChild(boot); }, 3400);
+  }
+  // 程序化星场：生成 ~70 颗星，带随机闪烁
+  var stars=document.getElementById('scifiStars');
+  if(stars){
+    var frag=document.createDocumentFragment();
+    for(var i=0;i<70;i++){
+      var s=document.createElement('span');
+      var x=Math.random()*100, y=Math.random()*100, sz=Math.random()*1.8+0.6;
+      s.style.cssText='position:absolute;left:'+x+'%;top:'+y+'%;width:'+sz+'px;height:'+sz+'px;border-radius:50%;'+
+        'background:#fff;box-shadow:0 0 '+(sz*2)+'px rgba(160,230,255,.9);'+
+        'opacity:'+(0.3+Math.random()*0.7)+';animation:starTwinkle '+(2.5+Math.random()*3).toFixed(2)+'s ease-in-out '+(Math.random()*3).toFixed(2)+'s infinite;';
+      frag.appendChild(s);
+    }
+    stars.appendChild(frag);
+  }
 })();
 </script>
 
