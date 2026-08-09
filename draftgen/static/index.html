@@ -209,20 +209,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* Composition Analysis */
 .analysis-result { padding: 8px; background: var(--card); border-radius: 6px; font-size: 12px; line-height: 1.6; margin-top: 8px; }
 
-/* Palette Strip (选中的调色板颜色一次性出现) */
-.palette-strip {
-  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-  background: #fff; border: 1px solid var(--border); border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 60;
-  display: none; align-items: center; gap: 6px; padding: 8px 12px; user-select: none; max-width: 92%;
-}
-.palette-strip.show { display: flex; }
-.palette-strip .ps-name { font-size: 11px; color: var(--accent-dark); font-weight: 600; margin-right: 4px; white-space: nowrap; }
-.palette-strip .ps-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
-.palette-strip .ps-swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .12s; }
-.palette-strip .ps-swatch:hover { transform: scale(1.15); }
-.palette-strip .ps-swatch.active { border-color: var(--accent-dark); box-shadow: 0 0 0 2px #fff inset; }
-.palette-strip .ps-close { margin-left: 6px; cursor: pointer; font-size: 14px; color: var(--text-light); border: none; background: none; }
 .palette-card.selected { border-color: var(--accent); background: #FFF9F0; box-shadow: 0 0 0 2px var(--accent) inset; }
 
 /* Floating Layer Panel (常驻右下角) */
@@ -613,19 +599,47 @@ body{ background: var(--bg); color: var(--text); }
 .layer-actions button{ padding:4px 8px; border:1px solid var(--border); border-radius:6px; background: var(--glass); cursor:pointer; font-size:11px; color:var(--text); }
 .layer-actions button:hover{ background: rgba(139,92,246,.18); border-color: rgba(139,92,246,.4); }
 
-/* ---------- Palette strip ---------- */
-.palette-strip{ position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:100000; display:none; align-items:center; gap:8px; padding:9px 13px; max-width:94vw; background: rgba(14,12,24,.84); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border:1px solid rgba(0,229,255,.35); border-radius:14px; box-shadow:0 14px 44px rgba(0,0,0,.6), 0 0 22px rgba(0,229,255,.18); user-select:none; }
+/* ---------- 配色浮窗（选中画作后弹出：可拖拽、永远置顶） ---------- */
+.palette-strip{
+  position:fixed;
+  top:50%; left:50%;
+  transform: translate(-50%, -50%);
+  z-index:100000;
+  display:none;
+  flex-direction:column;
+  gap:0;
+  width:min(340px, 92vw);
+  max-width:92vw;
+  background: rgba(18,15,30,.96);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border:1px solid rgba(0,229,255,.45);
+  border-radius:18px;
+  box-shadow:0 24px 70px rgba(0,0,0,.75), 0 0 30px rgba(0,229,255,.22);
+  user-select:none;
+  overflow:hidden;
+}
 .palette-strip.show{ display:flex; }
-.palette-strip .ps-grip{ cursor:grab; color:rgba(0,229,255,.85); font-size:17px; line-height:1; padding:0 2px; }
-.palette-strip .ps-grip:active{ cursor:grabbing; }
-.palette-strip .ps-name{ font-size:11px; color:var(--c2); font-weight:700; margin-right:4px; white-space:nowrap; }
-.palette-strip .ps-swatches{ display:flex; gap:6px; flex-wrap:wrap; }
-.palette-strip .ps-swatch{ width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,.25); transition: transform .12s; box-shadow:0 0 8px rgba(0,0,0,.4); }
+.palette-strip .ps-head{
+  display:flex; align-items:center; gap:8px;
+  padding:12px 14px;
+  background: rgba(0,229,255,.08);
+  border-bottom:1px solid rgba(0,229,255,.18);
+  cursor:grab;
+}
+.palette-strip .ps-head:active{ cursor:grabbing; }
+.palette-strip .ps-grip{ color:rgba(0,229,255,.85); font-size:17px; line-height:1; }
+.palette-strip .ps-name{ flex:1; font-size:13px; color:#fff; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.palette-strip .ps-body{ display:flex; align-items:center; gap:10px; padding:14px; }
+.palette-strip .ps-swatches{ display:flex; gap:8px; flex-wrap:wrap; flex:1; }
+.palette-strip .ps-swatch{ width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,.25); transition: transform .12s; box-shadow:0 0 8px rgba(0,0,0,.4); }
 .palette-strip .ps-swatch:hover{ transform: scale(1.18); }
 .palette-strip .ps-swatch.active{ border-color:#fff; box-shadow:0 0 12px var(--c2); }
-.palette-strip .ps-stamp{ font-size:11px; padding:4px 10px; border-radius:8px; border:1px solid rgba(0,229,255,.4); background:rgba(0,229,255,.12); color:#bfefff; cursor:pointer; white-space:nowrap; }
+.palette-strip .ps-foot{ display:flex; align-items:center; gap:8px; padding:10px 14px 14px; }
+.palette-strip .ps-stamp{ flex:1; font-size:12px; padding:7px 10px; border-radius:10px; border:1px solid rgba(0,229,255,.4); background:rgba(0,229,255,.12); color:#bfefff; cursor:pointer; white-space:nowrap; }
 .palette-strip .ps-stamp:hover{ background:rgba(0,229,255,.24); }
-.palette-strip .ps-close{ margin-left:6px; cursor:pointer; font-size:14px; color:var(--text-light); border:none; background:none; }
+.palette-strip .ps-close{ cursor:pointer; font-size:15px; color:var(--text-light); border:none; background:rgba(255,255,255,.08); width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.palette-strip .ps-close:hover{ background:rgba(255,255,255,.16); color:#fff; }
 
 /* ---------- Sliders / inputs ---------- */
 .slider-row{ display:flex; align-items:center; gap:8px; }
@@ -1114,13 +1128,19 @@ body{ background: var(--bg); color: var(--text); }
     <!-- 顶部下载按钮：导出高清 PNG 位图 -->
     <button class="float-dl" id="floatDownload" onclick="exportPNG()" title="导出高清 PNG 位图">⬇ 下载 PNG</button>
 
-    <!-- Palette Strip (选中调色板后，画笔相关颜色一次性出现) -->
+    <!-- 画作配色浮窗：点击作品后弹出，可拖拽，永远置顶 -->
     <div class="palette-strip" id="paletteStrip">
-      <span class="ps-grip" title="拖动移动">⠿</span>
-      <span class="ps-name" id="paletteStripName"></span>
-      <div class="ps-swatches" id="paletteStripSwatches"></div>
-      <button class="ps-stamp" onclick="stampSelectedPalette()" title="把整组配色印到画布中央">整组印</button>
-      <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
+      <div class="ps-head" title="拖动移动">
+        <span class="ps-grip">⠿</span>
+        <span class="ps-name" id="paletteStripName">画作配色</span>
+      </div>
+      <div class="ps-body">
+        <div class="ps-swatches" id="paletteStripSwatches"></div>
+      </div>
+      <div class="ps-foot">
+        <button class="ps-stamp" onclick="stampSelectedPalette()" title="把整组配色印到画布中央">🖨️ 整组印到画布</button>
+        <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
+      </div>
     </div>
 
     <!-- ===== 蓝图工作台覆盖层（技术制图框） ===== -->
@@ -1271,7 +1291,6 @@ body{ background: var(--bg); color: var(--text); }
           <div class="slider-row"><label>粗细</label><input type="range" id="brushSize" min="1" max="80" value="4" oninput="updateBrushSize(this.value);var v=document.getElementById('brushSizeVal');if(v)v.textContent=this.value"><span class="val" id="brushSizeVal">4</span></div>
           <div class="slider-row"><label>透明</label><input type="range" id="brushOpacity" min="5" max="100" value="100" oninput="updateBrushOpacity(this.value);var v=document.getElementById('brushOpacityVal');if(v)v.textContent=this.value+'%'"><span class="val" id="brushOpacityVal">100%</span></div>
           <div class="bp-actions">
-            <button class="action-btn" onclick="openArtistMode()">🎨 艺术家模式</button>
             <button class="action-btn secondary" id="bpEyedropper" onclick="setTool('eyedropper')">💧 吸管取色</button>
             <button class="action-btn secondary" onclick="importBrushTip()">🖌️ 导入笔尖</button>
             <button class="action-btn secondary" onclick="confirmReset()">🗑️ 重置画布</button>
@@ -2447,7 +2466,7 @@ function getArtistPortrait(a, cb) {
     .catch(() => { a._img = null; cb(null); });
 }
 
-// 点击代表作：把该画配色铺到画布（选中整组 + 在画布中央印出整组颜色）
+// 点击代表作：把该画配色收入浮窗（可拖拽、置顶），不再自动印到画布
 function applyArtistWork(ai, wi) {
   const work = artists[ai].works[wi];
   const colors = work.colors.slice();
@@ -2455,10 +2474,14 @@ function applyArtistWork(ai, wi) {
   const idx = palettes.length - 1;
   selectedPaletteIdx = -1;
   selectPalette(idx);
-  if (typeof stampPaletteColors === 'function') {
-    stampPaletteColors({ x: canvasW / 2, y: canvasH / 2 });
+  // 每次弹出都重置到屏幕中央
+  const strip = document.getElementById('paletteStrip');
+  if (strip) {
+    strip.style.left = '50%';
+    strip.style.top = '50%';
+    strip.style.transform = 'translate(-50%, -50%)';
   }
-  showToast(`已应用「${work.name}」配色 · 点画布可重印整组`);
+  showToast(`已弹出「${work.name}」配色浮窗，可拖拽置顶`);
   closeArtistModal();
 }
 
@@ -2467,7 +2490,7 @@ function selectPalette(idx) {
   selectedPaletteIdx = idx;
   document.querySelectorAll('.palette-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.pidx) === idx));
   showPaletteStrip();
-  showToast(`已选「${palettes[idx].name}」调色板，画笔可一键切换全部颜色`);
+  showToast(`已弹出「${palettes[idx].name}」配色浮窗，可拖拽、永远置顶`);
 }
 
 function clearPaletteSelection() {
@@ -2488,7 +2511,7 @@ function renderPaletteStrip() {
     s.className = 'ps-swatch' + (c.toLowerCase() === brushColor.toLowerCase() ? ' active' : '');
     s.style.background = c;
     s.title = c;
-    s.onclick = () => { setBrushColor(c); document.getElementById('colorPicker').value = c; clearPaletteSelection(); };
+    s.onclick = () => { setBrushColor(c); document.getElementById('colorPicker').value = c; };
     sw.appendChild(s);
   });
 }
@@ -2511,12 +2534,12 @@ function stampSelectedPalette() {
   showToast('已把整组配色印到画布中央');
 }
 
-// 配色盘面板：可拖动（永远置顶），不影响画笔默认行为
+// 配色浮窗：可拖动（永远置顶），不影响画笔默认行为
 (function initPaletteStripDrag() {
   var strip = document.getElementById('paletteStrip');
   if (!strip) return;
-  var grip = strip.querySelector('.ps-grip');
-  if (!grip) return;
+  var head = strip.querySelector('.ps-head');
+  if (!head) return;
   var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
   function down(e) {
     dragging = true;
@@ -2535,7 +2558,7 @@ function stampSelectedPalette() {
     strip.style.top = (oy + (e.clientY - sy)) + 'px';
   }
   function up() { dragging = false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); }
-  grip.addEventListener('mousedown', down);
+  head.addEventListener('mousedown', down);
 })();
 
 function applyPaletteToBg(idx) {
@@ -5947,13 +5970,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 }
 
 
-/* ===== 艺术家模式选择窗口 ===== */
-.artist-mode-window{ position:fixed; inset:0; z-index:1200; display:none; align-items:center; justify-content:center; background:rgba(5,4,12,.72); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
-.artist-mode-window.show{ display:flex; }
-.artist-mode-window .amw-card{ position:relative; width:min(420px,92vw); max-height:82vh; overflow:hidden; border-radius:16px; background:rgba(18,15,30,.96); border:1px solid rgba(255,255,255,.14); box-shadow:0 30px 80px rgba(0,0,0,.7); display:flex; flex-direction:column; }
-.amw-head{ padding:16px 18px; font-size:15px; font-weight:800; color:#fff; border-bottom:1px solid rgba(255,255,255,.1); display:flex; align-items:center; gap:8px; }
-.artist-mode-window .artist-list{ padding:14px; max-height:64vh; overflow-y:auto; }
-
 </style>
 
 <script>
@@ -6066,33 +6082,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
-<!-- 艺术家模式：选择窗口 -->
-<div class="artist-mode-window" id="artistModeWindow" onclick="if(event.target===this)closeArtistModeWindow()">
-  <div class="amw-card">
-    <button class="artist-modal-close" onclick="closeArtistModeWindow()">×</button>
-    <div class="amw-head">🎨 艺术家模式 · 选择配色</div>
-    <div class="artist-list" id="artistModeList"></div>
-  </div>
-</div>
-<script>
-function openArtistMode(){
-  var box=document.getElementById("artistModeList");
-  if(!box) return;
-  box.innerHTML="";
-  artists.forEach(function(a,idx){
-    var row=document.createElement("div");
-    row.className="artist-row";
-    row.innerHTML="<div class=\"av\" style=\"background:/"+gradFromColors(a.works[0].colors)+/"///">/"+a.name.charAt(0)+/"</div><div><div class=\"nm\">"+a.name+"</div><div class=\"en\">"+a.en+" · "+a.works.length+"幅代表作</div></div><div class=\"arrow\">›</div>";
-    row.onclick=function(){ closeArtistModeWindow(); openArtistModal(idx); };
-    box.appendChild(row);
-  });
-  document.getElementById("artistModeWindow").classList.add("show");
-}
-function closeArtistModeWindow(){
-  var w=document.getElementById("artistModeWindow");
-  if(w) w.classList.remove("show");
-}
-</script>
+
 
 </body>
 </html>
