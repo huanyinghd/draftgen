@@ -3297,13 +3297,13 @@ function paintMonaStrokes(ctx, n, rng) {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (let k = 0; k < n; k++) {
     // 拒绝采样：暗部与中间调都参与，亮部也保留少量 -> 头发/衣/脸/背景都画到，保证"完整"
-    let ix, iy, lum, tries = 0;
+    let ix, iy, lum, w, tries = 0;
     do {
       ix = Math.floor(rng() * mw);
       iy = Math.floor(rng() * mh);
       lum = L[iy * mw + ix];
+      w = 0.05 + (1 - lum / 255) * 0.9;   // 亮部也有 5% 概率，避免空洞
       tries++;
-      const w = 0.05 + (1 - lum / 255) * 0.9;   // 亮部也有 5% 概率，避免空洞
     } while (rng() > w && tries < 16);
     const px = rx + (ix + 0.5) / mw * rectW;
     const py = ry + (iy + 0.5) / mh * rectH;
