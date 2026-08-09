@@ -3285,9 +3285,11 @@ function updateDraftGenLabel() {
 function paintMonaStrokes(ctx, n, rng) {
   if (!window.MONA) return;
   const W = canvasW, H = canvasH;
+  const minSide = Math.min(W, H);
   const mw = MONA.W, mh = MONA.H, L = MONA.L;
-  const rectH = H * 0.92;
-  const rectW = rectH * (mw / mh);
+  // 让蒙娜丽莎完整显示在画布内，并按画布短边适配
+  const scale = (minSide * 0.92) / Math.max(mw, mh);
+  const rectW = mw * scale, rectH = mh * scale;
   const rx = (W - rectW) / 2;
   const ry = (H - rectH) / 2;
   ctx.save();
@@ -3300,9 +3302,13 @@ function paintMonaStrokes(ctx, n, rng) {
       iy = Math.floor(rng() * mh);
       lum = L[iy * mw + ix];
       tries++;
-    } while (rng() > (1 - lum / 255) * 0.9 + 0.06 && tries < 14);
-    const cx = rx + (ix + 0.5) / mw * rectW;
-    const cy = ry + (iy + 0.5) / mh * rectH;
+    } while (rng() > (1 - lum / 255) * 0.9 + 0.04 && tries < 14);
+    const px = rx + (ix + 0.5) / mw * rectW;
+    const py = ry + (iy + 0.5) / mh * rectH;
+    // 抖动，避免像素网格感
+    const jx = (rng() * 2 - 1) * scale * 0.6;
+    const jy = (rng() * 2 - 1) * scale * 0.6;
+    const cx = px + jx, cy = py + jy;
     // 边缘梯度 -> 笔触切线方向
     const x0 = Math.max(0, ix - 1), x1 = Math.min(mw - 1, ix + 1);
     const y0 = Math.max(0, iy - 1), y1 = Math.min(mh - 1, iy + 1);
@@ -3310,13 +3316,14 @@ function paintMonaStrokes(ctx, n, rng) {
     const gy = L[y1 * mw + ix] - L[y0 * mw + ix];
     let ang = Math.atan2(gy, gx) + Math.PI / 2;
     if (!isFinite(ang)) ang = rng() * 6.2832;
-    ang += (rng() * 2 - 1) * 0.5;
+    ang += (rng() * 2 - 1) * 0.55;
     const dark = 1 - lum / 255;
-    const len = (3 + dark * 7) * (0.8 + rng() * 0.6);
-    const shade = 26 + dark * 46;
-    const a = 0.16 + dark * 0.52;
+    // 笔画长度/粗细/透明度全部按画布短边缩放，保证可见
+    const len = minSide * (0.005 + dark * 0.012) * (0.8 + rng() * 0.7);
+    const shade = 12 + dark * 55;
+    const a = 0.28 + dark * 0.62;
     ctx.strokeStyle = 'rgba(' + (shade + 8) + ',' + shade + ',' + (shade + 12) + ',' + a.toFixed(2) + ')';
-    ctx.lineWidth = 0.8 + dark * 1.5;
+    ctx.lineWidth = minSide * (0.001 + dark * 0.0035);
     const r = rng();
     if (r < 0.45) {
       ctx.beginPath();
@@ -3324,8 +3331,9 @@ function paintMonaStrokes(ctx, n, rng) {
       ctx.lineTo(cx + Math.cos(ang) * len, cy + Math.sin(ang) * len);
       ctx.stroke();
     } else if (r < 0.8) {
-      const mx = cx + Math.cos(ang) * len * 0.5 + Math.cos(ang + 1.57) * (rng() * 2 - 1) * len * 0.4;
-      const my = cy + Math.sin(ang) * len * 0.5 + Math.sin(ang + 1.57) * (rng() * 2 - 1) * len * 0.4;
+      const cpLen = len * 0.5;
+      const mx = cx + Math.cos(ang) * cpLen + Math.cos(ang + 1.57) * (rng() * 2 - 1) * cpLen * 0.6;
+      const my = cy + Math.sin(ang) * cpLen + Math.sin(ang + 1.57) * (rng() * 2 - 1) * cpLen * 0.6;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.quadraticCurveTo(mx, my, cx + Math.cos(ang) * len, cy + Math.sin(ang) * len);
@@ -3333,11 +3341,12 @@ function paintMonaStrokes(ctx, n, rng) {
     } else {
       ctx.beginPath();
       const turns = 1 + rng();
+      const rr = len * 0.45;
       for (let t = 0; t <= 12; t++) {
         const th = t / 12 * turns * 6.2832;
-        const rr = len * (t / 12) * 0.5;
-        const px = cx + Math.cos(ang + th) * rr;
-        const py = cy + Math.sin(ang + th) * rr;
+        const tr = rr * (t / 12);
+        const px = cx + Math.cos(ang + th) * tr;
+        const py = cy + Math.sin(ang + th) * tr;
         if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
       }
       ctx.stroke();
