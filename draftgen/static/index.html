@@ -3302,7 +3302,7 @@ function paintMonaStrokes(ctx, n, rng) {
       iy = Math.floor(rng() * mh);
       lum = L[iy * mw + ix];
       tries++;
-    } while (rng() > (1 - lum / 255) * 0.9 + 0.04 && tries < 14);
+    } while (rng() > (1 - Math.pow(lum / 255, 1.65)) * 0.9 + 0.04 && tries < 14);
     const px = rx + (ix + 0.5) / mw * rectW;
     const py = ry + (iy + 0.5) / mh * rectH;
     // 抖动，避免像素网格感
