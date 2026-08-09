@@ -1177,16 +1177,9 @@ window.PAINTINGS={
     <div class="bp-ovl" id="bpOverlay" aria-hidden="true">
       <span class="bp-corner tl"></span>
       <span class="bp-corner tr"></span>
-      <span class="bp-corner bl"></span>
       <span class="bp-corner br"></span>
       <div class="bp-dim-x" id="bpDimX">W&nbsp;▸&nbsp;<span id="bpW">3508</span>&nbsp;PX</div>
       <div class="bp-dim-y" id="bpDimY">H&nbsp;▾&nbsp;<span id="bpH">2480</span>&nbsp;PX</div>
-      <div class="bp-stamp" id="bpStamp">
-        <span>DWG&nbsp;No.&nbsp;DG-<span id="bpNo">0001</span></span>
-        <span>SCALE&nbsp;1:1</span>
-        <span>UNITS&nbsp;PX</span>
-        <span>PROJ&nbsp;DRAFTGEN</span>
-      </div>
     </div>
 
   </div>
@@ -1254,10 +1247,12 @@ window.PAINTINGS={
             <div class="holo-body">
               <div class="fx-kicker"><i class="dot"></i>DRAFTGEN ／ COMPOSITION ENGINE<i class="dot"></i></div>
               <div class="fx-title" data-text="随机构图生成器">随机构图生成器</div>
-              <p class="fx-sub">一键在左侧主画布生成草稿 · 拖动移动 · 滚轮缩放 · 「✓ 放入画布」确认</p>
               <label class="fx-label">风格 STYLE</label>
-              <div class="fx-select-wrap"><select id="dStyle" class="fx-select"></select></div>
-              <div class="fx-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="style-circuit" id="styleCircuit">
+                <div class="sc-toplead"></div>
+                <div class="sc-bus"></div>
+                <div class="sc-balls" id="scBalls"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1266,8 +1261,7 @@ window.PAINTINGS={
 
         <div class="panel-section">
           <div class="panel-section">
-          <h3>🎲 乱线草稿 · 无限可能</h3>
-          <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">生成一张松快的探索性草稿：带构造底稿与主体雏形，并围绕主体浮现多个淡色「幽灵」变体 —— 从同一张草稿里能看到无限可能。</p>
+          <h3>🎲 乱线草稿</h3>
           <div class="slider-row"><label>每步线条</label><input type="range" id="lineDensity" min="500" max="3000" step="100" value="1000" oninput="var v=document.getElementById('densityVal');if(v)v.textContent=this.value;if(window.updateDraftGenLabel)updateDraftGenLabel()"><span class="val" id="densityVal">1000</span></div>
           <div class="slider-row"><label>混沌度</label><input type="range" id="chaosLevel" min="0" max="100" value="42" oninput="var v=document.getElementById('chaosVal');if(v)v.textContent=this.value+'%'"><span class="val" id="chaosVal">42%</span></div>
           <div class="slider-row"><label>可能性</label><input type="range" id="possibilityLevel" min="0" max="4" value="2" oninput="var v=document.getElementById('possibVal');if(v)v.textContent=this.value"><span class="val" id="possibVal">2</span></div>
@@ -1284,11 +1278,9 @@ window.PAINTINGS={
           <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
             <div style="font-size:12px;font-weight:600;margin-bottom:6px">🖼️ 蒙娜丽莎草图</div>
             <button class="action-btn" id="monaBtn" onclick="generateMona()" style="width:100%">生成蒙娜丽莎（乱线 1000）</button>
-            <div style="font-size:10px;color:var(--text-light);margin-top:4px">点一次 +1000，叠加到 3000 成模糊蒙娜丽莎 · 可缩放后放入画布</div>
           </div>
           <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
             <div style="font-size:12px;font-weight:600;margin-bottom:4px">🏛️ 世界名画合集</div>
-            <p style="font-size:10px;color:var(--text-light);margin:0 0 8px">每幅名画一个按钮：点一次 +1000 乱线，反复点叠加到 3000 成完整草稿；可缩放后「✓ 放入画布」收纳进合集。</p>
             <div id="paintingGrid" class="paint-grid"></div>
           </div>
         </div>
@@ -5956,20 +5948,43 @@ window.addEventListener('DOMContentLoaded', ()=>{
 <script src="/static/draftgen.js"></script>
 <script>
 (function(){
+  var currentStyleKey = '';   // 当前选中的风格 key（'' = 自动）
   function fail(msg){ if(window.showToast) showToast(msg); else console.error(msg); }
-  function fillStyleSelect(list){ var sel=document.getElementById('dStyle'); if(!sel) return; sel.innerHTML='';
-    list.forEach(function(s){ var o=document.createElement('option'); o.value=s.key||''; o.textContent=(s.artist?(s.title?s.artist+' — '+s.title:s.artist):s.title); sel.appendChild(o); }); }
+  function shortStyleLabel(s){
+    if(s.label) return s.label;
+    var a=s.artist||'', t=s.title||'';
+    if(t && t.length<=6) return t;
+    if(a && a.length<=6) return a;
+    return (t||a||'?').slice(0,6);
+  }
+  function buildStyleCircuit(list){
+    var box=document.getElementById('scBalls'); if(!box) return;
+    box.innerHTML='';
+    var items=[{key:'',label:'自动'}].concat(list).concat([{key:'random_scene',label:'随机'}]);
+    items.forEach(function(s){
+      var b=document.createElement('button'); b.type='button'; b.className='sc-ball';
+      b.setAttribute('data-key', s.key||'');
+      b.title=(s.artist?(s.artist+' '):'')+(s.title||'');
+      b.innerHTML='<span>'+shortStyleLabel(s)+'</span>';
+      if((s.key||'')===currentStyleKey) b.classList.add('active');
+      b.addEventListener('click', function(){
+        currentStyleKey=s.key||'';
+        var all=box.querySelectorAll('.sc-ball'); for(var i=0;i<all.length;i++) all[i].classList.remove('active');
+        b.classList.add('active');
+      });
+      box.appendChild(b);
+    });
+  }
   function loadStyles(){ try{
       var list=(typeof DraftGen!=='undefined'&&DraftGen.listStyles)?DraftGen.listStyles():[];
-      fillStyleSelect([{key:'',title:'🎲 自动（随机挑经典 / 随机场景）'}].concat(list).concat([{key:'random_scene',artist:'纯随机',title:'随机场景（从零生成）'}]));
+      buildStyleCircuit(list);
     }catch(e){ fail('DraftGen 未加载：请确认 draftgen.js 已正确引入'); } }
 
   function genDense(){
     if(typeof DraftGen==='undefined'||!DraftGen.generateRandomScene){ fail('DraftGen 未加载：请确认 draftgen.js 已引入'); return; }
     var btn=document.getElementById('genDense');
     if(btn) btn.disabled=true;
-    var styleSel=document.getElementById('dStyle');
-    var style=styleSel?styleSel.value:null;
+    var style=currentStyleKey;
     fail('⏳ 正在生成随机草图…');
     requestAnimationFrame(function(){ try{
       // 生成场景（每次随机种子）
@@ -6065,8 +6080,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main .inp{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
 .main .fp-grid button{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; }
 .main .fp-grid button.auto{ background:rgba(22,20,34,.9)!important; }
-/* 随机草图：精简右栏 + 大按钮 + 暗色下拉 */
-.main #dStyle{ background:rgba(22,20,34,.9)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.18)!important; border-radius:8px; padding:8px 10px; font-size:13px; }
+/* 随机草图：精简右栏 + 大按钮 */
 .main #genDense.big-gen{ width:100%!important; padding:16px!important; font-size:16px!important; border-radius:12px!important; letter-spacing:1px; }
 /* 工作室模态框（position:fixed，挂在 body 下，不在 .main 内） */
 .modal{ background:rgba(18,16,28,.97)!important; color:#e9e6f5!important; border:1px solid rgba(255,255,255,.16)!important; }
@@ -6238,10 +6252,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   93%{ opacity:.7; transform:translate(-2px,0); clip-path:inset(34% 0 44% 0); }
   95%{ opacity:0; }
 }
-.main .fx-sub{ font-size:11px; color:#bfe9ff!important; margin:7px 0 12px; line-height:1.65; }
 .main .fx-label{ display:block; font-size:9.5px; letter-spacing:2px; color:#8ee7f7; margin-bottom:6px; font-weight:700; }
-.main .fx-select-wrap{ position:relative; border-radius:11px; padding:1px; background:linear-gradient(120deg,#00e5ff,#22d3ee,#2b8bff); background-size:220% auto; animation:fxflow 6s linear infinite; }
-.main .fx-select-wrap #dStyle{ width:100%; border:none!important; border-radius:10px; background:rgba(4,16,28,.94)!important; color:#dff6ff!important; padding:10px 11px!important; font-size:13px; outline:none; }
 .main #genDense.fx-gen{ position:relative; display:block; width:100%; margin-top:13px; border:none; border-radius:14px;
   padding:17px 12px!important; font-size:16px!important; font-weight:900; letter-spacing:3px; color:#03121f!important; cursor:pointer; overflow:hidden;
   background:linear-gradient(115deg,#7df9ff,#00e5ff,#22d3ee,#7df9ff); background-size:300% auto;
@@ -6254,18 +6265,15 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main #genDense.fx-gen:hover{ transform:translateY(-2px) scale(1.015); }
 .main #genDense.fx-gen:active{ transform:scale(.97); }
 .main #genDense.fx-gen[disabled]{ filter:grayscale(.4) brightness(.85); animation:none; cursor:progress; }
-.main .fx-bars{ display:flex; align-items:flex-end; gap:3px; height:20px; margin-top:12px; opacity:.7; }
-.main .fx-bars i{ flex:1; height:20%; border-radius:2px; background:linear-gradient(180deg,#7df9ff,#00e5ff); animation:fxbar 1.15s ease-in-out infinite; }
-@keyframes fxbar{ 0%,100%{ height:18% } 50%{ height:100% } }
-.main .fx-bars i:nth-child(3n){ animation-duration:.85s } .main .fx-bars i:nth-child(3n+1){ animation-duration:1.45s }
-.main .fx-bars i:nth-child(2){animation-delay:.08s} .main .fx-bars i:nth-child(3){animation-delay:.16s} .main .fx-bars i:nth-child(4){animation-delay:.24s}
-.main .fx-bars i:nth-child(5){animation-delay:.32s} .main .fx-bars i:nth-child(6){animation-delay:.4s} .main .fx-bars i:nth-child(7){animation-delay:.48s}
-.main .fx-bars i:nth-child(8){animation-delay:.56s} .main .fx-bars i:nth-child(9){animation-delay:.64s} .main .fx-bars i:nth-child(10){animation-delay:.72s}
-.main .fx-bars i:nth-child(11){animation-delay:.8s} .main .fx-bars i:nth-child(12){animation-delay:.88s} .main .fx-bars i:nth-child(13){animation-delay:.96s}
-.main .fx-bars i:nth-child(14){animation-delay:1.04s} .main .fx-bars i:nth-child(15){animation-delay:1.12s} .main .fx-bars i:nth-child(16){animation-delay:.2s}
-.main .fx-bars i:nth-child(17){animation-delay:.36s} .main .fx-bars i:nth-child(18){animation-delay:.52s} .main .fx-bars i:nth-child(19){animation-delay:.68s}
-.main .fx-bars i:nth-child(20){animation-delay:.84s} .main .fx-bars i:nth-child(21){animation-delay:1s} .main .fx-bars i:nth-child(22){animation-delay:.12s}
-.main .fx-bars i:nth-child(23){animation-delay:.28s} .main .fx-bars i:nth-child(24){animation-delay:.44s}
+.main .style-circuit{ position:relative; padding:24px 8px 8px; margin-top:4px; }
+.main .style-circuit .sc-toplead{ position:absolute; left:50%; top:2px; width:2px; height:14px; transform:translateX(-50%); background:linear-gradient(180deg,#00e5ff,rgba(0,229,255,0)); box-shadow:0 0 8px #00e5ff; }
+.main .style-circuit .sc-bus{ position:absolute; left:26px; right:26px; top:16px; height:2px; background:linear-gradient(90deg,rgba(0,229,255,0),rgba(0,229,255,.6),rgba(0,229,255,0)); }
+.main .style-circuit .sc-balls{ position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:18px 12px; justify-content:center; margin-top:14px; }
+.main .sc-ball{ position:relative; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9.5px; line-height:1.08; padding:3px; background:rgba(4,16,28,.92); border:1.5px solid rgba(0,229,255,.45); color:#cdeefb; cursor:pointer; transition:.15s; }
+.main .sc-ball::before{ content:''; position:absolute; left:50%; top:-20px; transform:translateX(-50%); width:2px; height:20px; background:rgba(0,229,255,.5); }
+.main .sc-ball:hover{ border-color:#00e5ff; box-shadow:0 0 14px rgba(0,229,255,.5); color:#eafdff; }
+.main .sc-ball.active{ background:linear-gradient(135deg,#00e5ff,#22d3ee); color:#04121f; border-color:#aef6ff; font-weight:800; box-shadow:0 0 18px rgba(0,229,255,.85); }
+.main .sc-ball span{ pointer-events:none; }
 
 /* 分隔条 */
 .main .fx-sep{ display:flex; align-items:center; gap:9px; margin:4px 0 14px; }
@@ -6290,7 +6298,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 @media (prefers-reduced-motion: reduce){
   .main .holo-orb,.main .holo-orbit,.main .holo-reticle,.main .holo-arc,.main .holo-base,.main .holo-beam,.main .holo-scan,.main .holo-flicker,
-  .main .fx-title,.main .fx-bars i,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
+  .main .fx-title,.main #genDense.fx-gen,.main #genDense.fx-gen::before{ animation:none!important; }
   .main .holo-cta-text{ animation:none!important; opacity:1!important; }
   .main .holo-cta-text::before, .main .holo-cta-text::after{ animation:none!important; opacity:0!important; }
 }
@@ -6723,7 +6731,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @keyframes bpPulse{ 0%,100%{ box-shadow:0 0 6px #5fd0ff; } 50%{ box-shadow:0 0 18px #5fd0ff; } }
 .bp-dim-x{ position:absolute; top:16px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
 .bp-dim-y{ position:absolute; left:84px; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; font-size:11px; letter-spacing:2px; color:var(--bp-cyan); background:rgba(7,17,29,.7); padding:3px 10px; border:1px solid rgba(120,200,255,.3); border-radius:3px; white-space:nowrap; }
-.bp-stamp{ position:absolute; left:16px; bottom:16px; display:flex; flex-direction:column; gap:2px; font-size:9px; letter-spacing:1.5px; color:rgba(143,182,214,.85); background:rgba(7,17,29,.62); border:1px solid rgba(120,200,255,.22); border-radius:4px; padding:6px 9px; }
 
 @media (prefers-reduced-motion: reduce){
   .bp-ovl *{ animation:none !important; }
