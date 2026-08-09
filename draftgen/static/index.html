@@ -635,10 +635,7 @@ body{ background: var(--bg); color: var(--text); }
 .palette-strip .ps-swatch{ width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,.25); transition: transform .12s; box-shadow:0 0 8px rgba(0,0,0,.4); }
 .palette-strip .ps-swatch:hover{ transform: scale(1.18); }
 .palette-strip .ps-swatch.active{ border-color:#fff; box-shadow:0 0 12px var(--c2); }
-.palette-strip .ps-foot{ display:flex; align-items:center; gap:8px; padding:10px 14px 14px; }
-.palette-strip .ps-stamp{ flex:1; font-size:12px; padding:7px 10px; border-radius:10px; border:1px solid rgba(0,229,255,.4); background:rgba(0,229,255,.12); color:#bfefff; cursor:pointer; white-space:nowrap; }
-.palette-strip .ps-stamp:hover{ background:rgba(0,229,255,.24); }
-.palette-strip .ps-close{ cursor:pointer; font-size:15px; color:var(--text-light); border:none; background:rgba(255,255,255,.08); width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.palette-strip .ps-close{ margin-left:auto; cursor:pointer; font-size:14px; color:var(--text-light); border:none; background:rgba(255,255,255,.08); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
 .palette-strip .ps-close:hover{ background:rgba(255,255,255,.16); color:#fff; }
 
 /* ---------- Sliders / inputs ---------- */
@@ -1133,13 +1130,10 @@ body{ background: var(--bg); color: var(--text); }
       <div class="ps-head" title="拖动移动">
         <span class="ps-grip">⠿</span>
         <span class="ps-name" id="paletteStripName">画作配色</span>
+        <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
       </div>
       <div class="ps-body">
         <div class="ps-swatches" id="paletteStripSwatches"></div>
-      </div>
-      <div class="ps-foot">
-        <button class="ps-stamp" onclick="stampSelectedPalette()" title="把整组配色印到画布中央">🖨️ 整组印到画布</button>
-        <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
       </div>
     </div>
 
@@ -1666,29 +1660,6 @@ function setBrushColor(color) {
 
 function rgbToHex(r, g, b) {
   return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
-}
-
-// 调色板模式：把整组颜色按一行印在画布上（选中调色板后点/拖画布触发）
-function stampPaletteColors(pos) {
-  const p = palettes[selectedPaletteIdx];
-  if (!p) return;
-  const ctx = getActiveLayerCtx();
-  if (!ctx) return;
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-over';
-  const r = Math.max(2, brushSize);
-  const gap = r * 2.4;
-  const n = p.colors.length;
-  const startX = pos.x - (n - 1) * gap / 2;
-  p.colors.forEach((c, i) => {
-    ctx.globalAlpha = brushOpacity;
-    ctx.fillStyle = c;
-    ctx.beginPath();
-    ctx.arc(startX + i * gap, pos.y, r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.restore();
-  compositeToMain();
 }
 
 // 吸管：取画布上某点的颜色作为画笔色（并退出调色板模式）
@@ -2524,14 +2495,6 @@ function showPaletteStrip() {
 
 function hidePaletteStrip() {
   document.getElementById('paletteStrip').classList.remove('show');
-}
-
-// 整组印：把当前选中调色板的整组颜色一次性印到画布中央（显式操作，画笔保持默认不自动印）
-function stampSelectedPalette() {
-  if (selectedPaletteIdx < 0) { showToast('请先在右侧选择一个配色'); return; }
-  setTool('brush');
-  stampPaletteColors({ x: canvasW / 2, y: canvasH / 2 });
-  showToast('已把整组配色印到画布中央');
 }
 
 // 配色浮窗：可拖动（永远置顶），不影响画笔默认行为
