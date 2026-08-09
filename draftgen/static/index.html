@@ -614,13 +614,17 @@ body{ background: var(--bg); color: var(--text); }
 .layer-actions button:hover{ background: rgba(139,92,246,.18); border-color: rgba(139,92,246,.4); }
 
 /* ---------- Palette strip ---------- */
-.palette-strip{ position:absolute; top:14px; left:50%; transform:translateX(-50%); background: rgba(14,12,24,.7); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border:1px solid rgba(255,255,255,.14); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(139,92,246,.12) inset; z-index:60; display:none; align-items:center; gap:6px; padding:9px 13px; user-select:none; max-width:92%; }
+.palette-strip{ position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:100000; display:none; align-items:center; gap:8px; padding:9px 13px; max-width:94vw; background: rgba(14,12,24,.84); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border:1px solid rgba(0,229,255,.35); border-radius:14px; box-shadow:0 14px 44px rgba(0,0,0,.6), 0 0 22px rgba(0,229,255,.18); user-select:none; }
 .palette-strip.show{ display:flex; }
+.palette-strip .ps-grip{ cursor:grab; color:rgba(0,229,255,.85); font-size:17px; line-height:1; padding:0 2px; }
+.palette-strip .ps-grip:active{ cursor:grabbing; }
 .palette-strip .ps-name{ font-size:11px; color:var(--c2); font-weight:700; margin-right:4px; white-space:nowrap; }
 .palette-strip .ps-swatches{ display:flex; gap:6px; flex-wrap:wrap; }
 .palette-strip .ps-swatch{ width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,.25); transition: transform .12s; box-shadow:0 0 8px rgba(0,0,0,.4); }
 .palette-strip .ps-swatch:hover{ transform: scale(1.18); }
 .palette-strip .ps-swatch.active{ border-color:#fff; box-shadow:0 0 12px var(--c2); }
+.palette-strip .ps-stamp{ font-size:11px; padding:4px 10px; border-radius:8px; border:1px solid rgba(0,229,255,.4); background:rgba(0,229,255,.12); color:#bfefff; cursor:pointer; white-space:nowrap; }
+.palette-strip .ps-stamp:hover{ background:rgba(0,229,255,.24); }
 .palette-strip .ps-close{ margin-left:6px; cursor:pointer; font-size:14px; color:var(--text-light); border:none; background:none; }
 
 /* ---------- Sliders / inputs ---------- */
@@ -1081,16 +1085,10 @@ body{ background: var(--bg); color: var(--text); }
           <div class="m m4"></div><div class="m m5"></div><div class="m m6"></div>
           <div class="p p1"></div><div class="p p2"></div><div class="p p3"></div><div class="p p4"></div>
         </div>
-        <div class="s-orbits">
-          <div class="o o1"></div><div class="o o2"></div><div class="o o3"></div>
-        </div>
         <div class="s-core"></div>
       </div>
       <div class="s-layer s-scan"></div>
       <div class="s-layer s-particles"><div class="pp"></div></div>
-      <div class="s-layer s-hud">
-        <i class="h tl"></i><i class="h tr"></i><i class="h bl"></i><i class="h br"></i>
-      </div>
       <div class="s-layer s-halo"></div>
     </div>
 
@@ -1118,8 +1116,10 @@ body{ background: var(--bg); color: var(--text); }
 
     <!-- Palette Strip (选中调色板后，画笔相关颜色一次性出现) -->
     <div class="palette-strip" id="paletteStrip">
+      <span class="ps-grip" title="拖动移动">⠿</span>
       <span class="ps-name" id="paletteStripName"></span>
       <div class="ps-swatches" id="paletteStripSwatches"></div>
+      <button class="ps-stamp" onclick="stampSelectedPalette()" title="把整组配色印到画布中央">整组印</button>
       <button class="ps-close" onclick="clearPaletteSelection()" title="收起">✕</button>
     </div>
 
@@ -1271,6 +1271,7 @@ body{ background: var(--bg); color: var(--text); }
           <div class="slider-row"><label>粗细</label><input type="range" id="brushSize" min="1" max="80" value="4" oninput="updateBrushSize(this.value);var v=document.getElementById('brushSizeVal');if(v)v.textContent=this.value"><span class="val" id="brushSizeVal">4</span></div>
           <div class="slider-row"><label>透明</label><input type="range" id="brushOpacity" min="5" max="100" value="100" oninput="updateBrushOpacity(this.value);var v=document.getElementById('brushOpacityVal');if(v)v.textContent=this.value+'%'"><span class="val" id="brushOpacityVal">100%</span></div>
           <div class="bp-actions">
+            <button class="action-btn" onclick="toggleMixPanel()">🎨 混色调色盘</button>
             <button class="action-btn secondary" id="bpEyedropper" onclick="setTool('eyedropper')">💧 吸管取色</button>
             <button class="action-btn secondary" onclick="importBrushTip()">🖌️ 导入笔尖</button>
             <button class="action-btn secondary" onclick="confirmReset()">🗑️ 重置画布</button>
@@ -1679,6 +1680,19 @@ function pickColor(pos) {
   const d = ctx.getImageData(px, py, 1, 1).data;
   if (d[3] === 0) { showToast('此处透明，未取到颜色'); return; }
   const hex = rgbToHex(d[0], d[1], d[2]);
+  if (window._mixPick) {
+    window._mixPick = false;
+    if (window.mixState) {
+      window.mixState.chips.push(hex);
+      mixSetSlot(window.mixState.target, hex);
+      window.mixState.target = (window.mixState.target === 'A') ? 'B' : 'A';
+      mixUpdateTarget();
+      mixRenderChips();
+    }
+    showToast('已吸取 ' + hex + ' 到调色盘');
+    setTool('brush');
+    return;
+  }
   setBrushColor(hex);
   document.getElementById('colorPicker').value = hex;
   if (selectedPaletteIdx >= 0) clearPaletteSelection();
@@ -1733,11 +1747,6 @@ function onPointerDown(e) {
     return;
   }
   saveUndoState();
-  // 调色板模式：点击/拖动一次性把整组颜色印在画布上
-  if (currentTool === 'brush' && selectedPaletteIdx >= 0) {
-    stampPaletteColors(pos);
-    return;
-  }
   drawDot(pos.x, pos.y);
 }
 
@@ -1745,13 +1754,6 @@ function onPointerMove(e) {
   if (!isDrawing) return;
   pressure = e.pressure || 0.5;
   const pos = getCanvasPos(e);
-  // 调色板模式：沿途继续印出整组颜色
-  if (currentTool === 'brush' && selectedPaletteIdx >= 0) {
-    stampPaletteColors(pos);
-    lastX = pos.x;
-    lastY = pos.y;
-    return;
-  }
   drawLine(lastX, lastY, pos.x, pos.y);
   lastX = pos.x;
   lastY = pos.y;
@@ -2513,6 +2515,41 @@ function showPaletteStrip() {
 function hidePaletteStrip() {
   document.getElementById('paletteStrip').classList.remove('show');
 }
+
+// 整组印：把当前选中调色板的整组颜色一次性印到画布中央（显式操作，画笔保持默认不自动印）
+function stampSelectedPalette() {
+  if (selectedPaletteIdx < 0) { showToast('请先在右侧选择一个配色'); return; }
+  setTool('brush');
+  stampPaletteColors({ x: canvasW / 2, y: canvasH / 2 });
+  showToast('已把整组配色印到画布中央');
+}
+
+// 配色盘面板：可拖动（永远置顶），不影响画笔默认行为
+(function initPaletteStripDrag() {
+  var strip = document.getElementById('paletteStrip');
+  if (!strip) return;
+  var grip = strip.querySelector('.ps-grip');
+  if (!grip) return;
+  var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  function down(e) {
+    dragging = true;
+    var r = strip.getBoundingClientRect();
+    strip.style.left = r.left + 'px';
+    strip.style.top = r.top + 'px';
+    strip.style.transform = 'none';
+    sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+    e.preventDefault();
+  }
+  function move(e) {
+    if (!dragging) return;
+    strip.style.left = (ox + (e.clientX - sx)) + 'px';
+    strip.style.top = (oy + (e.clientY - sy)) + 'px';
+  }
+  function up() { dragging = false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); }
+  grip.addEventListener('mousedown', down);
+})();
 
 function applyPaletteToBg(idx) {
   const p = palettes[idx];
@@ -5754,7 +5791,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .studio-fx .s-grid{ transform: translate3d(calc(var(--mx,0) * 38px), calc(var(--my,0) * 20px), 0); }
 .studio-fx .s-scan{ transform: translate3d(calc(var(--mx,0) * 9px), 0, 0); }
 .studio-fx .s-particles{ transform: translate3d(calc(var(--mx,0) * 58px), calc(var(--my,0) * 40px), 0); }
-.studio-fx .s-hud{ transform: translate3d(calc(var(--mx,0) * 26px), calc(var(--my,0) * 18px), 0); }
 .studio-fx .s-halo{ transform: translate3d(calc(var(--mx,0) * 11px), calc(var(--my,0) * 8px), 0); }
 .studio-fx .s-ggrid{ transform: translate3d(calc(var(--mx,0) * 20px), calc(var(--my,0) * 13px), 0); }
 
@@ -5762,23 +5798,15 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .studio-fx .s-fog{ background: radial-gradient(130% 120% at 50% 46%, transparent 36%, rgba(3,10,18,.86) 100%); }
 /* 全屏辉光：画布后方被全息投影照亮 */
 .studio-fx .s-halo{ background: radial-gradient(60% 60% at 50% 50%, rgba(0,229,255,.24), transparent 65%); }
-/* 渐变黑色方格线：强化轨道弧与角弧的科技蓝图质感 */
+/* 渐变黑色方格线：工作区背景的蓝图质感（主画布后方） */
 .studio-fx .s-ggrid{
   background-image:
-    linear-gradient(rgba(7,14,22,.20) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(7,14,22,.20) 1px, transparent 1px);
+    linear-gradient(rgba(7,14,22,.26) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7,14,22,.26) 1px, transparent 1px);
   background-size: 56px 56px;
   -webkit-mask-image: radial-gradient(125% 120% at 50% 50%, #000 56%, rgba(0,0,0,0) 100%);
           mask-image: radial-gradient(125% 120% at 50% 50%, #000 56%, rgba(0,0,0,0) 100%);
 }
-
-/* HUD 角弧：四个角的大型全息弧线 */
-.studio-fx .s-hud{ inset:18px; }
-.studio-fx .s-hud .h{ position:absolute; width:160px; height:160px; border:2px solid rgba(0,229,255,.6); box-shadow:0 0 28px rgba(0,229,255,.42), 0 0 10px rgba(0,229,255,.5) inset, 0 0 46px rgba(0,229,255,.12); }
-.studio-fx .s-hud .tl{ left:0; top:0; border-right:0; border-bottom:0; border-top-left-radius:160px; }
-.studio-fx .s-hud .tr{ right:0; top:0; border-left:0; border-bottom:0; border-top-right-radius:160px; }
-.studio-fx .s-hud .bl{ left:0; bottom:0; border-right:0; border-top:0; border-bottom-left-radius:160px; }
-.studio-fx .s-hud .br{ right:0; bottom:0; border-left:0; border-top:0; border-bottom-right-radius:160px; }
 
 /* 全息线框球（工作室中心装置） */
 .studio-fx .s-globe{ left:50%; top:51%; width:560px; height:560px; margin:-280px 0 0 -280px; }
@@ -5800,13 +5828,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .studio-fx .s-globe .s-core{ position:absolute; left:50%; top:50%; width:60px; height:60px; margin:-30px 0 0 -30px; border-radius:50%;
   background: radial-gradient(circle, #d7fbff, rgba(0,229,255,.6) 45%, transparent 72%);
   box-shadow: 0 0 40px rgba(0,229,255,.6); animation: sPulse 3.6s ease-in-out infinite; }
-
-/* 轨道环（突破画布，环绕整个工作区） */
-.studio-fx .s-orbits{ position:absolute; inset:0; }
-.studio-fx .s-orbits .o{ position:absolute; left:50%; top:51%; border-radius:50%; }
-.studio-fx .s-orbits .o1{ width:1180px; height:1180px; margin:-590px 0 0 -590px; border:1px solid rgba(0,229,255,.45); transform: rotateX(74deg); animation: sOrbit 28s linear infinite; box-shadow:0 0 24px rgba(0,229,255,.12); }
-.studio-fx .s-orbits .o2{ width:1460px; height:1460px; margin:-730px 0 0 -730px; border-style:dashed; border-color:rgba(125,249,255,.32); transform: rotateX(74deg); animation: sOrbit 40s linear infinite reverse; }
-.studio-fx .s-orbits .o3{ width:1740px; height:1740px; margin:-870px 0 0 -870px; border:1px solid rgba(0,229,255,.22); transform: rotateX(74deg); animation: sOrbit 56s linear infinite; }
 
 /* 透视网格地平面 */
 .studio-fx .s-grid .gs{ position:absolute; left:-25%; right:-25%; bottom:-12%; height:54%;
@@ -5839,12 +5860,11 @@ window.addEventListener('DOMContentLoaded', ()=>{
   animation: sFloat 13s ease-in-out infinite alternate; }
 
 @keyframes sSpin{ to{ transform: rotateY(360deg); } }
-@keyframes sOrbit{ from{ transform: rotateX(74deg) rotate(0); } to{ transform: rotateX(74deg) rotate(360deg); } }
 @keyframes sScan{ 0%{ top:-30% } 100%{ top:100% } }
 @keyframes sPulse{ 0%,100%{ transform: scale(.9); opacity:.8 } 50%{ transform: scale(1.12); opacity:1 } }
 @keyframes sFloat{ from{ transform: translateY(0) } to{ transform: translateY(-14px) } }
 @media (prefers-reduced-motion: reduce){
-  .studio-fx .s-globe .cage, .studio-fx .s-orbits .o, .studio-fx .s-scan::after,
+  .studio-fx .s-globe .cage, .studio-fx .s-scan::after,
   .studio-fx .s-globe .s-core, .studio-fx .s-particles .pp{ animation:none !important; }
 }
 
@@ -5938,6 +5958,38 @@ window.addEventListener('DOMContentLoaded', ()=>{
   .bp-ovl *{ animation:none !important; }
   .main .canvas-area::before, .main .canvas-area::after{ animation:none !important; }
 }
+
+/* ===== 混色调色盘（真实颜料调色模拟） ===== */
+.mix-panel{ position:fixed; left:18px; bottom:18px; z-index:9000; width:288px; display:none; flex-direction:column;
+  background: rgba(16,14,28,.92); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+  border:1px solid rgba(0,229,255,.35); border-radius:16px; box-shadow:0 18px 60px rgba(0,0,0,.6), 0 0 24px rgba(0,229,255,.16);
+  color:#e8eef6; font-size:12px; overflow:hidden; }
+.mix-panel.show{ display:flex; }
+.mix-head{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.10);
+  background: linear-gradient(90deg, rgba(0,229,255,.12), transparent); cursor:default; }
+.mix-grip{ cursor:grab; color:rgba(0,229,255,.85); font-size:16px; }
+.mix-grip:active{ cursor:grabbing; }
+.mix-title{ font-weight:800; letter-spacing:.5px; flex:1; }
+.mix-close{ cursor:pointer; border:none; background:none; color:var(--text-light); font-size:15px; }
+.mix-body{ padding:12px; display:flex; flex-direction:column; gap:10px; }
+.mix-stage{ border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.12); background:#0b0f17; }
+.mix-stage canvas{ display:block; width:100%; height:auto; }
+.mix-cols{ display:flex; gap:10px; }
+.mix-slot{ flex:1; display:flex; align-items:center; gap:7px; padding:6px 8px; border-radius:10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); }
+.mix-slot-label{ font-weight:800; color:rgba(0,229,255,.9); min-width:14px; }
+.mix-swatch{ width:26px; height:26px; border-radius:7px; border:1px solid rgba(255,255,255,.25); box-shadow:0 0 10px rgba(0,0,0,.4); }
+.mix-slot-hex{ font-size:10px; color:var(--text-light); font-family:ui-monospace,monospace; }
+.mix-palette-label{ font-size:10px; color:var(--text-light); margin-bottom:4px; }
+.mix-chips{ display:flex; flex-wrap:wrap; gap:5px; min-height:26px; padding:6px; border-radius:9px; background:rgba(0,0,0,.25); border:1px dashed rgba(255,255,255,.14); }
+.mix-chip{ width:22px; height:22px; border-radius:6px; cursor:pointer; border:1px solid rgba(255,255,255,.2); transition:transform .12s; }
+.mix-chip:hover{ transform:scale(1.15); }
+.mix-tools{ display:flex; gap:8px; }
+.mix-tools .action-btn{ flex:1; justify-content:center; }
+.mix-conc label{ min-width:34px; }
+.mix-smear{ width:100%; justify-content:center; font-weight:800; }
+.mix-result-row{ display:flex; align-items:center; gap:8px; padding:8px; border-radius:10px; background:rgba(0,229,255,.08); border:1px solid rgba(0,229,255,.2); }
+.mix-result-label{ font-size:11px; color:rgba(0,229,255,.9); }
+.mix-result-hex{ font-size:10px; color:var(--text-light); font-family:ui-monospace,monospace; flex:1; }
 
 </style>
 
@@ -6047,6 +6099,183 @@ window.addEventListener('DOMContentLoaded', ()=>{
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
+})();
+</script>
+
+<!-- 混色调色盘（真实颜料调色模拟） -->
+<div class="mix-panel" id="mixPanel">
+  <div class="mix-head">
+    <span class="mix-grip" id="mixGrip" title="拖动移动">⠿</span>
+    <span class="mix-title">🎨 混色调色盘</span>
+    <button class="mix-close" onclick="toggleMixPanel(false)" title="关闭">✕</button>
+  </div>
+  <div class="mix-body">
+    <div class="mix-stage"><canvas id="mixCanvas" width="264" height="120"></canvas></div>
+    <div class="mix-cols">
+      <div class="mix-slot">
+        <span class="mix-slot-label" id="mixSlotAName">A</span>
+        <span class="mix-swatch" id="mixSlotA" style="background:#e8362f"></span>
+        <span class="mix-slot-hex" id="mixSlotAHex">#E8362F</span>
+      </div>
+      <div class="mix-slot">
+        <span class="mix-slot-label" id="mixSlotBName">B</span>
+        <span class="mix-swatch" id="mixSlotB" style="background:#ffd400"></span>
+        <span class="mix-slot-hex" id="mixSlotBHex">#FFD400</span>
+      </div>
+    </div>
+    <div>
+      <div class="mix-palette-label">调色盘 · 点色块填入 A/B（自动交替），或吸取</div>
+      <div class="mix-chips" id="mixChips"></div>
+    </div>
+    <div class="mix-tools">
+      <button class="action-btn secondary" onclick="mixEyedrop()">💧 吸管加色</button>
+      <button class="action-btn secondary" onclick="mixAddCurrent()">＋加当前色</button>
+    </div>
+    <div class="slider-row mix-conc">
+      <label>浓度</label>
+      <input type="range" id="mixConc" min="0" max="100" value="50" oninput="document.getElementById('mixConcVal').textContent=this.value+'%'">
+      <span class="val" id="mixConcVal">50%</span>
+    </div>
+    <button class="action-btn mix-smear" onclick="mixSmear()">🖌 涂抹混合</button>
+    <div class="mix-result-row">
+      <span class="mix-result-label">结果</span>
+      <span class="mix-swatch" id="mixResult" style="background:#f0741d"></span>
+      <span class="mix-result-hex" id="mixResultHex">#F0741D</span>
+      <button class="action-btn secondary" onclick="mixUseAsBrush()">用作画笔</button>
+      <button class="action-btn secondary" onclick="mixResultToPalette()">＋入盘</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 混色调色盘：真实颜料调色模型（RYB 减色混合） ===== */
+window.mixState = { A:'#e8362f', B:'#ffd400', target:'A', chips:[] };
+window._lastMixHex = null;
+
+function ryb2rgb(r,y,b){
+  r=Math.max(0,Math.min(1,r)); y=Math.max(0,Math.min(1,y)); b=Math.max(0,Math.min(1,b));
+  var c000=[0,0,0],c100=[1,0,0],c010=[1,1,0],c110=[1,0.647,0],
+      c001=[0,0,1],c101=[0.5,0,0.5],c011=[0,1,0],c111=[1,1,1];
+  function L(a,b,t){ return a+(b-a)*t; }
+  function L3(a,b,t){ return [L(a[0],b[0],t),L(a[1],b[1],t),L(a[2],b[2],t)]; }
+  var c00=L3(c000,c100,r), c10=L3(c010,c110,r), c01=L3(c001,c101,r), c11=L3(c011,c111,r);
+  return L3(L3(c00,c10,y), L3(c01,c11,y), b);
+}
+function rgb2ryb(R,G,B){
+  R/=255; G/=255; B/=255;
+  var best=[0,0,0], bestD=1e9;
+  for(var r=0;r<=20;r++) for(var y=0;y<=20;y++) for(var b=0;b<=20;b++){
+    var c=ryb2rgb(r/20,y/20,b/20);
+    var d=(c[0]-R)*(c[0]-R)+(c[1]-G)*(c[1]-G)+(c[2]-B)*(c[2]-B);
+    if(d<bestD){ bestD=d; best=[r/20,y/20,b/20]; }
+  }
+  return best;
+}
+// c1、c2 为十六进制；t 为 c2 的浓度占比（0..1）。结果按 RYB 减色混合，整体略加深以仿真颜料。
+function mixPaint(c1,c2,t){
+  var a=hexToRgb(c1), b=hexToRgb(c2);
+  var r1=rgb2ryb(a[0],a[1],a[2]), r2=rgb2ryb(b[0],b[1],b[2]);
+  var rr=r1[0]*(1-t)+r2[0]*t, yy=r1[1]*(1-t)+r2[1]*t, bb=r1[2]*(1-t)+r2[2]*t;
+  var c=ryb2rgb(rr,yy,bb);
+  var f=0.96; // 颜料混合后整体略加深（减淡/加深随浓度由 RYB 加权自然体现）
+  return rgbToHex(Math.round(c[0]*f*255), Math.round(c[1]*f*255), Math.round(c[2]*f*255));
+}
+
+window.toggleMixPanel=function(force){
+  var p=document.getElementById('mixPanel'); if(!p) return;
+  var show=(force===undefined)?(p.style.display!=='block'):force;
+  p.style.display=show?'block':'none';
+  if(show){ mixRenderChips(); mixUpdateTarget(); }
+};
+function mixSetSlot(slot,color){
+  window.mixState[slot]=color;
+  var sw=document.getElementById(slot==='A'?'mixSlotA':'mixSlotB');
+  var hx=document.getElementById(slot==='A'?'mixSlotAHex':'mixSlotBHex');
+  if(sw) sw.style.background=color;
+  if(hx) hx.textContent=String(color).toUpperCase();
+}
+function mixUpdateTarget(){
+  var a=document.getElementById('mixSlotAName'), b=document.getElementById('mixSlotBName');
+  if(a) a.textContent='A'+(window.mixState.target==='A'?' ◀':'');
+  if(b) b.textContent='B'+(window.mixState.target==='B'?' ◀':'');
+}
+function mixRenderChips(){
+  var box=document.getElementById('mixChips'); if(!box) return;
+  box.innerHTML='';
+  window.mixState.chips.forEach(function(c){
+    var el=document.createElement('span');
+    el.className='mix-chip'; el.style.background=c; el.title=c+'（点此填入 '+window.mixState.target+'）';
+    el.onclick=function(){
+      mixSetSlot(window.mixState.target,c);
+      window.mixState.target=(window.mixState.target==='A')?'B':'A';
+      mixUpdateTarget();
+    };
+    box.appendChild(el);
+  });
+}
+window.mixAddCurrent=function(){
+  var c=document.getElementById('colorPicker').value;
+  window.mixState.chips.push(c); mixRenderChips();
+};
+window.mixEyedrop=function(){ setTool('eyedropper'); window._mixPick=true; };
+window.mixSmear=function(){
+  var A=window.mixState.A, B=window.mixState.B;
+  var t=parseInt(document.getElementById('mixConc').value,10)/100;
+  var canvas=document.getElementById('mixCanvas'); if(!canvas) return;
+  var ctx=canvas.getContext('2d'), W=canvas.width, H=canvas.height;
+  var col=mixPaint(A,B,t); window._lastMixHex=col;
+  var start=performance.now(), dur=720;
+  function frame(now){
+    var p=Math.min(1,(now-start)/dur);
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle=A; ctx.fillRect(0,0,W/2,H);
+    ctx.fillStyle=B; ctx.fillRect(W/2,0,W/2,H);
+    var mx=p*W;
+    for(var i=0;i<7;i++){
+      var off=(i-3)*7;
+      var g=ctx.createRadialGradient(mx,H/2+off,2,mx,H/2+off,30);
+      g.addColorStop(0,col); g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(mx,H/2+off,30,0,6.2832); ctx.fill();
+    }
+    if(p<1){ requestAnimationFrame(frame); }
+    else{
+      ctx.fillStyle=col; ctx.fillRect(0,0,W,H);
+      ctx.globalAlpha=0.10;
+      for(var k=0;k<12;k++){
+        ctx.fillStyle=(k%2)?'rgba(255,255,255,1)':'rgba(0,0,0,1)';
+        ctx.fillRect(0,(k*H/12)+(Math.sin(k*1.7)*5),W,2);
+      }
+      ctx.globalAlpha=1;
+      var r=document.getElementById('mixResult'), h=document.getElementById('mixResultHex');
+      if(r) r.style.background=col; if(h) h.textContent=String(col).toUpperCase();
+    }
+  }
+  requestAnimationFrame(frame);
+};
+window.mixUseAsBrush=function(){
+  if(window._lastMixHex){ setBrushColor(window._lastMixHex); showToast('已用混合色 '+window._lastMixHex+' 作为画笔'); }
+  else showToast('请先点击「涂抹混合」');
+};
+window.mixResultToPalette=function(){
+  if(window._lastMixHex){ window.mixState.chips.push(window._lastMixHex); mixRenderChips(); showToast('已加入调色盘'); }
+  else showToast('请先点击「涂抹混合」');
+};
+
+/* 混色面板拖动 */
+(function(){
+  var panel=document.getElementById('mixPanel'), grip=document.getElementById('mixGrip');
+  if(!panel||!grip) return;
+  var drag=false,sx=0,sy=0,ox=0,oy=0;
+  grip.addEventListener('mousedown',function(e){
+    drag=true; var r=panel.getBoundingClientRect();
+    panel.style.left=r.left+'px'; panel.style.top=r.top+'px'; panel.style.bottom='auto'; panel.style.transform='none';
+    sx=e.clientX; sy=e.clientY; ox=r.left; oy=r.top; e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!drag) return;
+    panel.style.left=(ox+(e.clientX-sx))+'px'; panel.style.top=(oy+(e.clientY-sy))+'px';
+  });
+  document.addEventListener('mouseup',function(){ drag=false; });
 })();
 </script>
 </body>
