@@ -2771,16 +2771,35 @@ function paintScribble(oc, opts) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // —— 视线聚集点 ——
+  // —— 视线聚集点：三分法时随机Pick一个三分线交点作为"主焦点" ——
   const focals = [];
+  let primaryFocus;
   if (layout === 'thirds') {
-    focals.push({ x: W/3, y: H/3 }, { x: 2*W/3, y: H/3 }, { x: W/3, y: 2*H/3 }, { x: 2*W/3, y: 2*H/3 }, { x: W/2, y: H/2 });
+    const thirdsPoints = [
+      { x: W/3, y: H/3 },
+      { x: 2*W/3, y: H/3 },
+      { x: W/3, y: 2*H/3 },
+      { x: 2*W/3, y: 2*H/3 }
+    ];
+    primaryFocus = thirdsPoints[Math.floor(rng() * thirdsPoints.length)];
+    focals.push(primaryFocus);
+    thirdsPoints.forEach(function(p) { if (p !== primaryFocus) focals.push(p); });
     if (typeof drawThirdsGuides === 'function') drawThirdsGuides(ctx, W, H);
   } else {
     const n = 3 + Math.floor(rng() * 3);
     for (let k = 0; k < n; k++) focals.push({ x: W * (0.18 + rng() * 0.64), y: H * (0.18 + rng() * 0.64) });
+    primaryFocus = focals[0] || { x: W/2, y: H/2 };
   }
-  const main = focals[0] || { x: W/2, y: H/2 };
+  const main = primaryFocus;
+
+  // —— 密度衰减：主焦点附近保持现有密度，远处大幅稀疏 ——
+  const focusRadius = minSide * 0.26;
+  const densityAt = function(x, y) {
+    const d = Math.hypot(x - primaryFocus.x, y - primaryFocus.y);
+    if (d <= focusRadius) return 1.0;
+    const t = Math.min(1, (d - focusRadius) / (minSide * 0.55));
+    return 0.10 + 0.75 * Math.pow(1 - t, 2.0);
+  };
 
   // —— 风格预设 ——
   const presets = {
@@ -2810,7 +2829,7 @@ function paintScribble(oc, opts) {
 
   const TAU = 6.2832;
 
-  // ===== 2) 主线条层（注意力偏向焦点：越近越密越实）=====
+  // ===== 2) 主线条层（只在主焦点附近保持高密度，越远越稀疏）=====
   for (let k = 0; k < total; k++) {
     let x0, y0, ang;
     const cluster = focals.length && rng() < 0.62;
@@ -2822,6 +2841,11 @@ function paintScribble(oc, opts) {
     } else {
       x0 = rng() * W; y0 = rng() * H;
     }
+
+    // 按到主焦点的距离决定是否绘制此线
+    const density = densityAt(x0, y0);
+    if (rng() > density) continue;
+
     if (P.radial) {
       const f = cluster ? focals[Math.floor(rng() * focals.length)] : { x: W/2, y: H/2 };
       ang = Math.atan2(y0 - f.y, x0 - f.x) + (rng() * 2 - 1) * P.sp;
@@ -2853,6 +2877,10 @@ function paintScribble(oc, opts) {
       const sp = (0.05 + 0.10 * rng()) * minSide;
       x0 = f.x + (rng() * 2 - 1) * sp; y0 = f.y + (rng() * 2 - 1) * sp;
     } else { x0 = rng() * W; y0 = rng() * H; }
+
+    const density = densityAt(x0, y0);
+    if (rng() > density) continue;
+
     const r = minSide * (0.01 + rng() * 0.06);
     const kind = ['circle','semicircle','arc','curve'][Math.floor(rng() * 4)];
     ctx.strokeStyle = colorPick() + (0.30 + rng() * 0.5).toFixed(2) + ')';
@@ -3016,286 +3044,6 @@ function drawExploreMarks(ctx, f, rng, minSide) {
 }
 
 
-// —— 构造底稿：真实草图都有的几何骨架（淡蓝铅笔）——
-function drawConstruction(ctx, f, W, H, rng) {
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(70,110,170,0.34)';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath(); ctx.moveTo(f.x - W*0.42, f.y); ctx.lineTo(f.x + W*0.42, f.y); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(f.x, f.y - H*0.42); ctx.lineTo(f.x, f.y + H*0.42); ctx.stroke();
-  const bb = Math.min(W, H) * 0.26;
-  const rot = (rng()*2-1) * 0.18;
-  const cos = Math.cos(rot), sin = Math.sin(rot);
-  const pts = [[-bb,-bb],[bb,-bb],[bb,bb],[-bb,bb]].map(function(p){ return [f.x + p[0]*cos - p[1]*sin, f.y + p[0]*sin + p[1]*cos]; });
-  ctx.strokeStyle = 'rgba(70,110,170,0.28)';
-  ctx.beginPath();
-  ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-  ctx.closePath(); ctx.stroke();
-  const rays = 3 + Math.floor(rng()*3);
-  ctx.strokeStyle = 'rgba(70,110,170,0.20)';
-  for (let k = 0; k < rays; k++) {
-    const a = rng()*6.2832;
-    ctx.beginPath(); ctx.moveTo(f.x, f.y);
-    ctx.lineTo(f.x + Math.cos(a)*Math.min(W,H)*0.4, f.y + Math.sin(a)*Math.min(W,H)*0.4);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// —— 主体雏形：松快、像真人第一遍速写（复描两遍 + 排线）——
-function drawSubjectGerm(ctx, f, style, rng, minSide) {
-  const sz = minSide * 0.12;
-  ctx.save();
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  const pen = function(al){ return 'rgba(35,33,40,' + al + ')'; };
-  function sketchLine(x1,y1,x2,y2,wd,al){
-    ctx.strokeStyle = pen(al); ctx.lineWidth = wd;
-    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    ctx.strokeStyle = pen(al*0.5); ctx.lineWidth = wd*0.7;
-    ctx.beginPath(); ctx.moveTo(x1+(rng()*2-1)*1.5, y1+(rng()*2-1)*1.5); ctx.lineTo(x2+(rng()*2-1)*1.5, y2+(rng()*2-1)*1.5); ctx.stroke();
-  }
-  function sketchArc(cx,cy,r,a0,a1,wd,al){
-    ctx.strokeStyle = pen(al); ctx.lineWidth = wd;
-    ctx.beginPath(); ctx.arc(cx,cy,r,a0,a1); ctx.stroke();
-    ctx.strokeStyle = pen(al*0.5); ctx.lineWidth = wd*0.7;
-    ctx.beginPath(); ctx.arc(cx,cy,r+(rng()*2-1)*2,a0,a1); ctx.stroke();
-  }
-  if (style === 'sunflower' || style === 'figure') {
-    sketchArc(f.x, f.y, sz, 0, 6.2832, 2.6, 0.72);
-    sketchLine(f.x, f.y + sz, f.x + (rng()*2-1)*sz*0.3, f.y + sz*2.2, 2.2, 0.60);
-    if (style === 'sunflower') {
-      const petals = 10 + Math.floor(rng()*6);
-      for (let k = 0; k < petals; k++) { const a = k/petals*6.2832 + rng()*0.1;
-        sketchLine(f.x+Math.cos(a)*sz, f.y+Math.sin(a)*sz, f.x+Math.cos(a)*sz*1.7, f.y+Math.sin(a)*sz*1.7, 1.8, 0.52); }
-    } else {
-      sketchLine(f.x - sz*0.9, f.y + sz*1.1, f.x - sz*1.4, f.y + sz*2.0, 2.0, 0.50);
-      sketchLine(f.x + sz*0.9, f.y + sz*1.1, f.x + sz*1.4, f.y + sz*2.0, 2.0, 0.50);
-    }
-  } else if (style === 'layout') {
-    sketchLine(f.x - sz*2, f.y + sz, f.x + sz*2, f.y + sz, 2.4, 0.62);
-    sketchLine(f.x - sz*0.6, f.y + sz, f.x - sz*0.6, f.y - sz, 2.0, 0.56);
-    sketchLine(f.x + sz*0.6, f.y + sz, f.x + sz*0.6, f.y - sz, 2.0, 0.56);
-    sketchLine(f.x - sz*0.6, f.y - sz, f.x + sz*0.6, f.y - sz, 2.0, 0.56);
-  } else {
-    const n = 5 + Math.floor(rng()*3);
-    let px = f.x + (rng()*2-1)*sz, py = f.y + (rng()*2-1)*sz;
-    ctx.strokeStyle = pen(0.70); ctx.lineWidth = 2.6;
-    ctx.beginPath(); ctx.moveTo(px,py);
-    for (let k = 0; k < n; k++) { px += (rng()*2-1)*sz*1.1; py += (rng()*2-1)*sz*1.1; ctx.lineTo(px,py); }
-    ctx.stroke();
-    ctx.strokeStyle = pen(0.40); ctx.lineWidth = 1.8;
-    ctx.beginPath(); ctx.moveTo(px,py);
-    for (let k = 0; k < n; k++) { px += (rng()*2-1)*sz*1.1; py += (rng()*2-1)*sz*1.1; ctx.lineTo(px,py); }
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// —— 无限可能：同一主体的多个淡色"幽灵"变体 + 试探虚线箭头 ——
-function drawPossibilities(ctx, f, style, rng, minSide, n) {
-  const sz = minSide * 0.12;
-  ctx.save();
-  for (let k = 0; k < n; k++) {
-    const ang = (k / Math.max(1,n)) * 6.2832 + rng()*0.5;
-    const dist = minSide * (0.16 + rng()*0.12);
-    const ox = f.x + Math.cos(ang) * dist;
-    const oy = f.y + Math.sin(ang) * dist;
-    const sc = 0.78 + rng()*0.42;
-    const rot = (rng()*2-1) * 0.5;
-    const al = 0.26 + rng()*0.14;
-    ctx.save();
-    ctx.translate(ox, oy); ctx.rotate(rot); ctx.scale(sc, sc);
-    ctx.strokeStyle = 'rgba(120,140,175,' + al + ')';
-    ctx.lineWidth = 2.2;
-    ctx.beginPath(); ctx.arc(0, 0, sz, 0, 6.2832); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-sz*0.5, 0); ctx.lineTo(sz*0.5, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -sz*0.5); ctx.lineTo(0, sz*0.5); ctx.stroke();
-    ctx.restore();
-    // 试探虚线箭头：主体 -> 这个可能
-    ctx.save();
-    ctx.strokeStyle = 'rgba(120,140,175,0.46)';
-    ctx.lineWidth = 1.4; ctx.setLineDash([5,6]);
-    ctx.beginPath();
-    ctx.moveTo(f.x + Math.cos(ang)*sz*1.1, f.y + Math.sin(ang)*sz*1.1);
-    ctx.lineTo(ox - Math.cos(ang)*sz*sc, oy - Math.sin(ang)*sz*sc);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-  }
-  ctx.restore();
-}
-
-// —— 探索痕迹：问号 / 刻度 / 试探虚弧（草稿的"未定"气息）——
-function drawExploreMarks(ctx, f, rng, minSide) {
-  const sz = minSide * 0.12;
-  ctx.save();
-  const qn = 2 + Math.floor(rng()*3);
-  ctx.strokeStyle = 'rgba(80,80,100,0.48)';
-  ctx.lineWidth = 1.6;
-  for (let k = 0; k < qn; k++) {
-    const a = rng()*6.2832, d = sz*(1.6 + rng()*1.2);
-    const qx = f.x + Math.cos(a)*d, qy = f.y + Math.sin(a)*d;
-    ctx.beginPath(); ctx.arc(qx, qy, 6, 0.2, 4.6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(qx+5, qy+4); ctx.lineTo(qx+5, qy+10); ctx.stroke();
-  }
-  ctx.strokeStyle = 'rgba(120,140,175,0.32)';
-  ctx.setLineDash([4,7]);
-  for (let k = 0; k < 2; k++) {
-    const a = rng()*6.2832, r = sz*(2.0 + rng()*1.5);
-    ctx.beginPath(); ctx.arc(f.x, f.y, r, a, a + 1.2 + rng()*1.5); ctx.stroke();
-  }
-  ctx.setLineDash([]);
-  ctx.strokeStyle = 'rgba(80,80,100,0.40)';
-  for (let k = 0; k < 3; k++) {
-    const lx = f.x - sz*1.6 + k*sz*1.6, ly = f.y + sz*1.4;
-    ctx.beginPath(); ctx.moveTo(lx, ly-4); ctx.lineTo(lx, ly+4); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-
-// —— 构造底稿：真实草图都有的几何骨架（淡蓝铅笔）——
-function drawConstruction(ctx, f, W, H, rng) {
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(70,110,170,0.16)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(f.x - W*0.42, f.y); ctx.lineTo(f.x + W*0.42, f.y); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(f.x, f.y - H*0.42); ctx.lineTo(f.x, f.y + H*0.42); ctx.stroke();
-  const bb = Math.min(W, H) * 0.26;
-  const rot = (rng()*2-1) * 0.18;
-  const cos = Math.cos(rot), sin = Math.sin(rot);
-  const pts = [[-bb,-bb],[bb,-bb],[bb,bb],[-bb,bb]].map(function(p){ return [f.x + p[0]*cos - p[1]*sin, f.y + p[0]*sin + p[1]*cos]; });
-  ctx.strokeStyle = 'rgba(70,110,170,0.13)';
-  ctx.beginPath();
-  ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-  ctx.closePath(); ctx.stroke();
-  const rays = 3 + Math.floor(rng()*3);
-  ctx.strokeStyle = 'rgba(70,110,170,0.09)';
-  for (let k = 0; k < rays; k++) {
-    const a = rng()*6.2832;
-    ctx.beginPath(); ctx.moveTo(f.x, f.y);
-    ctx.lineTo(f.x + Math.cos(a)*Math.min(W,H)*0.4, f.y + Math.sin(a)*Math.min(W,H)*0.4);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// —— 主体雏形：松快、像真人第一遍速写（复描两遍 + 排线）——
-function drawSubjectGerm(ctx, f, style, rng, minSide) {
-  const sz = minSide * 0.12;
-  ctx.save();
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  const pen = function(al){ return 'rgba(35,33,40,' + al + ')'; };
-  function sketchLine(x1,y1,x2,y2,wd,al){
-    ctx.strokeStyle = pen(al); ctx.lineWidth = wd;
-    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    ctx.strokeStyle = pen(al*0.5); ctx.lineWidth = wd*0.7;
-    ctx.beginPath(); ctx.moveTo(x1+(rng()*2-1)*1.5, y1+(rng()*2-1)*1.5); ctx.lineTo(x2+(rng()*2-1)*1.5, y2+(rng()*2-1)*1.5); ctx.stroke();
-  }
-  function sketchArc(cx,cy,r,a0,a1,wd,al){
-    ctx.strokeStyle = pen(al); ctx.lineWidth = wd;
-    ctx.beginPath(); ctx.arc(cx,cy,r,a0,a1); ctx.stroke();
-    ctx.strokeStyle = pen(al*0.5); ctx.lineWidth = wd*0.7;
-    ctx.beginPath(); ctx.arc(cx,cy,r+(rng()*2-1)*2,a0,a1); ctx.stroke();
-  }
-  if (style === 'sunflower' || style === 'figure') {
-    sketchArc(f.x, f.y, sz, 0, 6.2832, 2.2, 0.5);
-    sketchLine(f.x, f.y + sz, f.x + (rng()*2-1)*sz*0.3, f.y + sz*2.2, 2, 0.42);
-    if (style === 'sunflower') {
-      const petals = 10 + Math.floor(rng()*6);
-      for (let k = 0; k < petals; k++) { const a = k/petals*6.2832 + rng()*0.1;
-        sketchLine(f.x+Math.cos(a)*sz, f.y+Math.sin(a)*sz, f.x+Math.cos(a)*sz*1.7, f.y+Math.sin(a)*sz*1.7, 1.4, 0.32); }
-    } else {
-      sketchLine(f.x - sz*0.9, f.y + sz*1.1, f.x - sz*1.4, f.y + sz*2.0, 1.6, 0.34);
-      sketchLine(f.x + sz*0.9, f.y + sz*1.1, f.x + sz*1.4, f.y + sz*2.0, 1.6, 0.34);
-    }
-  } else if (style === 'layout') {
-    sketchLine(f.x - sz*2, f.y + sz, f.x + sz*2, f.y + sz, 2, 0.40);
-    sketchLine(f.x - sz*0.6, f.y + sz, f.x - sz*0.6, f.y - sz, 1.6, 0.38);
-    sketchLine(f.x + sz*0.6, f.y + sz, f.x + sz*0.6, f.y - sz, 1.6, 0.38);
-    sketchLine(f.x - sz*0.6, f.y - sz, f.x + sz*0.6, f.y - sz, 1.6, 0.38);
-  } else {
-    const n = 5 + Math.floor(rng()*3);
-    let px = f.x + (rng()*2-1)*sz, py = f.y + (rng()*2-1)*sz;
-    ctx.strokeStyle = pen(0.45); ctx.lineWidth = 2.2;
-    ctx.beginPath(); ctx.moveTo(px,py);
-    for (let k = 0; k < n; k++) { px += (rng()*2-1)*sz*1.1; py += (rng()*2-1)*sz*1.1; ctx.lineTo(px,py); }
-    ctx.stroke();
-    ctx.strokeStyle = pen(0.22); ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.moveTo(px,py);
-    for (let k = 0; k < n; k++) { px += (rng()*2-1)*sz*1.1; py += (rng()*2-1)*sz*1.1; ctx.lineTo(px,py); }
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// —— 无限可能：同一主体的多个淡色"幽灵"变体 + 试探虚线箭头 ——
-function drawPossibilities(ctx, f, style, rng, minSide, n) {
-  const sz = minSide * 0.12;
-  ctx.save();
-  for (let k = 0; k < n; k++) {
-    const ang = (k / Math.max(1,n)) * 6.2832 + rng()*0.5;
-    const dist = minSide * (0.16 + rng()*0.12);
-    const ox = f.x + Math.cos(ang) * dist;
-    const oy = f.y + Math.sin(ang) * dist;
-    const sc = 0.78 + rng()*0.42;
-    const rot = (rng()*2-1) * 0.5;
-    const al = 0.09 + rng()*0.08;
-    ctx.save();
-    ctx.translate(ox, oy); ctx.rotate(rot); ctx.scale(sc, sc);
-    ctx.strokeStyle = 'rgba(120,140,175,' + al + ')';
-    ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(0, 0, sz, 0, 6.2832); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-sz*0.5, 0); ctx.lineTo(sz*0.5, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -sz*0.5); ctx.lineTo(0, sz*0.5); ctx.stroke();
-    ctx.restore();
-    // 试探虚线箭头：主体 -> 这个可能
-    ctx.save();
-    ctx.strokeStyle = 'rgba(120,140,175,0.24)';
-    ctx.lineWidth = 1; ctx.setLineDash([4,5]);
-    ctx.beginPath();
-    ctx.moveTo(f.x + Math.cos(ang)*sz*1.1, f.y + Math.sin(ang)*sz*1.1);
-    ctx.lineTo(ox - Math.cos(ang)*sz*sc, oy - Math.sin(ang)*sz*sc);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-  }
-  ctx.restore();
-}
-
-// —— 探索痕迹：问号 / 刻度 / 试探虚弧（草稿的"未定"气息）——
-function drawExploreMarks(ctx, f, rng, minSide) {
-  const sz = minSide * 0.12;
-  ctx.save();
-  const qn = 2 + Math.floor(rng()*3);
-  ctx.strokeStyle = 'rgba(90,90,110,0.30)';
-  ctx.lineWidth = 1.2;
-  for (let k = 0; k < qn; k++) {
-    const a = rng()*6.2832, d = sz*(1.6 + rng()*1.2);
-    const qx = f.x + Math.cos(a)*d, qy = f.y + Math.sin(a)*d;
-    ctx.beginPath(); ctx.arc(qx, qy, 5, 0.2, 4.6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(qx+4, qy+3); ctx.lineTo(qx+4, qy+8); ctx.stroke();
-  }
-  ctx.strokeStyle = 'rgba(120,140,175,0.18)';
-  ctx.setLineDash([3,6]);
-  for (let k = 0; k < 2; k++) {
-    const a = rng()*6.2832, r = sz*(2.0 + rng()*1.5);
-    ctx.beginPath(); ctx.arc(f.x, f.y, r, a, a + 1.2 + rng()*1.5); ctx.stroke();
-  }
-  ctx.setLineDash([]);
-  ctx.strokeStyle = 'rgba(90,90,110,0.22)';
-  for (let k = 0; k < 3; k++) {
-    const lx = f.x - sz*1.6 + k*sz*1.6, ly = f.y + sz*1.4;
-    ctx.beginPath(); ctx.moveTo(lx, ly-4); ctx.lineTo(lx, ly+4); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-
 // 随机生成草稿：先渲染到离屏画布，作为可缩放/移动的浮动对象出现，确认后再落进图层
 async function generateRandomDraft() {
   if (floatObj) commitFloat();   // 先提交上一次未确认的浮动草稿
@@ -3324,10 +3072,10 @@ async function generateRandomDraft() {
   const clEl = document.getElementById('chaosLevel');
   const density = ldEl ? parseInt(ldEl.value) : 2;            // 1..3，缺省中密度
   const chaos = clEl ? parseInt(clEl.value) / 100 : 0.4;
-  const counts = [6000, 8000, 10000];                       // 低密度6000 / 中8000 / 高10000
+  const counts = [2200, 3400, 4800];                        // 整体稀疏，焦点附近保持密度
   const seed = Date.now();
   const rng = mulberry32(seed);
-  const count = counts[density - 1] + Math.floor(rng() * 600); // 落在 6000~10000 区间
+  const count = counts[density - 1] + Math.floor(rng() * 300); // 落在 2200~5100 区间
 
   octx.save();
   octx.lineCap = 'round';
