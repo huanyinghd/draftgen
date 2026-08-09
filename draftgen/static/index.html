@@ -3281,8 +3281,9 @@ function updateDraftGenLabel() {
 
 // ============ 蒙娜丽莎草图：用随机乱线按亮度/边缘合成模糊蒙娜丽莎 ============
 
-// 蒙娜丽莎乱线草图：按亮度/边缘撒线，但笔触全部复用"乱线草稿"的线条词汇
-// （直线少量 + 弯曲曲线 + 麻花线 + 圆/椭圆 + 三角 + 不规则弯曲线），以得到完整、可辨识的速写
+// 蒙娜丽莎乱线草图：按亮度+边缘撒线，笔触全部复用"乱线草稿"的线条词汇
+// （直线少量 + 长轮廓曲线 + 弯曲曲线 + 麻花线 + 圆/椭圆 + 三角 + 不规则弯曲线），
+// 轮廓处画更多、更长、更深的切线，保证人像完整且可辨识
 function paintMonaStrokes(ctx, n, rng) {
   if (!window.MONA) return;
   const W = canvasW, H = canvasH;
@@ -3295,76 +3296,107 @@ function paintMonaStrokes(ctx, n, rng) {
   const ry = (H - rectH) / 2;
   ctx.save();
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  // 预计算梯度幅值，用于把更多笔触集中在轮廓/明暗交界
+  const G = new Float32Array(mw * mh);
+  let maxG = 0;
+  for (let y = 0; y < mh; y++) {
+    for (let x = 0; x < mw; x++) {
+      const x0 = Math.max(0, x - 1), x1 = Math.min(mw - 1, x + 1);
+      const y0 = Math.max(0, y - 1), y1 = Math.min(mh - 1, y + 1);
+      const gx = L[y * mw + x1] - L[y * mw + x0];
+      const gy = L[y1 * mw + x] - L[y0 * mw + x];
+      const g = Math.sqrt(gx * gx + gy * gy);
+      G[y * mw + x] = g;
+      if (g > maxG) maxG = g;
+    }
+  }
+  const maxGrad = maxG || 1;
+
   for (let k = 0; k < n; k++) {
-    // 拒绝采样：暗部与中间调都参与，亮部也保留少量 -> 头发/衣/脸/背景都画到，保证"完整"
-    let ix, iy, lum, w, tries = 0;
+    // 拒绝采样：暗部、中间调、强边缘都更容易被选中 -> 避免空洞且轮廓清晰
+    let ix, iy, lum, gm, w, tries = 0;
     do {
       ix = Math.floor(rng() * mw);
       iy = Math.floor(rng() * mh);
       lum = L[iy * mw + ix];
-      w = 0.05 + (1 - lum / 255) * 0.9;   // 亮部也有 5% 概率，避免空洞
+      gm = G[iy * mw + ix] / maxGrad;
+      w = 0.04 + (1 - lum / 255) * 0.45 + gm * 0.55;   // 亮部 4%，暗部+边缘更高
       tries++;
-    } while (rng() > w && tries < 16);
+    } while (rng() > w && tries < 18);
     const px = rx + (ix + 0.5) / mw * rectW;
     const py = ry + (iy + 0.5) / mh * rectH;
     // 抖动，避免像素网格感
-    const cx = px + (rng() * 2 - 1) * scale * 0.7;
-    const cy = py + (rng() * 2 - 1) * scale * 0.7;
+    const cx = px + (rng() * 2 - 1) * scale * 0.5;
+    const cy = py + (rng() * 2 - 1) * scale * 0.5;
     // 边缘梯度 -> 笔触切线方向
     const x0 = Math.max(0, ix - 1), x1 = Math.min(mw - 1, ix + 1);
     const y0 = Math.max(0, iy - 1), y1 = Math.min(mh - 1, iy + 1);
     const gx = L[iy * mw + x1] - L[iy * mw + x0];
     const gy = L[y1 * mw + ix] - L[y0 * mw + ix];
-    let ang = Math.atan2(gy, gx) + Math.PI / 2;
-    if (!isFinite(ang)) ang = rng() * 6.2832;
-    ang += (rng() * 2 - 1) * 0.5;
+    let tang = Math.atan2(gy, gx) + Math.PI / 2;
+    if (!isFinite(tang)) tang = rng() * 6.2832;
+    tang += (rng() * 2 - 1) * 0.35;
     const dark = 1 - lum / 255;
-    const baseLen = minSide * (0.012 + dark * 0.05);   // 越长越暗，笔触更具"速写"感
-    const a = 0.28 + dark * 0.6;
-    const shade = 14 + dark * 58;
+    const isEdge = gm > 0.35;
+    // 轮廓处：更长、更粗、更深；填充处：短、淡
+    const baseLen = minSide * (isEdge ? 0.018 : 0.010) + dark * minSide * (isEdge ? 0.055 : 0.032);
+    const a = (isEdge ? 0.32 : 0.22) + dark * (isEdge ? 0.55 : 0.42);
+    const shade = 10 + dark * 55;
     ctx.strokeStyle = 'rgba(' + (shade + 6) + ',' + shade + ',' + (shade + 10) + ',' + a.toFixed(2) + ')';
-    ctx.lineWidth = minSide * (0.0013 + dark * 0.0038);
+    ctx.lineWidth = minSide * (isEdge ? 0.0016 : (0.0011 + dark * 0.0015));
     ctx.beginPath();
     const tp = rng();
-    if (tp < 0.12) {
+    if (tp < 0.10) {
       // 直线（少量）
       ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + Math.cos(ang) * baseLen, cy + Math.sin(ang) * baseLen);
-    } else if (tp < 0.34) {
-      // 弯曲曲线（随机扰动路径）
-      const steps = 4 + Math.floor(rng() * 4);
-      let ax = cx, ay = cy, aa = ang, ll = baseLen;
+      ctx.lineTo(cx + Math.cos(tang) * baseLen, cy + Math.sin(tang) * baseLen);
+    } else if (tp < 0.42) {
+      // 长轮廓曲线：沿切线方向，小扰动，强调人像轮廓
+      const steps = 5 + Math.floor(rng() * 5);
+      let ax = cx, ay = cy, aa = tang, ll = baseLen * (0.9 + rng() * 0.4);
       ctx.moveTo(cx, cy);
       for (let s = 0; s < steps; s++) {
-        ax += Math.cos(aa) * ll / steps + (rng() * 2 - 1) * minSide * 0.02;
-        ay += Math.sin(aa) * ll / steps + (rng() * 2 - 1) * minSide * 0.02;
-        aa += (rng() * 2 - 1) * 0.6;
+        aa += (rng() * 2 - 1) * 0.25;
+        ax += Math.cos(aa) * ll / steps;
+        ay += Math.sin(aa) * ll / steps;
         ctx.lineTo(ax, ay);
       }
-    } else if (tp < 0.54) {
+    } else if (tp < 0.58) {
+      // 弯曲曲线（随机扰动路径）
+      const steps = 4 + Math.floor(rng() * 4);
+      let ax = cx, ay = cy, aa = tang, ll = baseLen;
+      ctx.moveTo(cx, cy);
+      for (let s = 0; s < steps; s++) {
+        ax += Math.cos(aa) * ll / steps + (rng() * 2 - 1) * minSide * 0.015;
+        ay += Math.sin(aa) * ll / steps + (rng() * 2 - 1) * minSide * 0.015;
+        aa += (rng() * 2 - 1) * 0.35;
+        ctx.lineTo(ax, ay);
+      }
+    } else if (tp < 0.72) {
       // 麻花线（沿轴来回扭转）
-      const steps = 12 + Math.floor(rng() * 6);
-      const amp = minSide * (0.006 + rng() * 0.016);
+      const steps = 10 + Math.floor(rng() * 5);
+      const amp = minSide * (0.005 + rng() * 0.014);
       ctx.moveTo(cx, cy);
       for (let s = 1; s <= steps; s++) {
         const t = s / steps;
-        const perp = ang + 1.5708;
+        const perp = tang + 1.5708;
         const off = Math.sin(t * Math.PI * 4 + rng() * 0.4) * amp;
-        const bx = cx + Math.cos(ang) * baseLen * t;
-        const by = cy + Math.sin(ang) * baseLen * t;
+        const bx = cx + Math.cos(tang) * baseLen * t;
+        const by = cy + Math.sin(tang) * baseLen * t;
         ctx.lineTo(bx + Math.cos(perp) * off, by + Math.sin(perp) * off);
       }
-    } else if (tp < 0.70) {
-      // 圆形 / 椭圆（部分环）
-      const r = minSide * (0.008 + rng() * 0.04);
+    } else if (tp < 0.84) {
+      // 圆形 / 椭圆（部分环），主轴沿切线
+      const r = minSide * (0.007 + rng() * 0.03);
       const a0 = rng() * 6.2832;
       const sweep = 6.2832 * (0.4 + rng() * 0.6);
-      ctx.ellipse(cx, cy, r * (0.7 + rng() * 0.6), r, rng() * 6.2832, a0, a0 + sweep);
-    } else if (tp < 0.84) {
-      // 三角形
-      const r = minSide * (0.015 + rng() * 0.05);
-      const a0 = rng() * 6.2832;
-      const rot = (rng() * 2 - 1) * 0.6;
+      ctx.ellipse(cx, cy, r * (0.7 + rng() * 0.6), r * 0.55, tang, a0, a0 + sweep);
+    } else if (tp < 0.93) {
+      // 三角形，一边沿切线
+      const r = minSide * (0.012 + rng() * 0.04);
+      const a0 = tang + (rng() * 2 - 1) * 0.4;
+      const rot = (rng() * 2 - 1) * 0.4;
       for (let i = 0; i <= 3; i++) {
         const aa = a0 + rot + i / 3 * 6.2832;
         const qx = cx + Math.cos(aa) * r, qy = cy + Math.sin(aa) * r;
@@ -3372,11 +3404,11 @@ function paintMonaStrokes(ctx, n, rng) {
       }
     } else {
       // 不规则弯曲线（角度大幅游走）
-      const steps = 6 + Math.floor(rng() * 8);
-      let ax = cx, ay = cy, aa = ang, ll = baseLen;
+      const steps = 5 + Math.floor(rng() * 7);
+      let ax = cx, ay = cy, aa = tang, ll = baseLen;
       ctx.moveTo(cx, cy);
       for (let s = 0; s < steps; s++) {
-        aa += (rng() * 2 - 1) * 1.3;
+        aa += (rng() * 2 - 1) * 0.7;
         ax += Math.cos(aa) * ll / steps;
         ay += Math.sin(aa) * ll / steps;
         ctx.lineTo(ax, ay);
