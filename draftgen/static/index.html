@@ -1160,6 +1160,7 @@ window.PAINTINGS={
       <canvas id="guideCanvas" class="guide-canvas"></canvas>
       <canvas id="drawCanvas" class="draw-canvas"></canvas>
       <canvas id="objCanvas" class="obj-canvas"></canvas>
+      <canvas id="archCanvas" class="arch-canvas"></canvas>
       <div class="refresh-fx" id="refreshFx" aria-hidden="true"><div class="rf-sweep"></div><div class="rf-spin">⟳</div><div class="rf-text">刷 新 中</div></div>
     </div>
     <div class="gen-toolbar" id="genToolbar" style="display:none">
@@ -1244,6 +1245,7 @@ window.PAINTINGS={
     </div>
     <div class="panel-tabs">
       <div class="tab active" data-tab="compose" onclick="switchTab('compose')">构图 · 随机生成</div>
+      <div class="tab" data-tab="arch" onclick="switchTab('arch')">建筑辅助</div>
       <div class="tab" data-tab="color" onclick="switchTab('color')">色彩</div>
       <div class="tab" data-tab="ai" onclick="switchTab('ai')">AI</div>
       <div class="tab" data-tab="trainer" onclick="switchTab('trainer')">训练</div>
@@ -1271,6 +1273,22 @@ window.PAINTINGS={
                 <div class="holo-pulse hp3"></div>
                 <div class="holo-orbit o1"><span class="holo-sat s1"></span><span class="holo-sat s2"></span></div>
                 <div class="holo-orbit o2"><span class="holo-sat s3"></span><span class="holo-sat s4"></span></div>
+                <!-- 线性粒子环绕：三层切向拖尾 -->
+                <div class="holo-lps r1" aria-hidden="true">
+                  <i class="holo-lp" style="--a:0deg;--r:56px"></i><i class="holo-lp" style="--a:45deg;--r:56px"></i>
+                  <i class="holo-lp" style="--a:90deg;--r:56px"></i><i class="holo-lp" style="--a:135deg;--r:56px"></i>
+                  <i class="holo-lp" style="--a:180deg;--r:56px"></i><i class="holo-lp" style="--a:225deg;--r:56px"></i>
+                  <i class="holo-lp" style="--a:270deg;--r:56px"></i><i class="holo-lp" style="--a:315deg;--r:56px"></i>
+                </div>
+                <div class="holo-lps r2" aria-hidden="true">
+                  <i class="holo-lp" style="--a:20deg;--r:74px"></i><i class="holo-lp" style="--a:80deg;--r:74px"></i>
+                  <i class="holo-lp" style="--a:140deg;--r:74px"></i><i class="holo-lp" style="--a:200deg;--r:74px"></i>
+                  <i class="holo-lp" style="--a:260deg;--r:74px"></i><i class="holo-lp" style="--a:320deg;--r:74px"></i>
+                </div>
+                <div class="holo-lps r3" aria-hidden="true">
+                  <i class="holo-lp" style="--a:10deg;--r:92px"></i><i class="holo-lp" style="--a:100deg;--r:92px"></i>
+                  <i class="holo-lp" style="--a:190deg;--r:92px"></i><i class="holo-lp" style="--a:280deg;--r:92px"></i>
+                </div>
                 <div class="holo-reticle"></div>
                 <div class="holo-arc"></div>
               </div>
@@ -1278,7 +1296,7 @@ window.PAINTINGS={
               <div class="holo-scan"></div>
               <div class="holo-flicker"></div>
               <div class="holo-cta" aria-hidden="true">
-                <span class="holo-cta-text" data-text="随机生成草图">随机生成草图</span>
+                <span class="holo-cta-text" data-text="点击随机生成草图">点击随机生成草图</span>
               </div>
               <div class="holo-hud">
                 <span class="hh-l">COMPOSITION&nbsp;ENGINE</span>
@@ -1290,12 +1308,6 @@ window.PAINTINGS={
             <div class="holo-body">
               <div class="fx-kicker"><i class="dot"></i>DRAFTGEN ／ COMPOSITION ENGINE<i class="dot"></i></div>
               <div class="fx-title" data-text="随机构图生成器">随机构图生成器</div>
-              <label class="fx-label">风格 STYLE</label>
-              <div class="style-circuit" id="styleCircuit">
-                <div class="sc-toplead"></div>
-                <div class="sc-bus"></div>
-                <div class="sc-balls" id="scBalls"></div>
-              </div>
             </div>
           </div>
         </div>
@@ -1303,60 +1315,206 @@ window.PAINTINGS={
         <div class="fx-sep"><span></span><b>构图参考线 GUIDES</b><span></span></div>
 
         <div class="panel-section">
-          <div class="panel-section">
           <h3>🎲 乱线草稿</h3>
           <div class="slider-row"><label>每步线条</label><input type="range" id="lineDensity" min="500" max="3000" step="100" value="1000" oninput="var v=document.getElementById('densityVal');if(v)v.textContent=this.value;if(window.updateDraftGenLabel)updateDraftGenLabel()"><span class="val" id="densityVal">1000</span></div>
           <div class="slider-row"><label>混沌度</label><input type="range" id="chaosLevel" min="0" max="100" value="42" oninput="var v=document.getElementById('chaosVal');if(v)v.textContent=this.value+'%'"><span class="val" id="chaosVal">42%</span></div>
           <div class="slider-row"><label>可能性</label><input type="range" id="possibilityLevel" min="0" max="4" value="2" oninput="var v=document.getElementById('possibVal');if(v)v.textContent=this.value"><span class="val" id="possibVal">2</span></div>
           <button class="action-btn" id="genDraftBtn" onclick="generateRandomDraft()">生成乱线草稿 · 1000</button>
-          <div class="guide-row" style="margin-top:8px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-light);flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="guideLines"> 透视辅助线</label>
-            <select id="guideMode" style="font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:#fff;color:#333">
-              <option value="one">一点透视</option>
-              <option value="two">两点透视</option>
-            </select>
-            <span style="opacity:.7">建筑 / 景深参考</span>
-          </div>
           <button class="action-btn secondary" id="resetBlankBtn" onclick="resetBlankWithRefresh()" style="margin-top:10px;width:100%">🧹 重置空白页面（带刷新特效）</button>
           <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
-            <div style="font-size:12px;font-weight:600;margin-bottom:4px">🏛️ 世界名画合集</div>
+            <div style="font-size:12px;font-weight:600;margin-bottom:4px">🏛️ 世界名画草图合集</div>
             <div id="paintingGrid" class="paint-grid"></div>
           </div>
         </div>
-        <h3>基础构图参考线</h3>
-          <div class="guide-grid">
-            <button class="guide-btn" data-guide="thirds" onclick="toggleGuide('thirds')">三分法</button>
-            <button class="guide-btn" data-guide="perspective" onclick="toggleGuide('perspective')">透视网格</button>
-            <button class="guide-btn" data-guide="golden" onclick="toggleGuide('golden')">黄金螺旋</button>
-            <button class="guide-btn" data-guide="symmetry" onclick="toggleGuide('symmetry')">对称线</button>
-            <button class="guide-btn" data-guide="random" onclick="toggleGuide('random')">随机参考点</button>
-            <button class="guide-btn" onclick="clearGuide()">清除参考线</button>
+        <!-- 折叠面板：基础构图参考线（含透视 / 进阶构图线） -->
+        <div class="panel-section fold-sec" id="guideFold">
+          <button type="button" class="fold-head" id="guideFoldHead" onclick="toggleGuideFold()" aria-expanded="false" aria-controls="guideFoldBody">
+            <span class="fh-ico">📐</span>
+            <span class="fh-txt">基础构图参考线</span>
+            <span class="fh-tag" id="guideFoldTag">点击展开</span>
+            <span class="fh-arrow">▾</span>
+          </button>
+          <div class="fold-body" id="guideFoldBody">
+            <label class="ttl">基础</label>
+            <div class="guide-grid">
+              <button class="guide-btn" data-guide="thirds" onclick="toggleGuide('thirds')">三分法</button>
+              <button class="guide-btn" data-guide="perspective" onclick="toggleGuide('perspective')">透视网格</button>
+              <button class="guide-btn" data-guide="golden" onclick="toggleGuide('golden')">黄金螺旋</button>
+              <button class="guide-btn" data-guide="symmetry" onclick="toggleGuide('symmetry')">对称线</button>
+              <button class="guide-btn" data-guide="random" onclick="toggleGuide('random')">随机参考点</button>
+            </div>
+
+            <label class="ttl">透视</label>
+            <div class="guide-grid">
+              <button class="guide-btn" data-guide="persp-one" onclick="toggleGuide('persp-one')">一点透视</button>
+              <button class="guide-btn" data-guide="persp-two" onclick="toggleGuide('persp-two')">两点透视</button>
+            </div>
+            <div class="guide-row">
+              <label class="gr-chk"><input type="checkbox" id="guideLines"> 草稿附带透视线</label>
+              <select id="guideMode">
+                <option value="one">一点透视</option>
+                <option value="two">两点透视</option>
+              </select>
+            </div>
+
+            <label class="ttl">焦点 / 视线</label>
+            <div class="guide-grid">
+              <button class="guide-btn" data-guide="thirds-focus" onclick="toggleGuide('thirds-focus')">井字格四点视线</button>
+            </div>
+
+            <label class="ttl">对称构图主视线</label>
+            <div class="guide-grid">
+              <button class="guide-btn" data-guide="symmetry-v" onclick="toggleGuide('symmetry-v')">竖轴</button>
+              <button class="guide-btn" data-guide="symmetry-h" onclick="toggleGuide('symmetry-h')">横轴</button>
+              <button class="guide-btn" data-guide="symmetry-d1" onclick="toggleGuide('symmetry-d1')">斜轴 ↘</button>
+              <button class="guide-btn" data-guide="symmetry-d2" onclick="toggleGuide('symmetry-d2')">斜轴 ↙</button>
+            </div>
+
+            <label class="ttl">分割 / 稳定</label>
+            <div class="guide-grid">
+              <button class="guide-btn" data-guide="golden-pts" onclick="toggleGuide('golden-pts')">黄金分割点</button>
+              <button class="guide-btn" data-guide="triangle" onclick="toggleGuide('triangle')">三角形稳定构图</button>
+            </div>
+
+            <button class="action-btn secondary" style="margin-top:10px;width:100%" onclick="clearGuide()">清除参考线</button>
+            <div class="guide-hint" id="guideHint">选择一种构图参考线，辅助画面布局。</div>
           </div>
-          <div class="guide-hint" id="guideHint">选择一种构图参考线，辅助画面布局。</div>
         </div>
+      </div>
+
+      <!-- Architecture Tab -->
+      <div class="tab-content" id="tab-arch" style="display:none">
+        <div class="arch-head">
+          <div class="ah-title">建筑辅助制图<b>ARCH · DRAFTING</b></div>
+          <div class="ah-sub">按建筑制图法：视平线 → 消失点 → 网格 → 立面 → 出图</div>
+          <label class="arch-switch"><input type="checkbox" id="archEnable" onchange="archToggleEnable(this.checked)"><span>启用辅助层（画布可交互）</span></label>
+        </div>
+
         <div class="panel-section">
-          <h3>进阶构图线</h3>
-          <label class="ttl" style="display:block;color:var(--text-light);font-size:12px;margin-bottom:6px;">焦点 / 视线</label>
-          <div class="guide-grid">
-            <button class="guide-btn" data-guide="thirds-focus" onclick="toggleGuide('thirds-focus')">井字格四点视线</button>
+          <h3>绘图流程 WORKFLOW</h3>
+          <div class="arch-steps" id="archSteps">
+            <button type="button" class="as-step" data-step="1" onclick="archGoStep(1)"><i>1</i><span>地平线</span></button>
+            <button type="button" class="as-step" data-step="2" onclick="archGoStep(2)"><i>2</i><span>消失点</span></button>
+            <button type="button" class="as-step" data-step="3" onclick="archGoStep(3)"><i>3</i><span>网格</span></button>
+            <button type="button" class="as-step" data-step="4" onclick="archGoStep(4)"><i>4</i><span>立面</span></button>
+            <button type="button" class="as-step" data-step="5" onclick="archGoStep(5)"><i>5</i><span>保存</span></button>
           </div>
-          <label class="ttl" style="display:block;color:var(--text-light);font-size:12px;margin:10px 0 6px;">对称构图主视线</label>
-          <div class="guide-grid">
-            <button class="guide-btn" data-guide="symmetry-v" onclick="toggleGuide('symmetry-v')">竖轴</button>
-            <button class="guide-btn" data-guide="symmetry-h" onclick="toggleGuide('symmetry-h')">横轴</button>
-            <button class="guide-btn" data-guide="symmetry-d1" onclick="toggleGuide('symmetry-d1')">斜轴 ↘</button>
-            <button class="guide-btn" data-guide="symmetry-d2" onclick="toggleGuide('symmetry-d2')">斜轴 ↙</button>
-          </div>
-          <label class="ttl" style="display:block;color:var(--text-light);font-size:12px;margin:10px 0 6px;">分割 / 稳定</label>
-          <div class="guide-grid">
-            <button class="guide-btn" data-guide="golden-pts" onclick="toggleGuide('golden-pts')">黄金分割点</button>
-            <button class="guide-btn" data-guide="triangle" onclick="toggleGuide('triangle')">三角形稳定构图</button>
+          <div class="arch-tip" id="archTip">先勾选「启用辅助层」，再从第 1 步开始。</div>
+          <div class="arch-btn-row">
+            <button class="action-btn secondary" onclick="archPrevStep()">‹ 上一步</button>
+            <button class="action-btn" onclick="archNextStep()">下一步 ›</button>
           </div>
         </div>
+
         <div class="panel-section">
-          <h3>构图分析</h3>
-          <button class="action-btn secondary" onclick="analyzeComposition()">分析画面平衡度</button>
-          <div class="analysis-result" id="analysisResult" style="display:none"></div>
+          <h3>图纸设置 SHEET</h3>
+          <div class="arch-grid2">
+            <label>出图比例
+              <select id="archScale" onchange="archRender()">
+                <option value="50">1 : 50</option>
+                <option value="100" selected>1 : 100</option>
+                <option value="200">1 : 200</option>
+                <option value="500">1 : 500</option>
+              </select>
+            </label>
+            <label>层高 (m)
+              <input type="number" id="archFloorH" value="3.6" step="0.3" min="2.4" max="12" onchange="archRender()">
+            </label>
+            <label>视高 (m)
+              <input type="number" id="archEyeH" value="1.60" step="0.1" min="0.5" max="60" onchange="archRender()">
+            </label>
+            <label>线宽 b (mm)
+              <select id="archLW" onchange="archRender()">
+                <option value="0.35">0.35</option>
+                <option value="0.5" selected>0.50</option>
+                <option value="0.7">0.70</option>
+                <option value="1.0">1.00</option>
+              </select>
+            </label>
+          </div>
+          <div class="arch-hint">线宽按制图规范三级：粗 b（外轮廓）· 中 0.5b（层线/构件）· 细 0.25b（辅助/网格）。</div>
+        </div>
+
+        <div class="panel-section">
+          <h3>视角 / 投影 VIEW</h3>
+          <div class="arch-chips" id="archViewChips"></div>
+          <div class="slider-row"><label>方位角</label><input type="range" id="archYaw" min="-180" max="180" value="35" oninput="archOnAngle()"><span class="val" id="archYawVal">35°</span></div>
+          <div class="slider-row"><label>俯仰角</label><input type="range" id="archPitch" min="-85" max="85" value="0" oninput="archOnAngle()"><span class="val" id="archPitchVal">0°</span></div>
+          <div class="arch-hint">两点透视需俯仰角 = 0°（竖线保持平行）；三点透视靠俯仰角制造天点/地点。</div>
+        </div>
+
+        <div class="panel-section">
+          <h3>立体网格体块 MASS · XYZ</h3>
+          <div class="arch-seg" id="archLayerSeg">
+            <button type="button" data-l="4" onclick="archSetLayers(4)">4 层</button>
+            <button type="button" data-l="6" onclick="archSetLayers(6)">6 层</button>
+            <button type="button" data-l="8" onclick="archSetLayers(8)">8 层</button>
+          </div>
+          <div class="arch-grid2">
+            <label>开间 X<input type="number" id="archBaysX" value="4" min="1" max="12" onchange="archRender()"></label>
+            <label>进深 Z<input type="number" id="archBaysZ" value="4" min="1" max="12" onchange="archRender()"></label>
+          </div>
+          <button class="action-btn" onclick="archPlaceCube()">⬛ 在画布放置立体网格</button>
+          <div class="arch-btn-row">
+            <button class="action-btn secondary" onclick="archToggleCube()">显 / 隐</button>
+            <button class="action-btn secondary" onclick="archRemoveCube()">移除体块</button>
+          </div>
+          <div class="arch-hint">拖动移动 · 拖四角缩放 · 滚轮缩放 · Shift+拖动旋转方位角。</div>
+        </div>
+
+        <div class="panel-section">
+          <h3>立面图 ELEVATION</h3>
+          <div class="arch-grid2">
+            <label>类型
+              <select id="archElevType" onchange="archRender()">
+                <option value="factory">单层厂房（门式刚架）</option>
+                <option value="office">多层办公（框架）</option>
+                <option value="house">坡屋顶住宅</option>
+                <option value="tower">高层塔楼</option>
+                <option value="warehouse">仓库（连续天窗）</option>
+              </select>
+            </label>
+            <label>朝向
+              <select id="archElevFace" onchange="archRender()">
+                <option value="front">正立面（南）</option>
+                <option value="back">背立面（北）</option>
+                <option value="left">左侧立面（东）</option>
+                <option value="right">右侧立面（西）</option>
+              </select>
+            </label>
+          </div>
+          <button class="action-btn" onclick="archPlaceElev()">📐 放置立面图</button>
+          <div class="arch-btn-row">
+            <button class="action-btn secondary" onclick="archToggleElev()">显 / 隐</button>
+            <button class="action-btn secondary" onclick="archRemoveElev()">移除立面</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>专业叠加 PRO OVERLAYS</h3>
+          <div class="arch-chk-grid" id="archOverlays">
+            <label><input type="checkbox" id="ovCone" onchange="archRender()">60° 视锥</label>
+            <label><input type="checkbox" id="ovMP" onchange="archRender()">量点 MP</label>
+            <label><input type="checkbox" id="ovHeight" onchange="archRender()">真高线</label>
+            <label><input type="checkbox" id="ovAxis" checked onchange="archRender()">轴网编号</label>
+            <label><input type="checkbox" id="ovLevel" checked onchange="archRender()">标高符号</label>
+            <label><input type="checkbox" id="ovFigure" onchange="archRender()">人体比例尺</label>
+            <label><input type="checkbox" id="ovNorth" onchange="archRender()">指北针</label>
+            <label><input type="checkbox" id="ovTitle" onchange="archRender()">图签栏</label>
+            <label><input type="checkbox" id="ovDim" onchange="archRender()">尺寸标注</label>
+            <label><input type="checkbox" id="ovShadow" onchange="archRender()">45° 阴影</label>
+            <label><input type="checkbox" id="ovSnap" checked>网格吸附</label>
+            <label><input type="checkbox" id="ovOrtho" checked>正交锁定</label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>保存 OUTPUT</h3>
+          <button class="action-btn" onclick="archBakeToLayer()">💾 烘焙到当前图层</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="archBakeToNewLayer()">🗂 存为新参考图层</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="archExportPNG()">⬇ 导出辅助线 PNG</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="archClearAll()">🧹 清空辅助层</button>
+          <div class="arch-hint">烘焙后辅助线成为可绘制的图层内容，可继续在其上落笔描线。</div>
         </div>
       </div>
 
@@ -2070,7 +2228,16 @@ const guideHints = {
   perspective: '透视网格：一点/两点透视参考线，帮助建立空间深度感。',
   golden: '黄金螺旋：按黄金比例1:1.618生成的螺旋线，主体放在螺旋焦点处最和谐。',
   symmetry: '对称线：中轴和对称辅助线，适合对称构图、镜像构图。',
-  random: '随机参考点：随机分布的重点标记，打破常规构图思维。'
+  random: '随机参考点：随机分布的重点标记，打破常规构图思维。',
+  'persp-one': '一点透视（平行透视）：视平线 HL 上单一消失点 VP，所有进深线汇聚于此，横线水平、竖线垂直。适合走廊、街道、正面建筑。',
+  'persp-two': '两点透视（成角透视）：视平线上左右两个消失点 VP1/VP2，两组水平边分别汇聚，竖线保持垂直。适合建筑转角、街景。',
+  'thirds-focus': '三分焦点：三分线交点为四个视觉焦点，四角引出视线牵引线，主体压在焦点上。',
+  'symmetry-v': '垂直主视线：画面中轴，适合正面对称构图。',
+  'symmetry-h': '水平主视线：上下等分，适合倒影、地平线构图。',
+  'symmetry-d1': '对角主视线（左上→右下）：建立斜向动势。',
+  'symmetry-d2': '对角主视线（右上→左下）：建立反向斜势。',
+  'golden-pts': '黄金分割点：0.382 / 0.618 交点，比三分法更精致的主体落位。',
+  triangle: '三角稳定：三角形骨架，构图最稳定的经典结构。'
 };
 
 function toggleGuide(type) {
@@ -2090,7 +2257,7 @@ function toggleGuide(type) {
 
 function drawGuide(type) {
   guideCtx.clearRect(0, 0, canvasW, canvasH);
-  guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.6)';
+  guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
   guideCtx.lineWidth = 2;
   guideCtx.setLineDash([10, 6]);
   
@@ -2107,7 +2274,7 @@ function drawGuide(type) {
     }
     // Draw intersection dots
     guideCtx.setLineDash([]);
-    guideCtx.fillStyle = 'rgba(196, 168, 130, 0.8)';
+    guideCtx.fillStyle = 'rgba(13, 110, 190, 0.85)';
     for (let i = 1; i <= 2; i++) {
       for (let j = 1; j <= 2; j++) {
         guideCtx.beginPath();
@@ -2138,12 +2305,100 @@ function drawGuide(type) {
     }
     // Vanishing points
     guideCtx.setLineDash([]);
-    guideCtx.fillStyle = 'rgba(196, 168, 130, 0.8)';
+    guideCtx.fillStyle = 'rgba(13, 110, 190, 0.85)';
     [vpx1, vpx2].forEach(vx => {
       guideCtx.beginPath();
       guideCtx.arc(vx, vpy, 10, 0, Math.PI * 2);
       guideCtx.fill();
     });
+  } else if (type === 'persp-one') {
+    // 一点透视（平行透视）：HL + 单消失点 VP + 放射进深线 + 地面网格
+    const hlY = canvasH * 0.42, vpx = canvasW * 0.5;
+    // 视平线 HL
+    guideCtx.setLineDash([12, 7]);
+    guideCtx.lineWidth = 2;
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
+    guideCtx.beginPath(); guideCtx.moveTo(0, hlY); guideCtx.lineTo(canvasW, hlY); guideCtx.stroke();
+    // 地面线 GL
+    const glY = canvasH * 0.92;
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.42)';
+    guideCtx.beginPath(); guideCtx.moveTo(0, glY); guideCtx.lineTo(canvasW, glY); guideCtx.stroke();
+    // 放射进深线（射向画面四边）
+    guideCtx.setLineDash([7, 6]);
+    guideCtx.lineWidth = 1.2;
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.42)';
+    guideCtx.beginPath();
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12;
+      guideCtx.moveTo(vpx, hlY); guideCtx.lineTo(canvasW * t, 0);
+      guideCtx.moveTo(vpx, hlY); guideCtx.lineTo(canvasW * t, canvasH);
+    }
+    guideCtx.moveTo(vpx, hlY); guideCtx.lineTo(0, hlY * 0.5);
+    guideCtx.moveTo(vpx, hlY); guideCtx.lineTo(canvasW, hlY * 0.5);
+    guideCtx.moveTo(vpx, hlY); guideCtx.lineTo(0, hlY + (canvasH - hlY) * 0.5);
+    guideCtx.moveTo(vpx, hlY); guideCtx.lineTo(canvasW, hlY + (canvasH - hlY) * 0.5);
+    guideCtx.stroke();
+    // 地面横向进深分格（近大远小）
+    guideCtx.setLineDash([4, 5]);
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.28)';
+    guideCtx.beginPath();
+    for (let k = 1; k <= 7; k++) {
+      const y = hlY + (glY - hlY) * Math.pow(k / 8, 1.9);
+      guideCtx.moveTo(0, y); guideCtx.lineTo(canvasW, y);
+    }
+    guideCtx.stroke();
+    // 消失点
+    guideCtx.setLineDash([]);
+    guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
+    guideCtx.beginPath(); guideCtx.arc(vpx, hlY, 9, 0, Math.PI * 2); guideCtx.fill();
+    guideCtx.fillStyle = 'rgba(255,255,255,0.92)';
+    guideCtx.beginPath(); guideCtx.arc(vpx, hlY, 3.4, 0, Math.PI * 2); guideCtx.fill();
+    guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
+    guideCtx.font = '600 13px ui-sans-serif, system-ui, sans-serif';
+    guideCtx.fillText('VP', vpx + 13, hlY - 10);
+    guideCtx.fillStyle = 'rgba(13, 110, 190, 0.85)';
+    guideCtx.fillText('HL 视平线', 10, hlY - 8);
+    guideCtx.fillText('GL 地面线', 10, glY - 8);
+  } else if (type === 'persp-two') {
+    // 两点透视（成角透视）：HL + 左右消失点 + 双向放射线 + 转角真高线
+    const hlY = canvasH * 0.42, vp1 = canvasW * 0.06, vp2 = canvasW * 0.94;
+    const cornerX = canvasW * 0.46;
+    guideCtx.setLineDash([12, 7]);
+    guideCtx.lineWidth = 2;
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
+    guideCtx.beginPath(); guideCtx.moveTo(0, hlY); guideCtx.lineTo(canvasW, hlY); guideCtx.stroke();
+    // 双向放射线
+    guideCtx.setLineDash([7, 6]);
+    guideCtx.lineWidth = 1.2;
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.42)';
+    guideCtx.beginPath();
+    for (let i = 0; i <= 9; i++) {
+      const yy = canvasH * (0.05 + i * 0.105);
+      guideCtx.moveTo(vp1, hlY); guideCtx.lineTo(canvasW, yy);
+      guideCtx.moveTo(vp2, hlY); guideCtx.lineTo(0, yy);
+    }
+    guideCtx.stroke();
+    // 转角真高线 TL
+    guideCtx.setLineDash([]);
+    guideCtx.lineWidth = 2.4;
+    guideCtx.strokeStyle = 'rgba(230, 74, 25, 0.95)';
+    guideCtx.beginPath();
+    guideCtx.moveTo(cornerX, canvasH * 0.16); guideCtx.lineTo(cornerX, canvasH * 0.84);
+    guideCtx.stroke();
+    guideCtx.font = '600 13px ui-sans-serif, system-ui, sans-serif';
+    guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
+    guideCtx.fillText('真高线', cornerX + 8, canvasH * 0.16 - 6);
+    // 两个消失点
+    [[vp1, 'VP1'], [vp2, 'VP2']].forEach(function(v) {
+      guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
+      guideCtx.beginPath(); guideCtx.arc(v[0], hlY, 9, 0, Math.PI * 2); guideCtx.fill();
+      guideCtx.fillStyle = 'rgba(255,255,255,0.92)';
+      guideCtx.beginPath(); guideCtx.arc(v[0], hlY, 3.4, 0, Math.PI * 2); guideCtx.fill();
+      guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
+      guideCtx.fillText(v[1], v[0] - 10, hlY - 14);
+    });
+    guideCtx.fillStyle = 'rgba(13, 110, 190, 0.85)';
+    guideCtx.fillText('HL 视平线', canvasW * 0.5 - 30, hlY - 10);
   } else if (type === 'golden') {
     const phi = 1.618033988749895;
     guideCtx.setLineDash([8, 6]);
@@ -2160,7 +2415,7 @@ function drawGuide(type) {
     // Spiral approximation
     guideCtx.beginPath();
     guideCtx.setLineDash([]);
-    guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.9)';
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
     guideCtx.lineWidth = 3;
     let cx = canvasW * 0.618, cy = canvasH * 0.382;
     for (let t = 0; t < Math.PI * 6; t += 0.05) {
@@ -2184,7 +2439,7 @@ function drawGuide(type) {
     guideCtx.lineTo(canvasW, canvasH / 2);
     guideCtx.stroke();
     // Diagonals
-    guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.3)';
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.42)';
     guideCtx.beginPath();
     guideCtx.moveTo(0, 0); guideCtx.lineTo(canvasW, canvasH);
     guideCtx.moveTo(canvasW, 0); guideCtx.lineTo(0, canvasH);
@@ -2192,14 +2447,14 @@ function drawGuide(type) {
   } else if (type === 'random') {
     guideCtx.setLineDash([]);
     const rng = mulberry32(Date.now());
-    guideCtx.fillStyle = 'rgba(196, 168, 130, 0.7)';
+    guideCtx.fillStyle = 'rgba(13, 110, 190, 0.85)';
     for (let i = 0; i < 12; i++) {
       const x = canvasW * 0.1 + rng() * canvasW * 0.8;
       const y = canvasH * 0.1 + rng() * canvasH * 0.8;
       guideCtx.beginPath();
       guideCtx.arc(x, y, 10, 0, Math.PI * 2);
       guideCtx.fill();
-      guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.5)';
+      guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.42)';
       guideCtx.lineWidth = 1;
       guideCtx.beginPath();
       guideCtx.moveTo(x - 15, y); guideCtx.lineTo(x + 15, y);
@@ -2209,7 +2464,7 @@ function drawGuide(type) {
   } else if (type === 'thirds-focus') {
     guideCtx.setLineDash([10, 6]);
     guideCtx.lineWidth = 2;
-    guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.6)';
+    guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
     for (let i = 1; i <= 2; i++) {
       guideCtx.beginPath();
       guideCtx.moveTo(canvasW * i / 3, 0); guideCtx.lineTo(canvasW * i / 3, canvasH);
@@ -2220,7 +2475,7 @@ function drawGuide(type) {
     tfpts.forEach(function(p) {
       const px = p[0], py = p[1];
       guideCtx.setLineDash([4, 4]);
-      guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.7)';
+      guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
       guideCtx.lineWidth = 1.5;
       guideCtx.beginPath();
       guideCtx.moveTo(0, 0); guideCtx.lineTo(px, py);
@@ -2229,21 +2484,21 @@ function drawGuide(type) {
       guideCtx.moveTo(canvasW, canvasH); guideCtx.lineTo(px, py);
       guideCtx.stroke();
       guideCtx.setLineDash([]);
-      guideCtx.fillStyle = 'rgba(232, 116, 44, 0.95)';
+      guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
       guideCtx.beginPath(); guideCtx.arc(px, py, 9, 0, Math.PI * 2); guideCtx.fill();
       guideCtx.fillStyle = 'rgba(255,255,255,0.9)';
       guideCtx.beginPath(); guideCtx.arc(px, py, 3.5, 0, Math.PI * 2); guideCtx.fill();
     });
   } else if (type === 'symmetry-v' || type === 'symmetry-h' || type === 'symmetry-d1' || type === 'symmetry-d2') {
     guideCtx.setLineDash([]);
-    guideCtx.lineWidth = 3; guideCtx.strokeStyle = 'rgba(232, 116, 44, 0.9)';
+    guideCtx.lineWidth = 3; guideCtx.strokeStyle = 'rgba(230, 74, 25, 0.95)';
     guideCtx.beginPath();
     if (type === 'symmetry-v') { guideCtx.moveTo(canvasW/2, 0); guideCtx.lineTo(canvasW/2, canvasH); }
     else if (type === 'symmetry-h') { guideCtx.moveTo(0, canvasH/2); guideCtx.lineTo(canvasW, canvasH/2); }
     else if (type === 'symmetry-d1') { guideCtx.moveTo(0, 0); guideCtx.lineTo(canvasW, canvasH); }
     else { guideCtx.moveTo(canvasW, 0); guideCtx.lineTo(0, canvasH); }
     guideCtx.stroke();
-    guideCtx.setLineDash([8, 6]); guideCtx.lineWidth = 1; guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.35)';
+    guideCtx.setLineDash([8, 6]); guideCtx.lineWidth = 1; guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.42)';
     guideCtx.beginPath();
     if (type === 'symmetry-v') { guideCtx.moveTo(0, canvasH/2); guideCtx.lineTo(canvasW, canvasH/2); }
     else if (type === 'symmetry-h') { guideCtx.moveTo(canvasW/2, 0); guideCtx.lineTo(canvasW/2, canvasH); }
@@ -2252,7 +2507,7 @@ function drawGuide(type) {
     guideCtx.stroke();
   } else if (type === 'golden-pts') {
     const gx1 = canvasW * 0.382, gx2 = canvasW * 0.618, gy1 = canvasH * 0.382, gy2 = canvasH * 0.618;
-    guideCtx.setLineDash([10, 6]); guideCtx.lineWidth = 2; guideCtx.strokeStyle = 'rgba(196, 168, 130, 0.7)';
+    guideCtx.setLineDash([10, 6]); guideCtx.lineWidth = 2; guideCtx.strokeStyle = 'rgba(13, 110, 190, 0.85)';
     guideCtx.beginPath();
     guideCtx.moveTo(gx1, 0); guideCtx.lineTo(gx1, canvasH);
     guideCtx.moveTo(gx2, 0); guideCtx.lineTo(gx2, canvasH);
@@ -2261,14 +2516,14 @@ function drawGuide(type) {
     guideCtx.stroke();
     guideCtx.setLineDash([]);
     [[gx1, gy1], [gx2, gy1], [gx1, gy2], [gx2, gy2]].forEach(function(p) {
-      guideCtx.fillStyle = 'rgba(232, 116, 44, 0.95)';
+      guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
       guideCtx.beginPath(); guideCtx.arc(p[0], p[1], 8, 0, Math.PI * 2); guideCtx.fill();
     });
   } else if (type === 'triangle') {
     const A = [canvasW * 0.333, canvasH * 0.667], B = [canvasW * 0.667, canvasH * 0.667], C = [canvasW * 0.5, canvasH * 0.333];
-    guideCtx.setLineDash([]); guideCtx.lineWidth = 2.5; guideCtx.strokeStyle = 'rgba(232, 116, 44, 0.85)';
+    guideCtx.setLineDash([]); guideCtx.lineWidth = 2.5; guideCtx.strokeStyle = 'rgba(230, 74, 25, 0.95)';
     guideCtx.beginPath(); guideCtx.moveTo(A[0], A[1]); guideCtx.lineTo(B[0], B[1]); guideCtx.lineTo(C[0], C[1]); guideCtx.closePath(); guideCtx.stroke();
-    guideCtx.fillStyle = 'rgba(232, 116, 44, 0.95)';
+    guideCtx.fillStyle = 'rgba(230, 74, 25, 0.95)';
     [A, B, C].forEach(function(p) { guideCtx.beginPath(); guideCtx.arc(p[0], p[1], 8, 0, Math.PI * 2); guideCtx.fill(); });
   }
   guideCtx.setLineDash([]);
@@ -5375,6 +5630,9 @@ function switchTab(tabName) {
   document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
   const el = document.getElementById('tab-' + tabName);
   if (el) el.style.display = 'block';
+  if (tabName === 'arch' && typeof window.archRender === 'function') {
+    setTimeout(function () { window.archRender(); }, 30);
+  }
   if (tabName === 'complib') loadCompositionLibrary();
   if (tabName === 'gallery') switchGallery('master');
   if (tabName === 'compose' && !window.__composeAutoGenDone) {
@@ -5996,27 +6254,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if(v.length<=4) return v;
     return v.slice(0,4);
   }
-  function buildStyleCircuit(list){
-    var box=document.getElementById('scBalls'); if(!box) return;
-    box.innerHTML='';
-    var items=[{key:'',label:'自动'}].concat(list).concat([{key:'random_scene',label:'随机'}]);
-    items.forEach(function(s){
-      var b=document.createElement('button'); b.type='button'; b.className='sc-ball';
-      b.setAttribute('data-key', s.key||'');
-      b.title=(s.artist?(s.artist+' '):'')+(s.title||'');
-      b.innerHTML='<span>'+shortStyleLabel(s)+'</span>';
-      if((s.key||'')===currentStyleKey) b.classList.add('active');
-      b.addEventListener('click', function(){
-        currentStyleKey=s.key||'';
-        var all=box.querySelectorAll('.sc-ball'); for(var i=0;i<all.length;i++) all[i].classList.remove('active');
-        b.classList.add('active');
-      });
-      box.appendChild(b);
-    });
-  }
+  // 风格选择器（PCB 电路板）已移除：风格恒为「自动」，由引擎内部随机决定
   function loadStyles(){ try{
-      var list=(typeof DraftGen!=='undefined'&&DraftGen.listStyles)?DraftGen.listStyles():[];
-      buildStyleCircuit(list);
+      if (typeof DraftGen === 'undefined' || !DraftGen.listStyles) throw new Error('no DraftGen');
+      DraftGen.listStyles();
     }catch(e){ fail('DraftGen 未加载：请确认 draftgen.js 已正确引入'); } }
 
   function genDense(){
@@ -6304,43 +6545,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main #genDense.fx-gen:hover{ transform:translateY(-2px) scale(1.015); }
 .main #genDense.fx-gen:active{ transform:scale(.97); }
 .main #genDense.fx-gen[disabled]{ filter:grayscale(.4) brightness(.85); animation:none; cursor:progress; }
-/* ===== 风格电路板（PCB） + 电流涌动 ===== */
-.main .style-circuit{ position:relative; padding:22px 10px 14px; margin-top:6px; border-radius:12px; overflow:hidden;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 11px, rgba(45,212,191,.08) 11px 12px),
-    repeating-linear-gradient(90deg, transparent 0 11px, rgba(45,212,191,.08) 11px 12px),
-    linear-gradient(160deg, rgba(6,28,26,.96), rgba(8,18,34,.96));
-  border:1px solid rgba(45,212,191,.35);
-  box-shadow: inset 0 0 22px rgba(45,212,191,.10), 0 0 14px rgba(45,212,191,.12);
-}
-/* 电路板上流动的电流光点 */
-.main .style-circuit::before{ content:''; position:absolute; inset:0; pointer-events:none; opacity:.9; mix-blend-mode:screen;
-  background:
-    radial-gradient(2px 2px at 14% 28%, rgba(45,212,191,.95), transparent 60%),
-    radial-gradient(2px 2px at 33% 72%, rgba(34,211,238,.85), transparent 60%),
-    radial-gradient(2px 2px at 54% 22%, rgba(139,92,246,.85), transparent 60%),
-    radial-gradient(2px 2px at 70% 64%, rgba(34,211,238,.85), transparent 60%),
-    radial-gradient(2px 2px at 88% 36%, rgba(45,212,191,.85), transparent 60%);
-  background-size:200% 200%; animation: pcbCurrent 4.5s linear infinite; }
-@keyframes pcbCurrent{ 0%{ background-position:0% 0% } 100%{ background-position:200% 200% } }
-/* 顶部接插件引脚 */
-.main .style-circuit .sc-toplead{ position:absolute; left:50%; top:4px; width:3px; height:12px; transform:translateX(-50%); background:linear-gradient(180deg,#ffd166,rgba(255,209,102,0)); box-shadow:0 0 8px rgba(255,209,102,.7); }
-/* 电源母线（带流动电流） */
-.main .style-circuit .sc-bus{ position:absolute; left:18px; right:18px; top:14px; height:3px; border-radius:2px;
-  background:linear-gradient(90deg, rgba(45,212,191,.18), rgba(34,211,238,.6), rgba(139,92,246,.5), rgba(45,212,191,.18));
-  box-shadow:0 0 10px rgba(34,211,238,.5); }
-.main .style-circuit .sc-balls{ position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:16px 12px; justify-content:center; margin-top:16px; }
-/* 芯片元件 */
-.main .sc-ball{ position:relative; width:48px; height:40px; border-radius:7px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:8px; line-height:1; letter-spacing:.2px; padding:3px;
-  background:linear-gradient(160deg, rgba(10,32,30,.96), rgba(8,18,34,.96)); color:#cdeefb; cursor:pointer; transition:.15s;
-  border:1.5px solid rgba(45,212,191,.5); box-shadow: inset 0 0 8px rgba(45,212,191,.15); }
-/* 芯片引脚：连到母线 */
-.main .sc-ball::before{ content:''; position:absolute; left:50%; top:-14px; transform:translateX(-50%); width:2px; height:14px; background:rgba(45,212,191,.55); }
-/* 芯片底部焊盘 */
-.main .sc-ball::after{ content:''; position:absolute; left:5px; right:5px; bottom:-4px; height:3px; border-radius:1px; background:repeating-linear-gradient(90deg, rgba(45,212,191,.75) 0 3px, transparent 3px 6px); }
-.main .sc-ball:hover{ border-color:#5eead4; color:#eafdff; box-shadow:0 0 14px rgba(45,212,191,.5), inset 0 0 8px rgba(45,212,191,.3); }
-.main .sc-ball.active{ background:linear-gradient(160deg,#0e6b63,#0a3a8c); color:#eafdff; border-color:#7df9ff; font-weight:800; box-shadow:0 0 18px rgba(34,211,238,.85), inset 0 0 10px rgba(34,211,238,.4); }
-.main .sc-ball span{ pointer-events:none; }
+
 
 /* 分隔条 */
 .main .fx-sep{ display:flex; align-items:center; gap:9px; margin:4px 0 14px; }
@@ -6859,10 +7064,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .holo-hero{ border:1px solid rgba(0,229,255,.3) !important; box-shadow: inset 0 0 40px rgba(0,229,255,.18), 0 0 30px rgba(124,92,255,.22) !important; }
 .holo-cta-text{ color:#eafdff !important; }
 
-/* 风格芯片脉冲 */
-.sc-ball{ border-color: rgba(45,212,191,.55) !important; box-shadow:0 0 10px rgba(45,212,191,.28) !important; }
-.sc-ball:hover{ box-shadow:0 0 18px rgba(45,212,191,.6) !important; }
-.sc-ball.active{ box-shadow:0 0 22px rgba(34,211,238,.9) !important; }
+
 
 /* 蓝图角标发光 */
 .bp-corner{ width:34px !important; height:34px !important; border-color: rgba(0,229,255,.6) !important; box-shadow:0 0 12px rgba(0,229,255,.5); }
@@ -6978,13 +7180,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @keyframes glitchTop{ 0%{ transform:translate(0,0); } 50%{ transform:translate(-3px,-1px); } 100%{ transform:translate(2px,0); } }
 @keyframes glitchBot{ 0%{ transform:translate(0,0); } 50%{ transform:translate(3px,1px); } 100%{ transform:translate(-2px,0); } }
 
-/* ---- 电路板电流涌动 ---- */
-.style-circuit .sc-bus, .style-circuit .sc-toplead{ position:relative; }
-.style-circuit .sc-bus::after, .style-circuit .sc-toplead::after{ content:''; position:absolute; inset:0;
-  background: linear-gradient(90deg, transparent, rgba(94,234,212,.95), rgba(34,211,238,.95), transparent); background-size:50% 100%;
-  background-repeat:no-repeat; animation: circuitFlow 1.8s linear infinite; mix-blend-mode:screen; }
-.style-circuit .sc-toplead::after{ background: linear-gradient(180deg, transparent, rgba(255,209,102,.95), transparent); background-size:100% 50%; animation-duration:2.2s; }
-@keyframes circuitFlow{ 0%{ background-position:-50% 0; } 100%{ background-position:150% 0; } }
+
 
 /* ---- 开机扫描（一次性） ---- */
 .scifi-boot{ position:fixed; inset:0; z-index:9500; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -7007,9 +7203,110 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 @media (prefers-reduced-motion: reduce){
   .scifi-stars, .scifi-floor .sf-grid, .hud-radar .hr-sweep, .hud-eq i, .hud-ticker .ht-track,
-  .holo-pulse, .holo-orbit, .fx-title, .style-circuit .sc-bus::after, .style-circuit .sc-toplead::after,
-  .scifi-boot .sb-sweep, .scifi-boot .sb-ring, .scifi-boot .sb-bars i, .hud-corner, .bp-corner{ animation:none !important; }
+  .holo-pulse, .holo-orbit, .holo-lp, .fx-title,
+  .scifi-boot .sb-sweep, .scifi-boot .sb-ring, .scifi-boot .sb-bars i, .hud-corner, .bp-corner,
+  .holo-lps{ animation:none !important; }
 }
+
+/* ============================================================
+   光球线性粒子环绕（切向拖尾）
+   ============================================================ */
+.main .holo-lps{ position:absolute; left:50%; top:50%; width:0; height:0; pointer-events:none; z-index:3; }
+.main .holo-lps.r1{ animation: lpSpin 7s linear infinite; }
+.main .holo-lps.r2{ animation: lpSpin 11s linear infinite reverse; }
+.main .holo-lps.r3{ animation: lpSpin 16s linear infinite; }
+@keyframes lpSpin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+.main .holo-lp{ position:absolute; left:0; top:0; height:2px; width:26px; border-radius:2px;
+  transform-origin:0 50%; transform: rotate(var(--a)) translateX(var(--r)) rotate(90deg);
+  background: linear-gradient(90deg, rgba(0,229,255,0) 0%, rgba(0,229,255,.55) 45%, #7df9ff 100%);
+  box-shadow:0 0 8px rgba(0,229,255,.75); animation: lpFlick 2.6s ease-in-out infinite; }
+.main .holo-lps.r2 .holo-lp{ width:34px; background: linear-gradient(90deg, rgba(139,92,246,0), rgba(139,92,246,.5) 45%, #c4b5fd 100%);
+  box-shadow:0 0 9px rgba(139,92,246,.75); animation-duration:3.4s; }
+.main .holo-lps.r3 .holo-lp{ width:44px; height:1.5px; background: linear-gradient(90deg, rgba(255,46,151,0), rgba(255,46,151,.45) 45%, #ff8ecb 100%);
+  box-shadow:0 0 10px rgba(255,46,151,.6); animation-duration:4.2s; }
+.main .holo-lps .holo-lp:nth-child(2n){ animation-delay:-.7s }
+.main .holo-lps .holo-lp:nth-child(3n){ animation-delay:-1.5s }
+@keyframes lpFlick{ 0%,100%{ opacity:.35; } 50%{ opacity:1; } }
+
+/* ============================================================
+   折叠面板（基础构图参考线）
+   ============================================================ */
+.fold-sec{ padding:0 !important; overflow:hidden; }
+.fold-head{ width:100%; display:flex; align-items:center; gap:8px; padding:11px 12px; cursor:pointer;
+  background:linear-gradient(135deg, rgba(0,229,255,.10), rgba(139,92,246,.10)); border:0; border-left:3px solid var(--accent, #00e5ff);
+  font-size:13px; font-weight:700; color:var(--text, #223); text-align:left; transition:.18s; }
+.fold-head:hover{ background:linear-gradient(135deg, rgba(0,229,255,.20), rgba(139,92,246,.18)); }
+.fold-head .fh-ico{ font-size:14px; }
+.fold-head .fh-txt{ flex:1; letter-spacing:.5px; }
+.fold-head .fh-tag{ font-size:10px; font-weight:600; padding:2px 7px; border-radius:9px; letter-spacing:.5px;
+  background:rgba(0,150,200,.16); color:#0a6f96; border:1px solid rgba(0,150,200,.3); }
+.fold-head .fh-arrow{ font-size:12px; transition:transform .25s; opacity:.75; }
+.fold-sec.open .fold-head .fh-arrow{ transform:rotate(180deg); }
+.fold-body{ display:none; padding:12px; border-top:1px dashed var(--border, #ddd); }
+.fold-sec.open .fold-body{ display:block; animation: foldIn .22s ease; }
+@keyframes foldIn{ from{ opacity:0; transform:translateY(-5px); } to{ opacity:1; transform:none; } }
+.fold-body .ttl{ display:block; font-size:11px; font-weight:700; color:var(--text-light, #789); letter-spacing:1px;
+  margin:12px 0 6px; padding-left:6px; border-left:2px solid rgba(0,150,200,.45); }
+.fold-body .ttl:first-child{ margin-top:0; }
+.fold-body .guide-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:8px;
+  font-size:11px; color:var(--text-light,#789); padding:7px 8px; border-radius:6px; background:rgba(0,150,200,.06); }
+.fold-body .guide-row .gr-chk{ display:flex; align-items:center; gap:4px; cursor:pointer; }
+.fold-body .guide-row select{ font-size:11px; padding:2px 4px; border-radius:4px; border:1px solid var(--border,#ccc); background:#fff; color:#333; }
+
+/* ============================================================
+   建筑辅助制图模块
+   ============================================================ */
+.arch-canvas{ position:absolute; left:0; top:0; pointer-events:none; z-index:6; }
+.arch-canvas.live{ pointer-events:auto; cursor:crosshair; }
+
+.arch-head{ padding:12px; border-radius:8px; margin-bottom:12px;
+  background:linear-gradient(135deg, rgba(0,229,255,.12), rgba(139,92,246,.10));
+  border:1px solid rgba(0,180,220,.28); }
+.arch-head .ah-title{ font-size:14px; font-weight:800; letter-spacing:.5px; display:flex; align-items:baseline; gap:8px; }
+.arch-head .ah-title b{ font-size:9px; font-weight:700; letter-spacing:2px; opacity:.6; font-family:var(--bp-mono, monospace); }
+.arch-head .ah-sub{ font-size:11px; color:var(--text-light,#789); margin-top:4px; line-height:1.5; }
+.arch-switch{ display:flex; align-items:center; gap:6px; margin-top:9px; padding:6px 8px; border-radius:6px;
+  background:rgba(255,255,255,.55); font-size:11.5px; font-weight:600; cursor:pointer; border:1px solid rgba(0,180,220,.25); }
+.arch-switch input{ cursor:pointer; }
+
+.arch-steps{ display:flex; gap:4px; margin-bottom:10px; }
+.as-step{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; cursor:pointer;
+  border:1px solid var(--border,#dcdcdc); border-radius:6px; background:#fff; transition:.16s; }
+.as-step i{ width:19px; height:19px; line-height:19px; border-radius:50%; font-style:normal; font-size:10px; font-weight:800;
+  background:#e6edf2; color:#68808f; }
+.as-step span{ font-size:9.5px; color:var(--text-light,#789); letter-spacing:.3px; }
+.as-step:hover{ border-color:rgba(0,180,220,.6); }
+.as-step.done i{ background:#8fd6c4; color:#0d3d33; }
+.as-step.active{ border-color:#0a86b8; background:rgba(0,180,220,.10); box-shadow:0 0 0 2px rgba(0,180,220,.14); }
+.as-step.active i{ background:#0a86b8; color:#fff; }
+.as-step.active span{ color:#0a6f96; font-weight:700; }
+
+.arch-tip{ font-size:11px; line-height:1.65; color:var(--text-light,#667); padding:8px 10px; border-radius:6px;
+  background:rgba(0,150,200,.07); border-left:3px solid rgba(0,150,200,.45); margin-bottom:9px; }
+.arch-btn-row{ display:flex; gap:6px; margin-top:6px; }
+.arch-btn-row .action-btn{ flex:1; margin-top:0 !important; }
+.arch-hint{ font-size:10.5px; line-height:1.6; color:var(--text-light,#8a97a3); margin-top:8px; }
+
+.arch-grid2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.arch-grid2 label{ display:flex; flex-direction:column; gap:4px; font-size:10.5px; color:var(--text-light,#789); font-weight:600; }
+.arch-grid2 select, .arch-grid2 input{ font-size:11.5px; padding:4px 6px; border-radius:5px;
+  border:1px solid var(--border,#d5d5d5); background:#fff; color:#333; width:100%; }
+
+.arch-chips{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.arch-chip{ font-size:10.5px; padding:5px 9px; border-radius:14px; cursor:pointer; transition:.16s;
+  border:1px solid var(--border,#dcdcdc); background:#fff; color:#5a6a75; }
+.arch-chip:hover{ border-color:rgba(0,180,220,.65); color:#0a6f96; }
+.arch-chip.active{ background:#0a86b8; border-color:#0a86b8; color:#fff; font-weight:700; box-shadow:0 2px 8px rgba(10,134,184,.3); }
+
+.arch-seg{ display:flex; gap:5px; margin-bottom:9px; }
+.arch-seg button{ flex:1; font-size:11.5px; font-weight:700; padding:7px 0; cursor:pointer; transition:.16s;
+  border:1px solid var(--border,#dcdcdc); border-radius:6px; background:#fff; color:#5a6a75; }
+.arch-seg button:hover{ border-color:rgba(0,180,220,.65); }
+.arch-seg button.active{ background:#1d2733; border-color:#1d2733; color:#fff; }
+
+.arch-chk-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
+.arch-chk-grid label{ display:flex; align-items:center; gap:5px; font-size:11px; color:#5a6a75; cursor:pointer; }
+.arch-chk-grid input{ cursor:pointer; }
 
 </style>
 
@@ -7229,5 +7526,939 @@ window.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<script>
+/* =====================================================================
+   建筑辅助制图模块 · ARCH DRAFTING
+   依据建筑制图法：站点/画面 → 视平线(HL) → 消失点(VP) → 透视网格 → 立面 → 出图
+   参考：一点/两点/三点透视、量点法(MP)、真高线(HL)、60°视锥、
+        轴网编号(1,2,3 / A,B,C)、标高符号、线宽三级 b : 0.5b : 0.25b
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var cv = null, cx = null;
+
+  var VIEWS = [
+    { k: 'iso',   n: '等轴测 30°', ortho: true,  yaw: 45,  pitch: 35 },
+    { k: 'one',   n: '一点透视',   ortho: false, yaw: 0,   pitch: 0 },
+    { k: 'two',   n: '两点透视',   ortho: false, yaw: 35,  pitch: 0 },
+    { k: 'three', n: '三点透视',   ortho: false, yaw: 35,  pitch: -26 },
+    { k: 'bird',  n: '鸟瞰',       ortho: false, yaw: 30,  pitch: 50 },
+    { k: 'worm',  n: '虫视仰望',   ortho: false, yaw: 30,  pitch: -38 },
+    { k: 'plan',  n: '平面俯视',   ortho: true,  yaw: 0,   pitch: 90 },
+    { k: 'front', n: '正立面',     ortho: true,  yaw: 0,   pitch: 0 },
+    { k: 'side',  n: '侧立面',     ortho: true,  yaw: 90,  pitch: 0 },
+    { k: 'back',  n: '背立面',     ortho: true,  yaw: 180, pitch: 0 }
+  ];
+
+  var STEP_TIP = {
+    1: '① 定地平线：在画布上点击或上下拖动，确定视平线 HL（= 观者眼高）。低视平线显纪念性，高视平线成鸟瞰。默认眼高 1.60 m。',
+    2: '② 定消失点：先选透视类型，再在画布上点击放置 VP。两点透视的两个 VP 距离越远画面越平稳；VP 不要落在画面正中。',
+    3: '③ 放置网格：生成地面透视网格（进深用量点法等分）。网格是后续所有体块的定位基准。',
+    4: '④ 放置立面：选类型与朝向后放入立面图，或放置 XYZ 立体网格体块推敲体量。可拖动、缩放、旋转。',
+    5: '⑤ 保存：把辅助线烘焙进图层（可继续在其上落笔），或存为独立参考层 / 导出 PNG。'
+  };
+
+  var A = {
+    on: false,
+    step: 1,
+    done: {},
+    horizon: 0.58,          // 视平线，画布高度比例
+    vpMode: 'two',
+    vps: [{ x: 0.16, y: 0.58 }, { x: 0.88, y: 0.58 }],
+    station: { x: 0.5, y: 0.93 },
+    grid: null,
+    cube: null,
+    elev: null,
+    view: 'two',
+    yaw: 35, pitch: 0,
+    drag: null
+  };
+  window.ARCH = A;
+
+  /* ---------- 基础工具 ---------- */
+  function W() { return (typeof canvasW !== 'undefined' ? canvasW : 3508); }
+  function H() { return (typeof canvasH !== 'undefined' ? canvasH : 2480); }
+  function el(id) { return document.getElementById(id); }
+  function num(id, d) { var e = el(id); var v = e ? parseFloat(e.value) : NaN; return isNaN(v) ? d : v; }
+  function chk(id) { var e = el(id); return !!(e && e.checked); }
+  function toast(m) { if (window.showToast) showToast(m); }
+
+  function syncSize() {
+    if (!cv) return;
+    var src = document.getElementById('drawCanvas');
+    if (!src) return;
+    if (cv.width !== W() || cv.height !== H()) { cv.width = W(); cv.height = H(); }
+    cv.style.width = src.style.width;
+    cv.style.height = src.style.height;
+  }
+
+  /* 线宽三级：粗 b / 中 0.5b / 细 0.25b */
+  function LW(level) {
+    var b = num('archLW', 0.5) * 14;
+    if (level === 'thick') return b;
+    if (level === 'mid') return b * 0.5;
+    if (level === 'thin') return b * 0.25;
+    return b * 0.25;
+  }
+  var INK = '#111318';
+  var INK_SOFT = 'rgba(17,19,24,0.42)';
+  var INK_FAINT = 'rgba(17,19,24,0.18)';
+  var RED = '#c62828';
+
+  function setPen(level, color, dash) {
+    cx.lineWidth = LW(level);
+    cx.strokeStyle = color || INK;
+    cx.setLineDash(dash || []);
+    cx.lineCap = 'butt';
+    cx.lineJoin = 'miter';
+  }
+  function line(x1, y1, x2, y2) { cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke(); }
+  function dot(x, y, r, c) { cx.fillStyle = c || INK; cx.beginPath(); cx.arc(x, y, r, 0, 6.2832); cx.fill(); }
+  function label(t, x, y, size, color, align) {
+    cx.save();
+    cx.font = '600 ' + (size || 30) + 'px "Segoe UI", "Microsoft YaHei", sans-serif';
+    cx.fillStyle = color || INK;
+    cx.textAlign = align || 'left';
+    cx.textBaseline = 'middle';
+    cx.fillText(t, x, y);
+    cx.restore();
+  }
+
+  /* ---------- 3D 投影 ---------- */
+  function project(p) {
+    var v = VIEWS.filter(function (o) { return o.k === A.view; })[0] || VIEWS[2];
+    var yaw = A.yaw * Math.PI / 180, pit = A.pitch * Math.PI / 180;
+    var cy = Math.cos(yaw), sy = Math.sin(yaw);
+    var x1 = p.x * cy - p.z * sy;
+    var z1 = p.x * sy + p.z * cy;
+    var cp = Math.cos(pit), sp = Math.sin(pit);
+    var y2 = p.y * cp - z1 * sp;
+    var z2 = p.y * sp + z1 * cp;
+    if (v.ortho) return { x: x1, y: -y2, d: z2 };
+    var dist = 18;
+    var f = dist / Math.max(0.35, dist + z2);
+    return { x: x1 * f, y: -y2 * f, d: z2 };
+  }
+
+  /* =====================================================================
+     绘制：视平线 / 消失点 / 站点 / 视锥
+     ===================================================================== */
+  function drawHorizon() {
+    var y = A.horizon * H();
+    setPen('mid', 'rgba(10,110,160,0.9)', [46, 22]);
+    line(0, y, W(), y);
+    setPen('thin', 'rgba(10,110,160,0.55)', []);
+    label('HL  视平线  EL ' + num('archEyeH', 1.6).toFixed(2) + ' m', 26, y - 30, 32, 'rgba(10,110,160,0.95)');
+    // 地面线 GL
+    var gl = Math.min(H() - 8, y + (H() - y) * 0.72);
+    setPen('mid', 'rgba(10,110,160,0.45)', [16, 14]);
+    line(0, gl, W(), gl);
+    label('GL  地面线', 26, gl - 26, 28, 'rgba(10,110,160,0.7)');
+    A._gl = gl;
+  }
+
+  function activeVPs() {
+    if (A.vpMode === 'one') return [A.vps[0]];
+    if (A.vpMode === 'three') return A.vps.slice(0, 3);
+    return A.vps.slice(0, 2);
+  }
+
+  function drawVPs() {
+    var list = activeVPs();
+    list.forEach(function (vp, i) {
+      var x = vp.x * W(), y = vp.y * H();
+      setPen('thin', RED, []);
+      cx.beginPath(); cx.arc(x, y, 26, 0, 6.2832); cx.stroke();
+      line(x - 40, y, x + 40, y);
+      line(x, y - 40, x, y + 40);
+      dot(x, y, 8, RED);
+      label('VP' + (i + 1), x + 34, y - 34, 30, RED);
+      // 放射线（正交线 orthogonals）
+      setPen('thin', 'rgba(17,19,24,0.20)', [26, 22]);
+      for (var k = 0; k <= 10; k++) {
+        var t = k / 10;
+        line(x, y, t * W(), H());
+      }
+      for (var k2 = 0; k2 <= 6; k2++) {
+        line(x, y, (k2 / 6) * W(), 0);
+      }
+    });
+  }
+
+  function drawCone() {
+    // 60° 视锥：以站点为顶，半角 30°
+    var sx = A.station.x * W(), sy = A.station.y * H();
+    var hy = A.horizon * H();
+    var d = Math.abs(sy - hy);
+    var r = d * Math.tan(30 * Math.PI / 180) * 1.9;
+    setPen('thin', 'rgba(198,40,40,0.55)', [20, 16]);
+    cx.beginPath(); cx.ellipse(A.station.x * W(), hy, r, r * 0.62, 0, 0, 6.2832); cx.stroke();
+    line(sx, sy, sx - r, hy); line(sx, sy, sx + r, hy);
+    dot(sx, sy, 10, 'rgba(198,40,40,0.85)');
+    label('SP 站点', sx + 22, sy - 24, 28, 'rgba(198,40,40,0.85)');
+    label('60° 视锥 · 圈外形体畸变', A.station.x * W() + r + 16, hy, 28, 'rgba(198,40,40,0.7)');
+  }
+
+  /* ---------- 量点法 MP：视平线上等分进深 ---------- */
+  function drawMP() {
+    var list = activeVPs();
+    if (!list.length) return;
+    var hy = A.horizon * H();
+    var vp = list[0];
+    var vx = vp.x * W();
+    var mpx = vx + (list.length > 1 ? (list[1].x * W() - vx) * 0.62 : W() * 0.34);
+    setPen('thin', 'rgba(120,60,180,0.8)', []);
+    cx.beginPath(); cx.arc(mpx, hy, 20, 0, 6.2832); cx.stroke();
+    dot(mpx, hy, 7, 'rgba(120,60,180,0.9)');
+    label('MP 量点', mpx + 26, hy + 34, 28, 'rgba(120,60,180,0.9)');
+    // 从量点向基线等分点连线 —— 求进深等分
+    var gl = A._gl || H() * 0.9;
+    setPen('thin', 'rgba(120,60,180,0.32)', [18, 14]);
+    for (var i = 1; i <= 10; i++) {
+      var bx = vx + (mpx - vx) * 0 + (W() * 0.06) * i;
+      line(mpx, hy, bx, gl);
+    }
+    label('量点法：基线等分 → 连 MP → 交透视线 = 等距进深', 26, gl + 44, 28, 'rgba(120,60,180,0.8)');
+  }
+
+  /* ---------- 真高线 ---------- */
+  function drawHeightLine() {
+    var fh = num('archFloorH', 3.6);
+    var eye = num('archEyeH', 1.6);
+    var hy = A.horizon * H();
+    var gl = A._gl || H() * 0.9;
+    var pxPerM = (gl - hy) / Math.max(0.3, eye);
+    var x = W() * 0.06;
+    setPen('mid', '#00695c', []);
+    line(x, gl, x, Math.max(20, gl - pxPerM * fh * 9));
+    setPen('thin', '#00695c', []);
+    for (var i = 0; i * fh <= 40; i++) {
+      var y = gl - pxPerM * fh * i;
+      if (y < 10) break;
+      line(x - 22, y, x + 22, y);
+      label((i * fh).toFixed(2).replace('.00', '.000') + ' m', x + 32, y, 26, '#00695c');
+    }
+    label('真高线 HL', x - 10, gl + 40, 28, '#00695c');
+  }
+
+  /* =====================================================================
+     地面透视网格
+     ===================================================================== */
+  function drawGrid() {
+    if (!A.grid) return;
+    var hy = A.horizon * H();
+    var gl = H();
+    var list = activeVPs();
+    setPen('thin', INK_FAINT, []);
+    if (A.vpMode === 'one' && list.length) {
+      var vx = list[0].x * W(), vy = list[0].y * H();
+      for (var i = 0; i <= A.grid.width; i++) {
+        var px = (i / A.grid.width) * W();
+        line(vx, vy, px, gl);
+      }
+      // 进深横线：按透视级数收缩
+      for (var d = 1; d <= A.grid.depth; d++) {
+        var t = d / (A.grid.depth + 1);
+        var y = vy + (gl - vy) * Math.pow(1 - t, 1.9);
+        line(0, y, W(), y);
+      }
+    } else if (list.length >= 2) {
+      var v1 = { x: list[0].x * W(), y: list[0].y * H() };
+      var v2 = { x: list[1].x * W(), y: list[1].y * H() };
+      for (var j = 0; j <= A.grid.width; j++) {
+        var t2 = j / A.grid.width;
+        var bx = W() * 0.1 + t2 * W() * 0.8;
+        line(v1.x, v1.y, bx, gl);
+        line(v2.x, v2.y, bx, gl);
+      }
+      for (var k = 1; k <= A.grid.depth; k++) {
+        var tk = k / (A.grid.depth + 1);
+        var yy = hy + (gl - hy) * Math.pow(1 - tk, 1.8);
+        setPen('thin', 'rgba(17,19,24,0.12)', []);
+        line(0, yy, W(), yy);
+      }
+    }
+  }
+
+  /* =====================================================================
+     XYZ 立体网格体块（魔方）
+     ===================================================================== */
+  function cubeGeom() {
+    var c = A.cube;
+    var bx = c.bx, bz = c.bz, ny = c.layers;
+    var mx = Math.max(bx, bz, ny);
+    var pts = function (x, y, z) {
+      return project({ x: (x - bx / 2) / mx * 2, y: (y - ny / 2) / mx * 2, z: (z - bz / 2) / mx * 2 });
+    };
+    // 求投影范围以归一化
+    var minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (var i = 0; i <= bx; i++) for (var j = 0; j <= ny; j++) for (var k = 0; k <= bz; k++) {
+      if (i % bx && j % ny && k % bz) continue;
+      var p = pts(i, j, k);
+      if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+    }
+    var spanX = Math.max(0.001, maxX - minX), spanY = Math.max(0.001, maxY - minY);
+    // 按「底面宽度」定标：层数增加 = 建筑真实变高（符合建筑体量逻辑），
+    // 再用画布高度做上限保护，避免 8 层溢出画面。
+    var s = c.size / spanX;
+    var maxH = H() * 0.82;
+    if (spanY * s > maxH) s = maxH / spanY;
+    var ox = c.cx - (minX + maxX) / 2 * s, oy = c.cy - (minY + maxY) / 2 * s;
+    return {
+      to: function (x, y, z) { var p = pts(x, y, z); return { x: ox + p.x * s, y: oy + p.y * s, d: p.d }; },
+      bbox: { x: ox + minX * s, y: oy + minY * s, w: spanX * s, h: spanY * s }
+    };
+  }
+
+  function drawCube() {
+    var c = A.cube;
+    if (!c || !c.visible) return;
+    var g = cubeGeom();
+    var bx = c.bx, bz = c.bz, ny = c.layers;
+
+    function seg(p1, p2, level, isEdge) {
+      var depth = (p1.d + p2.d) / 2;
+      var fade = Math.max(0.12, Math.min(1, 0.92 - depth * 0.10));
+      cx.lineWidth = LW(level);
+      cx.strokeStyle = isEdge ? 'rgba(17,19,24,' + Math.max(0.55, fade) + ')'
+                              : 'rgba(17,19,24,' + (fade * 0.5).toFixed(3) + ')';
+      cx.setLineDash([]);
+      cx.beginPath(); cx.moveTo(p1.x, p1.y); cx.lineTo(p2.x, p2.y); cx.stroke();
+    }
+    function edge(i, j, k, axis) {
+      // 是否为外轮廓棱
+      if (axis === 'x') return (j === 0 || j === ny) && (k === 0 || k === bz);
+      if (axis === 'y') return (i === 0 || i === bx) && (k === 0 || k === bz);
+      return (i === 0 || i === bx) && (j === 0 || j === ny);
+    }
+
+    // X 向线
+    for (var j = 0; j <= ny; j++) for (var k = 0; k <= bz; k++) {
+      var e = edge(0, j, k, 'x');
+      seg(g.to(0, j, k), g.to(bx, j, k), e ? 'thick' : (j % 1 === 0 && (j === 0 || j === ny) ? 'mid' : 'thin'), e);
+    }
+    // Z 向线
+    for (var i2 = 0; i2 <= bx; i2++) for (var j2 = 0; j2 <= ny; j2++) {
+      var e2 = edge(i2, j2, 0, 'z');
+      seg(g.to(i2, j2, 0), g.to(i2, j2, bz), e2 ? 'thick' : 'thin', e2);
+    }
+    // Y 向线（层高 / 竖向）
+    for (var i3 = 0; i3 <= bx; i3++) for (var k3 = 0; k3 <= bz; k3++) {
+      var e3 = edge(i3, 0, k3, 'y');
+      seg(g.to(i3, 0, k3), g.to(i3, ny, k3), e3 ? 'thick' : 'thin', e3);
+    }
+
+    // 楼层线加重（每层顶面外圈）
+    for (var f = 1; f <= ny; f++) {
+      cx.lineWidth = LW('mid'); cx.strokeStyle = 'rgba(17,19,24,0.62)'; cx.setLineDash([]);
+      var a = g.to(0, f, 0), b = g.to(bx, f, 0), d2 = g.to(bx, f, bz), e4 = g.to(0, f, bz);
+      cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.lineTo(d2.x, d2.y); cx.lineTo(e4.x, e4.y); cx.closePath(); cx.stroke();
+    }
+
+    // XYZ 三轴
+    var o = g.to(0, 0, 0);
+    var ax = g.to(bx * 1.34, 0, 0), ay = g.to(0, ny * 1.3, 0), az = g.to(0, 0, bz * 1.34);
+    [[ax, 'X 开间'], [ay, 'Y 层高'], [az, 'Z 进深']].forEach(function (t) {
+      cx.lineWidth = LW('mid'); cx.strokeStyle = '#111318'; cx.setLineDash([26, 16]);
+      cx.beginPath(); cx.moveTo(o.x, o.y); cx.lineTo(t[0].x, t[0].y); cx.stroke();
+      cx.setLineDash([]);
+      // 箭头
+      var an = Math.atan2(t[0].y - o.y, t[0].x - o.x);
+      cx.fillStyle = '#111318';
+      cx.beginPath();
+      cx.moveTo(t[0].x, t[0].y);
+      cx.lineTo(t[0].x - 26 * Math.cos(an - 0.34), t[0].y - 26 * Math.sin(an - 0.34));
+      cx.lineTo(t[0].x - 26 * Math.cos(an + 0.34), t[0].y - 26 * Math.sin(an + 0.34));
+      cx.closePath(); cx.fill();
+      label(t[1], t[0].x + 14, t[0].y - 14, 30, '#111318');
+    });
+
+    // 层数 / 标高标注
+    if (chk('ovLevel')) {
+      var fh = num('archFloorH', 3.6);
+      for (var L = 0; L <= ny; L++) {
+        var p = g.to(bx, L, 0);
+        var v = (L * fh);
+        label((L === 0 ? '±0.000' : '+' + v.toFixed(3)), p.x + 20, p.y, 26, '#00695c');
+      }
+    }
+    // 轴网编号
+    if (chk('ovAxis')) {
+      for (var n1 = 0; n1 <= bx; n1++) {
+        var pa = g.to(n1, 0, bz);
+        cx.lineWidth = LW('thin'); cx.strokeStyle = RED; cx.setLineDash([]);
+        cx.beginPath(); cx.arc(pa.x, pa.y + 62, 24, 0, 6.2832); cx.stroke();
+        label(String(n1 + 1), pa.x, pa.y + 62, 26, RED, 'center');
+      }
+      var AL = 'ABCDEFGHJKLMNPQRSTUV';
+      for (var n2 = 0; n2 <= bz; n2++) {
+        var pb = g.to(0, 0, n2);
+        cx.lineWidth = LW('thin'); cx.strokeStyle = RED; cx.setLineDash([]);
+        cx.beginPath(); cx.arc(pb.x - 60, pb.y, 24, 0, 6.2832); cx.stroke();
+        label(AL.charAt(n2), pb.x - 60, pb.y, 26, RED, 'center');
+      }
+    }
+
+    // 选中手柄
+    var bb = g.bbox;
+    A._cubeBox = bb;
+    if (A.on) {
+      cx.lineWidth = 2; cx.strokeStyle = 'rgba(10,134,184,0.85)'; cx.setLineDash([18, 14]);
+      cx.strokeRect(bb.x - 16, bb.y - 16, bb.w + 32, bb.h + 32);
+      cx.setLineDash([]);
+      cx.fillStyle = '#0a86b8';
+      [[bb.x - 16, bb.y - 16], [bb.x + bb.w + 16, bb.y - 16], [bb.x - 16, bb.y + bb.h + 16], [bb.x + bb.w + 16, bb.y + bb.h + 16]]
+        .forEach(function (q) { cx.fillRect(q[0] - 14, q[1] - 14, 28, 28); });
+    }
+  }
+
+  /* =====================================================================
+     立面图（正投影 · 工程线型）
+     ===================================================================== */
+  function drawElev() {
+    var e = A.elev;
+    if (!e || !e.visible) return;
+    var x = e.cx - e.w / 2, y = e.cy - e.h / 2, w = e.w, h = e.h;
+    var fh = num('archFloorH', 3.6);
+    var t = el('archElevType') ? el('archElevType').value : 'factory';
+    var face = el('archElevFace') ? el('archElevFace').value : 'front';
+    var bays = Math.max(2, Math.round(num('archBaysX', 4)));
+    var floors = Math.max(1, Math.round(A.cube ? A.cube.layers : 4));
+
+    cx.save();
+    if (face === 'back' || face === 'right') { cx.translate(e.cx, 0); cx.scale(-1, 1); cx.translate(-e.cx, 0); }
+
+    setPen('thick', INK, []);
+    if (t === 'factory') {
+      var eave = y + h * 0.42;
+      cx.beginPath();
+      cx.moveTo(x, y + h); cx.lineTo(x, eave);
+      cx.lineTo(x + w / 2, y + h * 0.18);
+      cx.lineTo(x + w, eave); cx.lineTo(x + w, y + h);
+      cx.closePath(); cx.stroke();
+      setPen('mid', INK, []);
+      line(x, eave, x + w, eave);
+      // 刚架柱
+      for (var i = 1; i < bays; i++) { var px = x + w * i / bays; line(px, eave, px, y + h); }
+      // 侧窗带
+      setPen('thin', INK_SOFT, []);
+      cx.strokeRect(x + w * 0.06, eave + h * 0.10, w * 0.88, h * 0.16);
+      for (var s = 1; s < bays * 2; s++) { var sx = x + w * 0.06 + (w * 0.88) * s / (bays * 2); line(sx, eave + h * 0.10, sx, eave + h * 0.26); }
+      // 大门
+      setPen('mid', INK, []);
+      cx.strokeRect(x + w * 0.40, y + h * 0.72, w * 0.20, h * 0.28);
+      setPen('thin', INK_SOFT, []);
+      for (var d = 1; d < 6; d++) { var dy = y + h * 0.72 + (h * 0.28) * d / 6; line(x + w * 0.40, dy, x + w * 0.60, dy); }
+      label('单层厂房 · 门式刚架 · 柱距 6.0m', x, y - 34, 30, INK);
+    } else if (t === 'office' || t === 'tower') {
+      var podium = (t === 'tower') ? h * 0.18 : 0;
+      cx.strokeRect(x, y, w, h);
+      setPen('mid', INK, []);
+      var nf = (t === 'tower') ? Math.max(floors, 8) : floors;
+      for (var f = 1; f < nf; f++) { var fy = y + h * f / nf; line(x, fy, x + w, fy); }
+      setPen('thin', INK_SOFT, []);
+      for (var b = 1; b < bays; b++) { var bxp = x + w * b / bays; line(bxp, y, bxp, y + h - podium); }
+      // 窗带
+      for (var f2 = 0; f2 < nf; f2++) {
+        var wy = y + h * f2 / nf + h / nf * 0.22;
+        var wh = h / nf * 0.46;
+        for (var b2 = 0; b2 < bays; b2++) {
+          var wx = x + w * b2 / bays + w / bays * 0.16;
+          cx.strokeRect(wx, wy, w / bays * 0.68, wh);
+        }
+      }
+      if (podium) { setPen('thick', INK, []); cx.strokeRect(x - w * 0.10, y + h - podium, w * 1.20, podium); }
+      setPen('mid', INK, []);
+      cx.strokeRect(x + w * 0.42, y + h - h * 0.09, w * 0.16, h * 0.09);
+      label(t === 'tower' ? '高层塔楼 · 裙房 + 标准层' : '多层办公 · 框架结构', x, y - 34, 30, INK);
+    } else if (t === 'house') {
+      var wall = y + h * 0.46;
+      cx.beginPath();
+      cx.moveTo(x, y + h); cx.lineTo(x, wall);
+      cx.lineTo(x + w / 2, y + h * 0.10); cx.lineTo(x + w, wall); cx.lineTo(x + w, y + h);
+      cx.closePath(); cx.stroke();
+      setPen('mid', INK, []);
+      line(x - w * 0.04, wall, x + w * 1.04, wall);
+      cx.strokeRect(x + w * 0.66, y + h * 0.14, w * 0.09, h * 0.20); // 烟囱
+      setPen('thin', INK_SOFT, []);
+      cx.strokeRect(x + w * 0.10, wall + h * 0.12, w * 0.20, h * 0.18);
+      cx.strokeRect(x + w * 0.70, wall + h * 0.12, w * 0.20, h * 0.18);
+      setPen('mid', INK, []);
+      cx.strokeRect(x + w * 0.42, y + h - h * 0.30, w * 0.16, h * 0.30);
+      label('坡屋顶住宅 · 屋面坡度 1:2', x, y - 34, 30, INK);
+    } else {
+      // warehouse
+      cx.strokeRect(x, y + h * 0.26, w, h * 0.74);
+      setPen('mid', INK, []);
+      for (var t2 = 0; t2 < 4; t2++) {
+        var tx = x + w * (0.06 + t2 * 0.24);
+        cx.beginPath();
+        cx.moveTo(tx, y + h * 0.26); cx.lineTo(tx + w * 0.09, y + h * 0.10);
+        cx.lineTo(tx + w * 0.18, y + h * 0.26); cx.stroke();
+      }
+      setPen('thin', INK_SOFT, []);
+      for (var c2 = 1; c2 < bays * 2; c2++) { var cxx = x + w * c2 / (bays * 2); line(cxx, y + h * 0.26, cxx, y + h); }
+      label('仓库 · 连续天窗', x, y - 34, 30, INK);
+    }
+    cx.restore();
+
+    // 标高
+    if (chk('ovLevel')) {
+      var nlv = floors;
+      for (var L = 0; L <= nlv; L++) {
+        var ly = y + h - h * L / nlv;
+        setPen('thin', '#00695c', [14, 10]);
+        line(x + w + 10, ly, x + w + 120, ly);
+        cx.setLineDash([]);
+        cx.strokeStyle = '#00695c'; cx.lineWidth = LW('thin');
+        cx.beginPath(); cx.moveTo(x + w + 120, ly); cx.lineTo(x + w + 142, ly - 20); cx.lineTo(x + w + 164, ly); cx.stroke();
+        label(L === 0 ? '±0.000' : '+' + (L * fh).toFixed(3), x + w + 176, ly - 6, 26, '#00695c');
+      }
+    }
+    // 轴网编号
+    if (chk('ovAxis')) {
+      for (var n = 0; n <= bays; n++) {
+        var axp = x + w * n / bays;
+        setPen('thin', RED, [16, 12]);
+        line(axp, y + h, axp, y + h + 74);
+        cx.setLineDash([]);
+        cx.strokeStyle = RED; cx.lineWidth = LW('thin');
+        cx.beginPath(); cx.arc(axp, y + h + 104, 28, 0, 6.2832); cx.stroke();
+        label(String(n + 1), axp, y + h + 104, 28, RED, 'center');
+      }
+    }
+    // 尺寸标注（起止 45° 短斜线）
+    if (chk('ovDim')) {
+      var dy2 = y + h + 172;
+      setPen('thin', INK, []);
+      line(x, dy2, x + w, dy2);
+      for (var m = 0; m <= bays; m++) {
+        var mx2 = x + w * m / bays;
+        line(mx2 - 16, dy2 + 16, mx2 + 16, dy2 - 16);
+        if (m < bays) label('6000', x + w * (m + 0.5) / bays, dy2 - 26, 26, INK, 'center');
+      }
+      label('总长 ' + (bays * 6000), x + w / 2, dy2 + 52, 28, INK, 'center');
+    }
+    // 45° 阴影
+    if (chk('ovShadow')) {
+      cx.save();
+      cx.globalAlpha = 0.12; cx.fillStyle = '#111318';
+      cx.beginPath();
+      cx.moveTo(x + w, y + h); cx.lineTo(x + w + h * 0.34, y + h + h * 0.34);
+      cx.lineTo(x + h * 0.34, y + h + h * 0.34); cx.lineTo(x, y + h);
+      cx.closePath(); cx.fill(); cx.restore();
+    }
+    A._elevBox = { x: x, y: y, w: w, h: h };
+    if (A.on) {
+      cx.lineWidth = 2; cx.strokeStyle = 'rgba(10,134,184,0.85)'; cx.setLineDash([18, 14]);
+      cx.strokeRect(x - 14, y - 14, w + 28, h + 28); cx.setLineDash([]);
+      cx.fillStyle = '#0a86b8';
+      [[x - 14, y - 14], [x + w + 14, y - 14], [x - 14, y + h + 14], [x + w + 14, y + h + 14]]
+        .forEach(function (q) { cx.fillRect(q[0] - 14, q[1] - 14, 28, 28); });
+    }
+  }
+
+  /* ---------- 人体比例尺：眼睛永远落在视平线上 ---------- */
+  function drawFigure() {
+    var hy = A.horizon * H();
+    var gl = A._gl || H() * 0.9;
+    var eye = num('archEyeH', 1.6);
+    var pxPerM = (gl - hy) / Math.max(0.3, eye);
+    var hh = pxPerM * 1.70;
+    [0.22, 0.34].forEach(function (fx, idx) {
+      var bx = W() * fx;
+      var by = gl - (idx ? 0 : 0);
+      var s = hh * (idx ? 0.82 : 1);
+      var head = s * 0.13;
+      setPen('mid', 'rgba(17,19,24,0.62)', []);
+      cx.beginPath(); cx.arc(bx, by - s + head, head, 0, 6.2832); cx.stroke();
+      line(bx, by - s + head * 2, bx, by - s * 0.42);
+      line(bx, by - s * 0.78, bx - s * 0.16, by - s * 0.52);
+      line(bx, by - s * 0.78, bx + s * 0.16, by - s * 0.52);
+      line(bx, by - s * 0.42, bx - s * 0.13, by);
+      line(bx, by - s * 0.42, bx + s * 0.13, by);
+    });
+    setPen('thin', 'rgba(17,19,24,0.4)', [12, 10]);
+    line(W() * 0.18, hy, W() * 0.40, hy);
+    label('1.70 m 人体比例尺 · 眼位 = 视平线', W() * 0.40 + 16, hy - 24, 27, 'rgba(17,19,24,0.6)');
+  }
+
+  function drawNorth() {
+    var x = W() - 250, y = 210, r = 78;
+    setPen('mid', INK, []);
+    cx.beginPath(); cx.arc(x, y, r, 0, 6.2832); cx.stroke();
+    cx.fillStyle = INK;
+    cx.beginPath();
+    cx.moveTo(x, y - r * 1.05); cx.lineTo(x - r * 0.30, y + r * 0.72); cx.lineTo(x, y + r * 0.36);
+    cx.closePath(); cx.fill();
+    setPen('thin', INK, []);
+    cx.beginPath();
+    cx.moveTo(x, y - r * 1.05); cx.lineTo(x + r * 0.30, y + r * 0.72); cx.lineTo(x, y + r * 0.36);
+    cx.closePath(); cx.stroke();
+    label('N', x, y - r - 42, 38, INK, 'center');
+  }
+
+  function drawTitleBlock() {
+    var w = 900, h = 300, x = W() - w - 60, y = H() - h - 60;
+    setPen('thick', INK, []);
+    cx.strokeRect(x, y, w, h);
+    setPen('thin', INK, []);
+    [0.25, 0.5, 0.75].forEach(function (t) { line(x, y + h * t, x + w, y + h * t); });
+    line(x + w * 0.34, y, x + w * 0.34, y + h);
+    var sc = el('archScale') ? el('archScale').value : '100';
+    var rows = [
+      ['项目 PROJECT', 'DRAFTGEN 建筑草图'],
+      ['图名 TITLE', '建筑辅助制图 / 透视推敲'],
+      ['比例 SCALE', '1 : ' + sc],
+      ['日期 DATE', new Date().toISOString().slice(0, 10)]
+    ];
+    rows.forEach(function (r, i) {
+      label(r[0], x + 22, y + h * (i + 0.5) / 4, 26, 'rgba(17,19,24,0.6)');
+      label(r[1], x + w * 0.34 + 22, y + h * (i + 0.5) / 4, 28, INK);
+    });
+  }
+
+  /* =====================================================================
+     主渲染
+     ===================================================================== */
+  function render() {
+    if (!cv) return;
+    syncSize();
+    cx.clearRect(0, 0, W(), H());
+    if (!A.on) return;
+
+    drawHorizon();
+    if (A.step >= 2) drawVPs();
+    if (chk('ovCone')) drawCone();
+    if (A.grid) drawGrid();
+    if (chk('ovMP')) drawMP();
+    if (chk('ovHeight')) drawHeightLine();
+    if (A.elev) drawElev();
+    if (A.cube) drawCube();
+    if (chk('ovFigure')) drawFigure();
+    if (chk('ovNorth')) drawNorth();
+    if (chk('ovTitle')) drawTitleBlock();
+
+    // 步骤水印
+    label('STEP ' + A.step + ' / 5', 26, 44, 30, 'rgba(10,134,184,0.75)');
+  }
+  window.archRender = render;
+
+  /* =====================================================================
+     UI 事件
+     ===================================================================== */
+  window.archToggleEnable = function (on) {
+    A.on = !!on;
+    if (cv) cv.classList.toggle('live', A.on);
+    render();
+    toast(A.on ? '建筑辅助层已启用，可在画布上交互' : '建筑辅助层已关闭');
+  };
+
+  function refreshSteps() {
+    var wrap = el('archSteps'); if (!wrap) return;
+    Array.prototype.forEach.call(wrap.querySelectorAll('.as-step'), function (b) {
+      var s = parseInt(b.dataset.step, 10);
+      b.classList.toggle('active', s === A.step);
+      b.classList.toggle('done', !!A.done[s] && s !== A.step);
+    });
+    var tip = el('archTip'); if (tip) tip.textContent = STEP_TIP[A.step] || '';
+  }
+
+  window.archGoStep = function (s) {
+    A.step = Math.max(1, Math.min(5, s));
+    if (A.step >= 3 && !A.grid) A.grid = { depth: 8, width: 12 };
+    refreshSteps(); render();
+    if (!A.on) toast('提示：先勾选「启用辅助层」才能在画布上操作');
+  };
+  window.archNextStep = function () {
+    A.done[A.step] = true;
+    if (A.step === 5) { archBakeToLayer(); return; }
+    archGoStep(A.step + 1);
+  };
+  window.archPrevStep = function () { archGoStep(A.step - 1); };
+
+  window.archOnAngle = function () {
+    A.yaw = num('archYaw', 35); A.pitch = num('archPitch', 0);
+    var a = el('archYawVal'), b = el('archPitchVal');
+    if (a) a.textContent = A.yaw + '°';
+    if (b) b.textContent = A.pitch + '°';
+    render();
+  };
+
+  function setView(k) {
+    var v = VIEWS.filter(function (o) { return o.k === k; })[0]; if (!v) return;
+    A.view = k; A.yaw = v.yaw; A.pitch = v.pitch;
+    var y = el('archYaw'), p = el('archPitch');
+    if (y) y.value = v.yaw; if (p) p.value = v.pitch;
+    // 透视类型联动消失点数量
+    if (k === 'one') A.vpMode = 'one';
+    else if (k === 'three' || k === 'bird' || k === 'worm') A.vpMode = 'three';
+    else A.vpMode = 'two';
+    archOnAngle();
+    Array.prototype.forEach.call(document.querySelectorAll('#archViewChips .arch-chip'), function (c) {
+      c.classList.toggle('active', c.dataset.k === k);
+    });
+    render();
+  }
+  window.archSetView = setView;
+
+  window.archSetLayers = function (n) {
+    if (!A.cube) archPlaceCube();
+    A.cube.layers = n;
+    Array.prototype.forEach.call(document.querySelectorAll('#archLayerSeg button'), function (b) {
+      b.classList.toggle('active', parseInt(b.dataset.l, 10) === n);
+    });
+    render();
+    toast(n + ' 层立体网格');
+  };
+
+  window.archPlaceCube = function () {
+    if (!A.on) { var e = el('archEnable'); if (e) { e.checked = true; archToggleEnable(true); } }
+    A.cube = A.cube || {};
+    A.cube.cx = A.cube.cx || W() * 0.42;
+    A.cube.cy = A.cube.cy || H() * 0.52;
+    A.cube.size = A.cube.size || Math.min(W(), H()) * 0.42;
+    A.cube.layers = A.cube.layers || 4;
+    A.cube.bx = Math.max(1, Math.round(num('archBaysX', 4)));
+    A.cube.bz = Math.max(1, Math.round(num('archBaysZ', 4)));
+    A.cube.visible = true;
+    Array.prototype.forEach.call(document.querySelectorAll('#archLayerSeg button'), function (b) {
+      b.classList.toggle('active', parseInt(b.dataset.l, 10) === A.cube.layers);
+    });
+    render();
+    toast('立体网格已放置：拖动移动 · 拖角缩放 · 滚轮缩放 · Shift 旋转');
+  };
+  window.archToggleCube = function () { if (A.cube) { A.cube.visible = !A.cube.visible; render(); } };
+  // 体块外接框（供调试 / 自动化检查体量高度）
+  window.archCubeBBox = function () { return A.cube ? cubeGeom().bbox : null; };
+  window.archRemoveCube = function () { A.cube = null; render(); toast('体块已移除'); };
+
+  window.archPlaceElev = function () {
+    if (!A.on) { var e = el('archEnable'); if (e) { e.checked = true; archToggleEnable(true); } }
+    A.elev = A.elev || {};
+    A.elev.cx = A.elev.cx || W() * 0.72;
+    A.elev.cy = A.elev.cy || H() * 0.46;
+    A.elev.w = A.elev.w || W() * 0.34;
+    A.elev.h = A.elev.h || H() * 0.34;
+    A.elev.visible = true;
+    render();
+    toast('立面图已放置：拖动移动 · 拖角缩放');
+  };
+  window.archToggleElev = function () { if (A.elev) { A.elev.visible = !A.elev.visible; render(); } };
+  window.archRemoveElev = function () { A.elev = null; render(); toast('立面已移除'); };
+
+  window.archClearAll = function () {
+    A.cube = null; A.elev = null; A.grid = null; A.step = 1; A.done = {};
+    refreshSteps(); render(); toast('辅助层已清空');
+  };
+
+  function bake(newLayer) {
+    if (!cv) return;
+    var wasOn = A.on;
+    // 出图态：把辅助线重绘到离屏画布，A.on=false 以隐藏交互手柄
+    var snapshot = document.createElement('canvas');
+    snapshot.width = W(); snapshot.height = H();
+    var oc = cx;
+    cx = snapshot.getContext('2d');
+    A.on = false;
+    cx.clearRect(0, 0, W(), H());
+    drawHorizon();
+    drawVPs();
+    if (chk('ovCone')) drawCone();
+    if (A.grid) drawGrid();
+    if (chk('ovMP')) drawMP();
+    if (chk('ovHeight')) drawHeightLine();
+    if (A.elev) drawElev();
+    if (A.cube) drawCube();
+    if (chk('ovFigure')) drawFigure();
+    if (chk('ovNorth')) drawNorth();
+    if (chk('ovTitle')) drawTitleBlock();
+    cx = oc;
+    A.on = wasOn;
+
+    if (newLayer && typeof addLayer === 'function') addLayer();
+    var ctx2 = (typeof getActiveLayerCtx === 'function') ? getActiveLayerCtx() : null;
+    if (!ctx2) { toast('当前图层已锁定，无法烘焙'); render(); return null; }
+    if (typeof saveUndoState === 'function') saveUndoState();
+    ctx2.drawImage(snapshot, 0, 0);
+    if (typeof compositeToMain === 'function') compositeToMain();
+    render();
+    return snapshot;
+  }
+
+  window.archBakeToLayer = function () { if (bake(false)) { A.done[5] = true; refreshSteps(); toast('✓ 辅助线已烘焙到当前图层'); } };
+  window.archBakeToNewLayer = function () { if (bake(true)) toast('✓ 已存为新参考图层'); };
+  window.archExportPNG = function () {
+    if (!cv) return;
+    var a = document.createElement('a');
+    a.download = 'arch_guides_' + Date.now() + '.png';
+    a.href = cv.toDataURL('image/png');
+    a.click();
+    toast('已导出辅助线 PNG');
+  };
+
+  /* =====================================================================
+     画布交互
+     ===================================================================== */
+  function evPos(e) {
+    var r = cv.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (W() / r.width), y: (e.clientY - r.top) * (H() / r.height) };
+  }
+  function nearHandles(box, p) {
+    if (!box) return -1;
+    var pts = [[box.x - 16, box.y - 16], [box.x + box.w + 16, box.y - 16],
+               [box.x - 16, box.y + box.h + 16], [box.x + box.w + 16, box.y + box.h + 16]];
+    for (var i = 0; i < 4; i++) {
+      if (Math.abs(p.x - pts[i][0]) < 46 && Math.abs(p.y - pts[i][1]) < 46) return i;
+    }
+    return -1;
+  }
+  function inBox(box, p) {
+    return box && p.x > box.x - 30 && p.x < box.x + box.w + 30 && p.y > box.y - 30 && p.y < box.y + box.h + 30;
+  }
+
+  function onDown(e) {
+    if (!A.on) return;
+    var p = evPos(e);
+    e.preventDefault();
+
+    // 手柄优先
+    if (A.cube && A.cube.visible) {
+      var hi = nearHandles(A._cubeBox, p);
+      if (hi >= 0) { A.drag = { t: 'cube-scale', s0: A.cube.size, p0: p }; return; }
+    }
+    if (A.elev && A.elev.visible) {
+      var he = nearHandles(A._elevBox, p);
+      if (he >= 0) { A.drag = { t: 'elev-scale', w0: A.elev.w, h0: A.elev.h, p0: p }; return; }
+    }
+    // VP 拖动
+    var vs = activeVPs();
+    for (var i = 0; i < vs.length; i++) {
+      if (Math.abs(p.x - vs[i].x * W()) < 60 && Math.abs(p.y - vs[i].y * H()) < 60) {
+        A.drag = { t: 'vp', i: i }; return;
+      }
+    }
+    // 视平线拖动
+    if (Math.abs(p.y - A.horizon * H()) < 40) { A.drag = { t: 'horizon' }; return; }
+    // 体块 / 立面移动
+    if (A.cube && A.cube.visible && inBox(A._cubeBox, p)) {
+      A.drag = { t: e.shiftKey ? 'cube-rot' : 'cube-move', p0: p, c0: { x: A.cube.cx, y: A.cube.cy }, y0: A.yaw }; return;
+    }
+    if (A.elev && A.elev.visible && inBox(A._elevBox, p)) {
+      A.drag = { t: 'elev-move', p0: p, c0: { x: A.elev.cx, y: A.elev.cy } }; return;
+    }
+    // 按当前步骤落点
+    if (A.step === 1) { A.horizon = Math.max(0.05, Math.min(0.95, p.y / H())); A.done[1] = true; }
+    else if (A.step === 2) {
+      var n = (A.vpMode === 'one') ? 1 : (A.vpMode === 'three' ? 3 : 2);
+      A._vpIdx = ((A._vpIdx || 0) % n);
+      A.vps[A._vpIdx] = { x: p.x / W(), y: (A._vpIdx < 2 ? A.horizon : p.y / H()) };
+      A._vpIdx++;
+      A.done[2] = true;
+    } else if (A.step === 3) {
+      A.grid = A.grid || { depth: 8, width: 12 };
+      A.done[3] = true;
+    }
+    refreshSteps(); render();
+  }
+
+  function onMove(e) {
+    if (!A.on || !A.drag) return;
+    var p = evPos(e);
+    var d = A.drag;
+    if (d.t === 'horizon') {
+      A.horizon = Math.max(0.05, Math.min(0.95, p.y / H()));
+      // 视平线上的 VP 跟随
+      A.vps.forEach(function (v, i) { if (i < 2) v.y = A.horizon; });
+    } else if (d.t === 'vp') {
+      A.vps[d.i] = { x: p.x / W(), y: (d.i < 2 ? A.horizon : p.y / H()) };
+    } else if (d.t === 'cube-move') {
+      A.cube.cx = d.c0.x + (p.x - d.p0.x);
+      A.cube.cy = d.c0.y + (p.y - d.p0.y);
+    } else if (d.t === 'cube-rot') {
+      A.yaw = Math.round(Math.max(-180, Math.min(180, d.y0 + (p.x - d.p0.x) * 0.12)));
+      var yEl = el('archYaw'); if (yEl) yEl.value = A.yaw;
+      var yv = el('archYawVal'); if (yv) yv.textContent = A.yaw + '°';
+    } else if (d.t === 'cube-scale') {
+      var k = 1 + ((p.x - d.p0.x) + (p.y - d.p0.y)) / 900;
+      A.cube.size = Math.max(120, Math.min(Math.max(W(), H()) * 1.2, d.s0 * k));
+    } else if (d.t === 'elev-move') {
+      A.elev.cx = d.c0.x + (p.x - d.p0.x);
+      A.elev.cy = d.c0.y + (p.y - d.p0.y);
+    } else if (d.t === 'elev-scale') {
+      var k2 = 1 + ((p.x - d.p0.x) + (p.y - d.p0.y)) / 900;
+      A.elev.w = Math.max(150, d.w0 * k2);
+      A.elev.h = Math.max(120, d.h0 * k2);
+    }
+    render();
+  }
+  function onUp() { A.drag = null; }
+
+  function onWheel(e) {
+    if (!A.on) return;
+    var p = evPos(e);
+    if (A.cube && A.cube.visible && inBox(A._cubeBox, p)) {
+      e.preventDefault();
+      A.cube.size = Math.max(120, Math.min(Math.max(W(), H()) * 1.2, A.cube.size * (e.deltaY < 0 ? 1.08 : 0.93)));
+      render();
+    } else if (A.elev && A.elev.visible && inBox(A._elevBox, p)) {
+      e.preventDefault();
+      var k = e.deltaY < 0 ? 1.08 : 0.93;
+      A.elev.w = Math.max(150, A.elev.w * k);
+      A.elev.h = Math.max(120, A.elev.h * k);
+      render();
+    }
+  }
+
+  /* =====================================================================
+     初始化
+     ===================================================================== */
+  function init() {
+    cv = document.getElementById('archCanvas');
+    if (!cv) return;
+    cx = cv.getContext('2d');
+    syncSize();
+
+    // 视角 chips
+    var box = el('archViewChips');
+    if (box) {
+      box.innerHTML = '';
+      VIEWS.forEach(function (v) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'arch-chip'; b.dataset.k = v.k; b.textContent = v.n;
+        if (v.k === A.view) b.classList.add('active');
+        b.addEventListener('click', function () { setView(v.k); });
+        box.appendChild(b);
+      });
+    }
+    cv.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    cv.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('resize', function () { syncSize(); render(); });
+
+    refreshSteps();
+    render();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+/* ---------- 折叠面板 ---------- */
+function toggleGuideFold() {
+  var sec = document.getElementById('guideFold');
+  if (!sec) return;
+  var open = sec.classList.toggle('open');
+  var head = document.getElementById('guideFoldHead');
+  var tag = document.getElementById('guideFoldTag');
+  if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (tag) tag.textContent = open ? '点击收起' : '点击展开';
+}
+
+</script>
 </body>
 </html>
