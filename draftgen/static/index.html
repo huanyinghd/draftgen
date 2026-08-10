@@ -410,11 +410,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 30%, transparent 80%);
           mask-image: radial-gradient(circle at 50% 40%, #000 30%, transparent 80%);
 }
-#cursor-glow{
-  position:fixed; width:540px; height:540px; left:0; top:0; z-index:8000; pointer-events:none;
-  transform: translate(-50%,-50%); mix-blend-mode: screen;
-  background: radial-gradient(circle, rgba(139,92,246,.16), rgba(34,211,238,.08) 42%, transparent 70%);
-}
 
 /* ---------- Base ---------- */
 body{ background: var(--bg); color: var(--text); }
@@ -506,6 +501,9 @@ body{ background: var(--bg); color: var(--text); }
 .canvas-wrapper .guide-canvas{ z-index:5; pointer-events:none; }
 .canvas-wrapper .draw-canvas{ z-index:10; cursor:crosshair; }
 .canvas-wrapper .obj-canvas{ z-index:20; pointer-events:none; }
+
+/* 粒子光束层：漂浮在 holographic 背景之上、画布纸之下 */
+.beam-field{ position:absolute; inset:0; z-index:2; pointer-events:none; }
 
 /* ===== 刷新特效：重置空白页面时的扫光 + 转圈 + 刷新中 ===== */
 .refresh-fx{ position:absolute; inset:0; z-index:30; pointer-events:none; opacity:0; visibility:hidden; overflow:hidden;
@@ -963,7 +961,6 @@ window.PAINTINGS={
 <!-- Global ambient FX layers -->
 <div id="fx-bg"></div>
 <div id="fx-grid"></div>
-<div id="cursor-glow"></div>
 <!-- 开机扫描装饰层（一次性） -->
 <div class="scifi-boot" id="scifiBoot" aria-hidden="true">
   <div class="sb-sweep"></div>
@@ -1155,6 +1152,9 @@ window.PAINTINGS={
       <div class="sf-glow"></div>
     </div>
 
+    <!-- 粒子光束层 -->
+    <canvas id="beamField" class="beam-field" aria-hidden="true"></canvas>
+
     <div class="canvas-wrapper" id="canvasWrapper">
       <canvas id="bgCanvas"></canvas>
       <canvas id="guideCanvas" class="guide-canvas"></canvas>
@@ -1318,10 +1318,6 @@ window.PAINTINGS={
             <span style="opacity:.7">建筑 / 景深参考</span>
           </div>
           <button class="action-btn secondary" id="resetBlankBtn" onclick="resetBlankWithRefresh()" style="margin-top:10px;width:100%">🧹 重置空白页面（带刷新特效）</button>
-          <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
-            <div style="font-size:12px;font-weight:600;margin-bottom:6px">🖼️ 蒙娜丽莎草图</div>
-            <button class="action-btn" id="monaBtn" onclick="generateMona()" style="width:100%">生成蒙娜丽莎（乱线 1000）</button>
-          </div>
           <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
             <div style="font-size:12px;font-weight:600;margin-bottom:4px">🏛️ 世界名画合集</div>
             <div id="paintingGrid" class="paint-grid"></div>
@@ -6308,14 +6304,42 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .main #genDense.fx-gen:hover{ transform:translateY(-2px) scale(1.015); }
 .main #genDense.fx-gen:active{ transform:scale(.97); }
 .main #genDense.fx-gen[disabled]{ filter:grayscale(.4) brightness(.85); animation:none; cursor:progress; }
-.main .style-circuit{ position:relative; padding:24px 8px 8px; margin-top:4px; }
-.main .style-circuit .sc-toplead{ position:absolute; left:50%; top:2px; width:2px; height:14px; transform:translateX(-50%); background:linear-gradient(180deg,#00e5ff,rgba(0,229,255,0)); box-shadow:0 0 8px #00e5ff; }
-.main .style-circuit .sc-bus{ position:absolute; left:26px; right:26px; top:16px; height:2px; background:linear-gradient(90deg,rgba(0,229,255,0),rgba(0,229,255,.6),rgba(0,229,255,0)); }
-.main .style-circuit .sc-balls{ position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:18px 12px; justify-content:center; margin-top:14px; }
-.main .sc-ball{ position:relative; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:8px; line-height:1; letter-spacing:.2px; padding:3px; background:rgba(4,16,28,.92); border:1.5px solid rgba(0,229,255,.45); color:#cdeefb; cursor:pointer; transition:.15s; }
-.main .sc-ball::before{ content:''; position:absolute; left:50%; top:-20px; transform:translateX(-50%); width:2px; height:20px; background:rgba(0,229,255,.5); }
-.main .sc-ball:hover{ border-color:#00e5ff; box-shadow:0 0 14px rgba(0,229,255,.5); color:#eafdff; }
-.main .sc-ball.active{ background:linear-gradient(135deg,#00e5ff,#22d3ee); color:#04121f; border-color:#aef6ff; font-weight:800; box-shadow:0 0 18px rgba(0,229,255,.85); }
+/* ===== 风格电路板（PCB） + 电流涌动 ===== */
+.main .style-circuit{ position:relative; padding:22px 10px 14px; margin-top:6px; border-radius:12px; overflow:hidden;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, rgba(45,212,191,.08) 11px 12px),
+    repeating-linear-gradient(90deg, transparent 0 11px, rgba(45,212,191,.08) 11px 12px),
+    linear-gradient(160deg, rgba(6,28,26,.96), rgba(8,18,34,.96));
+  border:1px solid rgba(45,212,191,.35);
+  box-shadow: inset 0 0 22px rgba(45,212,191,.10), 0 0 14px rgba(45,212,191,.12);
+}
+/* 电路板上流动的电流光点 */
+.main .style-circuit::before{ content:''; position:absolute; inset:0; pointer-events:none; opacity:.9; mix-blend-mode:screen;
+  background:
+    radial-gradient(2px 2px at 14% 28%, rgba(45,212,191,.95), transparent 60%),
+    radial-gradient(2px 2px at 33% 72%, rgba(34,211,238,.85), transparent 60%),
+    radial-gradient(2px 2px at 54% 22%, rgba(139,92,246,.85), transparent 60%),
+    radial-gradient(2px 2px at 70% 64%, rgba(34,211,238,.85), transparent 60%),
+    radial-gradient(2px 2px at 88% 36%, rgba(45,212,191,.85), transparent 60%);
+  background-size:200% 200%; animation: pcbCurrent 4.5s linear infinite; }
+@keyframes pcbCurrent{ 0%{ background-position:0% 0% } 100%{ background-position:200% 200% } }
+/* 顶部接插件引脚 */
+.main .style-circuit .sc-toplead{ position:absolute; left:50%; top:4px; width:3px; height:12px; transform:translateX(-50%); background:linear-gradient(180deg,#ffd166,rgba(255,209,102,0)); box-shadow:0 0 8px rgba(255,209,102,.7); }
+/* 电源母线（带流动电流） */
+.main .style-circuit .sc-bus{ position:absolute; left:18px; right:18px; top:14px; height:3px; border-radius:2px;
+  background:linear-gradient(90deg, rgba(45,212,191,.18), rgba(34,211,238,.6), rgba(139,92,246,.5), rgba(45,212,191,.18));
+  box-shadow:0 0 10px rgba(34,211,238,.5); }
+.main .style-circuit .sc-balls{ position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:16px 12px; justify-content:center; margin-top:16px; }
+/* 芯片元件 */
+.main .sc-ball{ position:relative; width:48px; height:40px; border-radius:7px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:8px; line-height:1; letter-spacing:.2px; padding:3px;
+  background:linear-gradient(160deg, rgba(10,32,30,.96), rgba(8,18,34,.96)); color:#cdeefb; cursor:pointer; transition:.15s;
+  border:1.5px solid rgba(45,212,191,.5); box-shadow: inset 0 0 8px rgba(45,212,191,.15); }
+/* 芯片引脚：连到母线 */
+.main .sc-ball::before{ content:''; position:absolute; left:50%; top:-14px; transform:translateX(-50%); width:2px; height:14px; background:rgba(45,212,191,.55); }
+/* 芯片底部焊盘 */
+.main .sc-ball::after{ content:''; position:absolute; left:5px; right:5px; bottom:-4px; height:3px; border-radius:1px; background:repeating-linear-gradient(90deg, rgba(45,212,191,.75) 0 3px, transparent 3px 6px); }
+.main .sc-ball:hover{ border-color:#5eead4; color:#eafdff; box-shadow:0 0 14px rgba(45,212,191,.5), inset 0 0 8px rgba(45,212,191,.3); }
+.main .sc-ball.active{ background:linear-gradient(160deg,#0e6b63,#0a3a8c); color:#eafdff; border-color:#7df9ff; font-weight:800; box-shadow:0 0 18px rgba(34,211,238,.85), inset 0 0 10px rgba(34,211,238,.4); }
 .main .sc-ball span{ pointer-events:none; }
 
 /* 分隔条 */
@@ -6835,10 +6859,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .holo-hero{ border:1px solid rgba(0,229,255,.3) !important; box-shadow: inset 0 0 40px rgba(0,229,255,.18), 0 0 30px rgba(124,92,255,.22) !important; }
 .holo-cta-text{ color:#eafdff !important; }
 
-/* 风格球球脉冲 */
-.sc-ball{ border-color: rgba(0,229,255,.5) !important; box-shadow:0 0 10px rgba(0,229,255,.25); }
-.sc-ball:hover{ box-shadow:0 0 18px rgba(0,229,255,.6) !important; }
-.sc-ball.active{ box-shadow:0 0 22px rgba(0,229,255,.9) !important; }
+/* 风格芯片脉冲 */
+.sc-ball{ border-color: rgba(45,212,191,.55) !important; box-shadow:0 0 10px rgba(45,212,191,.28) !important; }
+.sc-ball:hover{ box-shadow:0 0 18px rgba(45,212,191,.6) !important; }
+.sc-ball.active{ box-shadow:0 0 22px rgba(34,211,238,.9) !important; }
 
 /* 蓝图角标发光 */
 .bp-corner{ width:34px !important; height:34px !important; border-color: rgba(0,229,255,.6) !important; box-shadow:0 0 12px rgba(0,229,255,.5); }
@@ -6859,11 +6883,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .hud-bar .dot{ width:6px; height:6px; border-radius:50%; background:#39ff14; box-shadow:0 0 8px #39ff14; animation:hudBlink 1.6s ease-in-out infinite; }
 @keyframes hudBlink{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
 
-/* 光标辉光增强 */
-#cursor-glow{ background: radial-gradient(circle, rgba(0,229,255,.18), rgba(124,92,255,.10) 42%, transparent 70%) !important; }
-
 @media (prefers-reduced-motion: reduce){
-  #fx-scanline::after, #cursor-glow{ animation:none !important; }
+  #fx-scanline::after{ animation:none !important; }
 }
 
 /* ============ 科幻 3.0 强化特效 ============ */
@@ -6957,13 +6978,13 @@ window.addEventListener('DOMContentLoaded', ()=>{
 @keyframes glitchTop{ 0%{ transform:translate(0,0); } 50%{ transform:translate(-3px,-1px); } 100%{ transform:translate(2px,0); } }
 @keyframes glitchBot{ 0%{ transform:translate(0,0); } 50%{ transform:translate(3px,1px); } 100%{ transform:translate(-2px,0); } }
 
-/* ---- 风格电路能量流动 ---- */
+/* ---- 电路板电流涌动 ---- */
 .style-circuit .sc-bus, .style-circuit .sc-toplead{ position:relative; }
 .style-circuit .sc-bus::after, .style-circuit .sc-toplead::after{ content:''; position:absolute; inset:0;
-  background: linear-gradient(90deg, transparent, rgba(0,229,255,.9), transparent); background-size:40% 100%;
-  background-repeat:no-repeat; animation: circuitFlow 2.4s linear infinite; mix-blend-mode:screen; }
-.style-circuit .sc-toplead::after{ background: linear-gradient(180deg, transparent, rgba(124,92,255,.9), transparent); background-size:100% 40%; }
-@keyframes circuitFlow{ 0%{ background-position:-40% 0; } 100%{ background-position:140% 0; } }
+  background: linear-gradient(90deg, transparent, rgba(94,234,212,.95), rgba(34,211,238,.95), transparent); background-size:50% 100%;
+  background-repeat:no-repeat; animation: circuitFlow 1.8s linear infinite; mix-blend-mode:screen; }
+.style-circuit .sc-toplead::after{ background: linear-gradient(180deg, transparent, rgba(255,209,102,.95), transparent); background-size:100% 50%; animation-duration:2.2s; }
+@keyframes circuitFlow{ 0%{ background-position:-50% 0; } 100%{ background-position:150% 0; } }
 
 /* ---- 开机扫描（一次性） ---- */
 .scifi-boot{ position:fixed; inset:0; z-index:9500; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -7105,16 +7126,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* 科幻 2.0 交互特效：光标辉光跟随 + HUD 时钟/数据 */
+/* HUD 时钟 / 数据 */
 (function(){
-  var glow=document.getElementById('cursor-glow');
-  if(glow){
-    var gx=0, gy=0, tx=0, ty=0;
-    window.addEventListener('mousemove', function(e){ tx=e.clientX; ty=e.clientY; }, {passive:true});
-    (function gl(){ gx += (tx-gx)*0.18; gy += (ty-gy)*0.18;
-      glow.style.transform='translate('+gx+'px,'+gy+'px) translate(-50%,-50%)';
-      requestAnimationFrame(gl); })();
-  }
   var clock=document.getElementById('hudClock'), node=document.getElementById('hudNode');
   function pad(n){ return n<10?'0'+n:''+n; }
   function tick(){
@@ -7152,6 +7165,67 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }
     stars.appendChild(frag);
   }
+})();
+</script>
+
+<script>
+/* 粒子光束：在画布区漂浮的发光粒子拖尾 + 偶发能量光束 */
+(function(){
+  var cv=document.getElementById('beamField'); if(!cv) return;
+  var ctx=cv.getContext('2d');
+  var area=document.getElementById('canvasArea');
+  var DPR=Math.min(window.devicePixelRatio||1, 2);
+  var W=0, H=0;
+  function resize(){
+    var r=area?area.getBoundingClientRect():{width:innerWidth,height:innerHeight};
+    W=r.width; H=r.height; cv.width=Math.max(2,Math.floor(W*DPR)); cv.height=Math.max(2,Math.floor(H*DPR));
+    cv.style.width=W+'px'; cv.style.height=H+'px'; ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resize(); window.addEventListener('resize', resize);
+  var COLORS=['34,211,238','45,212,191','139,92,246','236,72,153','125,211,252'];
+  function mk(){ var c=COLORS[(Math.random()*COLORS.length)|0];
+    var edge=Math.random(); var x,y;
+    if(edge<0.5){ x=Math.random()*W; y=Math.random()<0.5?-10:H+10; }
+    else { x=Math.random()<0.5?-10:W+10; y=Math.random()*H; }
+    var ang=Math.random()*Math.PI*2, sp=0.6+Math.random()*1.8;
+    return { x:x, y:y, px:x, py:y, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp, life:0, max:120+Math.random()*160, c:c, w:0.8+Math.random()*1.6 };
+  }
+  var ps=[], beams=[];
+  for(var i=0;i<54;i++){ ps.push(mk()); }
+  function spawnBeam(){
+    var x0=Math.random()*W, y0=Math.random()*H, a=Math.random()*Math.PI*2, len=80+Math.random()*220;
+    beams.push({ x0:x0, y0:y0, a:a, len:len, life:0, max:18+Math.random()*16, c:COLORS[(Math.random()*COLORS.length)|0] });
+  }
+  var beamT=0;
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    for(var i=0;i<ps.length;i++){
+      var p=ps[i]; p.px=p.x; p.py=p.y; p.x+=p.vx; p.y+=p.vy; p.life++;
+      if(p.life>p.max || p.x<-20||p.x>W+20||p.y<-20||p.y>H+20){ ps[i]=mk(); continue; }
+      var t=p.life/p.max, al=Math.sin(Math.PI*t)*0.9;
+      // 光束拖尾
+      ctx.strokeStyle='rgba('+p.c+','+(al*0.7).toFixed(3)+')'; ctx.lineWidth=p.w; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(p.px,p.py); ctx.lineTo(p.x,p.y); ctx.stroke();
+      // 头部光点
+      ctx.fillStyle='rgba('+p.c+','+al.toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.w*1.4,0,6.283); ctx.fill();
+    }
+    beamT++; if(beamT>26 && Math.random()<0.5){ beamT=0; spawnBeam(); }
+    for(var j=beams.length-1;j>=0;j--){
+      var b=beams[j]; b.life++; if(b.life>b.max){ beams.splice(j,1); continue; }
+      var bt=b.life/b.max, ba=(1-Math.abs(bt-0.5)*2)*0.9;
+      var ex=b.x0+Math.cos(b.a)*b.len, ey=b.y0+Math.sin(b.a)*b.len;
+      var g=ctx.createLinearGradient(b.x0,b.y0,ex,ey);
+      g.addColorStop(0,'rgba('+b.c+',0)'); g.addColorStop(0.5,'rgba('+b.c+','+ba.toFixed(3)+')'); g.addColorStop(1,'rgba('+b.c+',0)');
+      ctx.strokeStyle=g; ctx.lineWidth=2.2; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(b.x0,b.y0); ctx.lineTo(ex,ey); ctx.stroke();
+    }
+    ctx.globalCompositeOperation='source-over';
+    requestAnimationFrame(frame);
+  }
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce) requestAnimationFrame(frame); else { ctx.clearRect(0,0,W,H); }
 })();
 </script>
 
