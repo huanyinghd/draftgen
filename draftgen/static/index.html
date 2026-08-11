@@ -7562,7 +7562,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
     vps: [{ x: -0.30, y: 0.58 }, { x: 1.30, y: 0.58 }, { x: 0.5, y: -1.10 }],
     station: { x: 0.5, y: 0.93 },
     grid: null,
-    cube: null,
+    cube: null,        // 当前选中 / 正在编辑的立方体（指向 cubes 中的对象）
+    cubes: [],         // 全部立方体：一个图层一个，全部默认对齐主辅助线（guide=0）
     elev: null,
     view: 'two',
     yaw: 35, pitch: 0,
@@ -7580,6 +7581,19 @@ window.addEventListener('DOMContentLoaded', ()=>{
     showSecond: false  // 是否显示第二条辅助线
   };
   window.ARCH = A;
+
+  // 主图层显隐联动对应立方体：每个立方体（经「添加图层并放下一幅」创建）绑定一个图层
+  if (typeof toggleLayerVisibility === 'function' && !window.__archLayerVisWrapped) {
+    var _origToggleLayerVisibility = toggleLayerVisibility;
+    window.toggleLayerVisibility = function (idx) {
+      _origToggleLayerVisibility(idx);
+      if (A.cubes && typeof layers !== 'undefined' && layers[idx]) {
+        A.cubes.forEach(function (c) { if (c.layerIdx === idx) c.visible = layers[idx].visible; });
+        render();
+      }
+    };
+    window.__archLayerVisWrapped = true;
+  }
 
   // 主辅助线（= A.vps / A.horizon / A.vpMode，永远最高优先级）
   function primaryG() { return { vpMode: A.vpMode, vps: A.vps, horizon: A.horizon }; }
@@ -7905,23 +7919,26 @@ window.addEventListener('DOMContentLoaded', ()=>{
   /* =====================================================================
      XYZ 立体网格体块（魔方）
      ===================================================================== */
-  function cubeGeom() {
+  function cubeGeom(cube) {
+    cube = cube || A.cube;
     var v = VIEWS.filter(function (o) { return o.k === A.view; })[0] || VIEWS[2];
     // ★ 贴合模式：仅透视视角（一点/两点/三点）由消失点反解的相机驱动，
     //   所有水平边严格汇聚到 VP；正交/轴测等视角仍用原几何。
     if (A.snapVP && !v.ortho) {
-      var vg = cubeGeomVP();
+      var vg = cubeGeomVP(cube);
       if (vg) return vg;
     }
-    return cubeGeomOrtho();
+    return cubeGeomOrtho(cube);
   }
 
   /* 由消失点相机生成的体块几何（真实建筑比例） */
-  function cubeGeomVP() {
-    var gi = (A.cube && A.cube.guide === 1) ? 1 : 0;   // 该立方体跟随的辅助线
+  function cubeGeomVP(cube) {
+    cube = cube || A.cube;
+    if (!cube) return null;
+    var gi = (cube.guide === 1) ? 1 : 0;   // 该立方体跟随的辅助线
     var cam = camFromVPs(guideG(gi));
     if (!cam) return null;
-    var c = A.cube;
+    var c = cube;
     var bx = c.bx, bz = c.bz, ny = c.layers;
 
     var bayW = Math.max(1.5, num('archBayW', A.bayW));      // 开间宽 m
@@ -7967,8 +7984,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 
   /* 正交 / 等轴测等非透视视角的原几何 */
-  function cubeGeomOrtho() {
-    var c = A.cube;
+  function cubeGeomOrtho(cube) {
+    cube = cube || A.cube;
+    if (!cube) return null;
+    var c = cube;
     var bx = c.bx, bz = c.bz, ny = c.layers;
     var mx = Math.max(bx, bz, ny);
     var pts = function (x, y, z) {
@@ -7997,10 +8016,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function drawCube() {
-    var c = A.cube;
+  function drawCube(cube) {
+    var c = cube || A.cube;
     if (!c || !c.visible) return;
-    var g = cubeGeom();
+    var g = cubeGeom(c);
     var bx = c.bx, bz = c.bz, ny = c.layers;
 
     function seg(p1, p2, level, isEdge) {
@@ -8087,10 +8106,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
       }
     }
 
-    // 选中手柄
+    // 选中手柄（仅当前选中立方体显示）
     var bb = g.bbox;
-    A._cubeBox = bb;
-    if (A.on) {
+    c._box = bb;
+    if (A.on && c === A.cube) {
       cx.lineWidth = 2; cx.strokeStyle = 'rgba(10,134,184,0.85)'; cx.setLineDash([18, 14]);
       cx.strokeRect(bb.x - 16, bb.y - 16, bb.w + 32, bb.h + 32);
       cx.setLineDash([]);
@@ -8327,7 +8346,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (chk('ovMP')) drawMP();
     if (chk('ovHeight')) drawHeightLine();
     if (A.elev) drawElev();
-    if (A.cube) drawCube();
+    A.cubes.forEach(function (c) { drawCube(c); });
     if (chk('ovFigure')) drawFigure();
     if (chk('ovNorth')) drawNorth();
     if (chk('ovTitle')) drawTitleBlock();
@@ -8509,32 +8528,45 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
   window.archPlaceCube = function () {
     if (!A.on) { var e = el('archEnable'); if (e) { e.checked = true; archToggleEnable(true); } }
-    A.cube = A.cube || {};
-    A.cube.guide = A.activeGuide;   // 跟随当前激活辅助线；默认 0=主辅助线（所有立方体统一对齐）
-    A.cube.cx = A.cube.cx || W() * 0.42;
-    A.cube.cy = A.cube.cy || H() * 0.52;
-    A.cube.size = A.cube.size || Math.min(W(), H()) * 0.42;
-    A.cube.layers = A.cube.layers || 4;
-    A.cube.bx = Math.max(1, Math.round(num('archBaysX', 4)));
-    A.cube.bz = Math.max(1, Math.round(num('archBaysZ', 4)));
-    A.cube.visible = true;
+    // 新增一个立方体（一个图层一个）；默认 guide=0=主辅助线（最高优先级）→ 与第一幅对齐
+    var prev = A.cubes[A.cubes.length - 1];
+    var c = {
+      guide: A.activeGuide,                                       // 0=主辅助线
+      cx: prev ? prev.cx + Math.max(120, prev.size * 0.55) : W() * 0.40,
+      cy: prev ? prev.cy : H() * 0.54,
+      size: prev ? prev.size : Math.min(W(), H()) * 0.40,
+      layers: A.cube ? A.cube.layers : 4,
+      bx: Math.max(1, Math.round(num('archBaysX', 4))),
+      bz: Math.max(1, Math.round(num('archBaysZ', 4))),
+      visible: true,
+      layerIdx: -1                                                 // 仅经「添加图层并放下一幅」时绑定具体图层
+    };
+    A.cubes.push(c);
+    A.cube = c;                                                    // 选中新放置的立方体
     Array.prototype.forEach.call(document.querySelectorAll('#archLayerSeg button'), function (b) {
-      b.classList.toggle('active', parseInt(b.dataset.l, 10) === A.cube.layers);
+      b.classList.toggle('active', parseInt(b.dataset.l, 10) === c.layers);
     });
     render();
     toast('立体网格已放置：拖动移动 · 拖角缩放 · 滚轮缩放 · Shift 旋转');
   };
   window.archToggleCube = function () { if (A.cube) { A.cube.visible = !A.cube.visible; render(); } };
   // 体块外接框（供调试 / 自动化检查体量高度）
-  window.archCubeBBox = function () { return A.cube ? cubeGeom().bbox : null; };
-  window.archRemoveCube = function () { A.cube = null; render(); toast('体块已移除'); };
+  window.archCubeBBox = function () { return A.cube ? cubeGeom(A.cube).bbox : null; };
+  window.archRemoveCube = function () {
+    if (!A.cube) { toast('没有可移除的体块'); return; }
+    var idx = A.cubes.indexOf(A.cube);
+    if (idx >= 0) A.cubes.splice(idx, 1);
+    A.cube = A.cubes.length ? A.cubes[A.cubes.length - 1] : null;
+    render(); toast('体块已移除');
+  };
 
   // 添加新图层并直接放置下一幅立方体（沿用主辅助线坐标 → 与第一幅对齐）
   window.archAddLayerAndPlace = function () {
-    if (typeof addLayer === 'function') addLayer();
+    if (typeof addLayer === 'function') addLayer();   // 新建一个图层，与立方体一一对应
     A.activeGuide = 0;            // 新图层默认对齐主辅助线
     syncVPSliders();
-    archPlaceCube();
+    archPlaceCube();              // 新增一个立方体（guide=0）
+    if (A.cube) A.cube.layerIdx = (typeof layers !== 'undefined') ? layers.length - 1 : -1;
     if (typeof renderLayerList === 'function') renderLayerList();
     toast('已新建图层：新立方体默认对齐主辅助线');
   };
@@ -8554,7 +8586,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   window.archRemoveElev = function () { A.elev = null; render(); toast('立面已移除'); };
 
   window.archClearAll = function () {
-    A.cube = null; A.elev = null; A.grid = null; A.step = 1; A.done = {};
+    A.cube = null; A.cubes = []; A.elev = null; A.grid = null; A.step = 1; A.done = {};
     refreshSteps(); render(); toast('辅助层已清空');
   };
 
@@ -8575,7 +8607,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (chk('ovMP')) drawMP();
     if (chk('ovHeight')) drawHeightLine();
     if (A.elev) drawElev();
-    if (A.cube) drawCube();
+    A.cubes.forEach(function (c) { drawCube(c); });
     if (chk('ovFigure')) drawFigure();
     if (chk('ovNorth')) drawNorth();
     if (chk('ovTitle')) drawTitleBlock();
@@ -8622,16 +8654,23 @@ window.addEventListener('DOMContentLoaded', ()=>{
   function inBox(box, p) {
     return box && p.x > box.x - 30 && p.x < box.x + box.w + 30 && p.y > box.y - 30 && p.y < box.y + box.h + 30;
   }
+  // 命中测试：返回最上层（最后绘制）且可见的立方体
+  function cubeAt(p) {
+    for (var i = A.cubes.length - 1; i >= 0; i--) {
+      var c = A.cubes[i];
+      if (c.visible && c._box && inBox(c._box, p)) return c;
+    }
+    return null;
+  }
 
   function onDown(e) {
     if (!A.on) return;
     var p = evPos(e);
     e.preventDefault();
 
-    // 手柄优先
-    if (A.cube && A.cube.visible) {
-      var hi = nearHandles(A._cubeBox, p);
-      if (hi >= 0) { A.drag = { t: 'cube-scale', s0: A.cube.size, p0: p }; return; }
+    // 选中立方体的缩放手柄优先
+    if (A.cube && A.cube.visible && nearHandles(A.cube._box, p) >= 0) {
+      A.drag = { t: 'cube-scale', s0: A.cube.size, p0: p }; return;
     }
     if (A.elev && A.elev.visible) {
       var he = nearHandles(A._elevBox, p);
@@ -8656,9 +8695,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }
     // 视平线拖动
     if (Math.abs(p.y - A.horizon * H()) < 40) { A.drag = { t: 'horizon' }; return; }
-    // 体块 / 立面移动
-    if (A.cube && A.cube.visible && inBox(A._cubeBox, p)) {
-      A.drag = { t: e.shiftKey ? 'cube-rot' : 'cube-move', p0: p, c0: { x: A.cube.cx, y: A.cube.cy }, y0: A.yaw }; return;
+    // 体块选择 / 移动：多个立方体中取最上层
+    var hitCube = cubeAt(p);
+    if (hitCube) {
+      A.cube = hitCube;
+      A.drag = { t: e.shiftKey ? 'cube-rot' : 'cube-move', p0: p, c0: { x: A.cube.cx, y: A.cube.cy }, y0: A.yaw };
+      render(); return;
     }
     if (A.elev && A.elev.visible && inBox(A._elevBox, p)) {
       A.drag = { t: 'elev-move', p0: p, c0: { x: A.elev.cx, y: A.elev.cy } }; return;
@@ -8716,10 +8758,13 @@ window.addEventListener('DOMContentLoaded', ()=>{
   function onWheel(e) {
     if (!A.on) return;
     var p = evPos(e);
-    if (A.cube && A.cube.visible && inBox(A._cubeBox, p)) {
+    var hit = cubeAt(p);
+    if (hit) {
+      A.cube = hit;
       e.preventDefault();
       A.cube.size = Math.max(120, Math.min(Math.max(W(), H()) * 1.2, A.cube.size * (e.deltaY < 0 ? 1.08 : 0.93)));
       render();
+      return;
     } else if (A.elev && A.elev.visible && inBox(A._elevBox, p)) {
       e.preventDefault();
       var k = e.deltaY < 0 ? 1.08 : 0.93;
