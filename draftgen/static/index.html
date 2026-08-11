@@ -1443,6 +1443,31 @@ window.PAINTINGS={
           <div class="arch-hint">两点透视需俯仰角 = 0°（竖线保持平行）；三点透视靠俯仰角制造天点/地点。</div>
         </div>
 
+        <div class="panel-section" id="vpEditPanel">
+          <h3>消失点 VP · 可编辑</h3>
+          <div class="arch-chk-grid">
+            <label><input type="checkbox" id="vpSnap" checked onchange="archSetSnap(this.checked)">图形贴合消失点</label>
+            <label><input type="checkbox" id="vpLock" checked onchange="archSetVPLock(this.checked)">锁定视平线(标准两点)</label>
+          </div>
+          <div class="arch-hint">拖动画布上的红色 VP 手柄即可改位置；或用下方滑块精确输入。移动 VP，所有放射辅助线与体块同步跟随。</div>
+          <div class="vp-row" id="vpRow1">
+            <span class="vp-name">VP1</span>
+            <label class="vp-sl">X<input type="range" id="vp1X" min="-0.5" max="1.5" step="0.01" value="-0.30" oninput="archSetVP(0,'x',this.value)"></label>
+            <label class="vp-sl">Y<input type="range" id="vp1Y" min="-0.5" max="1.5" step="0.01" value="0.58" oninput="archSetVP(0,'y',this.value)"></label>
+          </div>
+          <div class="vp-row" id="vpRow2">
+            <span class="vp-name">VP2</span>
+            <label class="vp-sl">X<input type="range" id="vp2X" min="-0.5" max="1.5" step="0.01" value="1.30" oninput="archSetVP(1,'x',this.value)"></label>
+            <label class="vp-sl">Y<input type="range" id="vp2Y" min="-0.5" max="1.5" step="0.01" value="0.58" oninput="archSetVP(1,'y',this.value)"></label>
+          </div>
+          <div class="vp-row" id="vpRow3" style="display:none">
+            <span class="vp-name">VP3</span>
+            <label class="vp-sl">X<input type="range" id="vp3X" min="-0.5" max="1.5" step="0.01" value="0.50" oninput="archSetVP(2,'x',this.value)"></label>
+            <label class="vp-sl">Y<input type="range" id="vp3Y" min="-0.5" max="1.5" step="0.01" value="-0.10" oninput="archSetVP(2,'y',this.value)"></label>
+          </div>
+          <button class="action-btn secondary" onclick="archResetVP()">↺ 复位消失点</button>
+        </div>
+
         <div class="panel-section">
           <h3>立体网格体块 MASS · XYZ</h3>
           <div class="arch-seg" id="archLayerSeg">
@@ -7256,7 +7281,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* ============================================================
    建筑辅助制图模块
    ============================================================ */
-.arch-canvas{ position:absolute; left:0; top:0; pointer-events:none; z-index:6; }
+.arch-canvas{ position:absolute; left:0; top:0; pointer-events:none; z-index:30; }
 .arch-canvas.live{ pointer-events:auto; cursor:crosshair; }
 
 .arch-head{ padding:12px; border-radius:8px; margin-bottom:12px;
@@ -7307,6 +7332,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .arch-chk-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
 .arch-chk-grid label{ display:flex; align-items:center; gap:5px; font-size:11px; color:#5a6a75; cursor:pointer; }
 .arch-chk-grid input{ cursor:pointer; }
+
+/* 消失点编辑面板 */
+.vp-row{ display:flex; align-items:center; gap:8px; margin:6px 0; padding:5px 7px; border:1px solid rgba(198,40,40,.28); border-radius:7px; background:rgba(198,40,40,.05); }
+.vp-name{ font-weight:800; font-size:11.5px; color:#c62828; min-width:30px; }
+.vp-sl{ display:flex; align-items:center; gap:4px; font-size:10px; color:#5a6a75; flex:1; }
+.vp-sl input[type=range]{ flex:1; min-width:0; accent-color:#c62828; }
+#vpEditPanel.disabled{ opacity:.4; pointer-events:none; filter:grayscale(.6); }
+#vpEditPanel.disabled::after{ content:'正交/轴测视角下无消失点'; position:absolute; }
 
 </style>
 
@@ -7566,14 +7599,22 @@ window.addEventListener('DOMContentLoaded', ()=>{
     done: {},
     horizon: 0.58,          // 视平线，画布高度比例
     vpMode: 'two',
-    vps: [{ x: 0.16, y: 0.58 }, { x: 0.88, y: 0.58 }],
+    // 消失点，比例坐标；允许 <0 或 >1（画面外消失点，两点透视常见）
+    vps: [{ x: -0.30, y: 0.58 }, { x: 1.30, y: 0.58 }, { x: 0.5, y: -1.10 }],
     station: { x: 0.5, y: 0.93 },
     grid: null,
     cube: null,
     elev: null,
     view: 'two',
     yaw: 35, pitch: 0,
-    drag: null
+    drag: null,
+    /* ---- 透视贴合 ---- */
+    snapVP: true,      // 生成的图形严格贴合消失点辅助线
+    vpLock: true,      // VP1/VP2 锁定在视平线上（标准两点透视）
+    vpSym: false,      // VP1/VP2 关于主点对称联动
+    bayW: 6.0,         // 开间宽（m），用于真实比例
+    dist: 1.8,         // 一点透视视距系数（× 画布宽）
+    hover: null        // 悬停中的可拖控件
   };
   window.ARCH = A;
 
@@ -7643,6 +7684,97 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 
   /* =====================================================================
+     ★ 消失点驱动的透视相机（几何贴合内核）
+     ---------------------------------------------------------------------
+     建筑透视的严格几何：两个互相垂直的水平方向 d1 ⟂ d2，其灭点 V1、V2
+     与主点 P、焦距 f 满足  (V1−P)·(V2−P) = −f²。
+     由画面上的 VP 反解出相机内参 (px, py, f) 与三个轴向单位矢量
+     e1(开间 X) / e2(层高 Y) / e3(进深 Z)，此后所有几何都用同一台相机投影，
+     因此每一条水平边都必然精确落在从 VP 发出的放射线上 —— 真正的「贴合」。
+     拖动 VP → 相机重解 → 体块、网格、立面同步重构。
+     ===================================================================== */
+  function nrm(v) {
+    var L = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) || 1;
+    return [v[0] / L, v[1] / L, v[2] / L];
+  }
+
+  function camFromVPs() {
+    var hy = A.horizon * H();
+    var mode = A.vpMode;
+
+    if (mode === 'one') {
+      // 一点透视：唯一的 VP 即主点，进深方向沿视线；焦距由视距参数给定
+      var v0 = A.vps[0];
+      var px1 = v0.x * W(), py1 = v0.y * H();
+      var f1 = Math.max(300, A.dist * W());
+      return {
+        px: px1, py: py1, f: f1, mode: 'one',
+        e1: [1, 0, 0],      // 开间方向：平行画面（水平）
+        e2: [0, -1, 0],     // 层高方向：画面向上
+        e3: [0, 0, 1]       // 进深方向：沿视线，灭于 VP
+      };
+    }
+
+    if (mode === 'three') {
+      // 三点透视：三个灭点构成三角形，主点 = 垂心，f² = −(V1−P)·(V2−P)
+      var q = [0, 1, 2].map(function (i) { return { x: A.vps[i].x * W(), y: A.vps[i].y * H() }; });
+      var hc = orthocenter(q[0], q[1], q[2]);
+      if (hc) {
+        var d1 = { x: q[0].x - hc.x, y: q[0].y - hc.y };
+        var d2 = { x: q[1].x - hc.x, y: q[1].y - hc.y };
+        var f2sq = -(d1.x * d2.x + d1.y * d2.y);
+        if (f2sq > 400) {
+          var f3 = Math.sqrt(f2sq);
+          return {
+            px: hc.x, py: hc.y, f: f3, mode: 'three',
+            e1: nrm([d1.x / f3, d1.y / f3, 1]),
+            e2: nrm([(q[2].x - hc.x) / f3, (q[2].y - hc.y) / f3, 1]),
+            e3: nrm([d2.x / f3, d2.y / f3, 1])
+          };
+        }
+      }
+      // 退化则降级为两点
+    }
+
+    // 两点透视（含 three 降级）：VP1/VP2 在视平线上
+    var x1 = A.vps[0].x * W(), x2 = A.vps[1].x * W();
+    var lo = Math.min(x1, x2), hi = Math.max(x1, x2);
+    if (hi - lo < 120) return null;                 // 两点过近 → 无解
+    var pxc = W() * 0.5;
+    var pad = (hi - lo) * 0.07;
+    var px = Math.max(lo + pad, Math.min(hi - pad, pxc));   // 主点须落在两灭点之间
+    var f = Math.sqrt(Math.max(1, (px - lo) * (hi - px)));
+    return {
+      px: px, py: hy, f: f, mode: 'two',
+      e1: nrm([(x1 - px) / f, 0, 1]),   // 开间方向 → 灭于 VP1
+      e2: [0, -1, 0],                   // 竖直方向保持垂直
+      e3: nrm([(x2 - px) / f, 0, 1])    // 进深方向 → 灭于 VP2
+    };
+  }
+
+  function orthocenter(a, b, c) {
+    // 解 (H−A)·(B−C)=0 , (H−B)·(A−C)=0
+    var a1 = b.x - c.x, b1 = b.y - c.y, c1 = a.x * (b.x - c.x) + a.y * (b.y - c.y);
+    var a2 = a.x - c.x, b2 = a.y - c.y, c2 = b.x * (a.x - c.x) + b.y * (a.y - c.y);
+    var det = a1 * b2 - a2 * b1;
+    if (Math.abs(det) < 1e-6) return null;
+    return { x: (c1 * b2 - c2 * b1) / det, y: (a1 * c2 - a2 * c1) / det };
+  }
+
+  /* 相机坐标 → 画面 */
+  function projCam(cam, P) {
+    var Z = P[2];
+    if (Z < 0.08) Z = 0.08;                          // 近裁剪
+    return { x: cam.px + cam.f * P[0] / Z, y: cam.py + cam.f * P[1] / Z, d: Z };
+  }
+  function addv(P, e, s) { return [P[0] + e[0] * s, P[1] + e[1] * s, P[2] + e[2] * s]; }
+
+  /* 画面锚点 (ax, ay) + 深度 Z0 → 相机坐标 */
+  function anchorCam(cam, ax, ay, Z0) {
+    return [(ax - cam.px) * Z0 / cam.f, (ay - cam.py) * Z0 / cam.f, Z0];
+  }
+
+  /* =====================================================================
      绘制：视平线 / 消失点 / 站点 / 视锥
      ===================================================================== */
   function drawHorizon() {
@@ -7669,14 +7801,27 @@ window.addEventListener('DOMContentLoaded', ()=>{
     var list = activeVPs();
     list.forEach(function (vp, i) {
       var x = vp.x * W(), y = vp.y * H();
+      var off = (x < 0 || x > W() || y < 0 || y > H());
+      // 画面外的消失点：在边缘画引导标记，提示其方向
+      if (off) {
+        var ex = Math.max(0, Math.min(W(), x)), ey = Math.max(0, Math.min(H(), y));
+        setPen('thin', 'rgba(198,40,40,0.55)', [14, 10]);
+        line(ex, ey, ex + (x - ex) * 0.12, ey + (y - ey) * 0.12);
+        dot(ex, ey, 6, 'rgba(198,40,40,0.7)');
+        label('VP' + (i + 1) + ' ⟶', ex - 4, ey - 22, 26, 'rgba(198,40,40,0.8)', 'right');
+        return;
+      }
+      // 可拖拽手柄：外环 = 命中区，亮红点 = 消失点
+      setPen('thin', 'rgba(198,40,40,0.35)', []);
+      cx.beginPath(); cx.arc(x, y, 46, 0, 6.2832); cx.stroke();
       setPen('thin', RED, []);
       cx.beginPath(); cx.arc(x, y, 26, 0, 6.2832); cx.stroke();
       line(x - 40, y, x + 40, y);
       line(x, y - 40, x, y + 40);
-      dot(x, y, 8, RED);
-      label('VP' + (i + 1), x + 34, y - 34, 30, RED);
-      // 放射线（正交线 orthogonals）
-      setPen('thin', 'rgba(17,19,24,0.20)', [26, 22]);
+      dot(x, y, 9, RED);
+      label('VP' + (i + 1), x + 36, y - 36, 30, RED);
+      // 放射线（正交线 orthogonals）—— 永远从 VP 发出，随 VP 移动
+      setPen('thin', 'rgba(17,19,24,0.18)', [26, 22]);
       for (var k = 0; k <= 10; k++) {
         var t = k / 10;
         line(x, y, t * W(), H());
@@ -7749,7 +7894,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   function drawGrid() {
     if (!A.grid) return;
     var hy = A.horizon * H();
-    var gl = H();
+    var gl = A._gl || H();
     var list = activeVPs();
     setPen('thin', INK_FAINT, []);
     if (A.vpMode === 'one' && list.length) {
@@ -7786,6 +7931,67 @@ window.addEventListener('DOMContentLoaded', ()=>{
      XYZ 立体网格体块（魔方）
      ===================================================================== */
   function cubeGeom() {
+    var v = VIEWS.filter(function (o) { return o.k === A.view; })[0] || VIEWS[2];
+    // ★ 贴合模式：仅透视视角（一点/两点/三点）由消失点反解的相机驱动，
+    //   所有水平边严格汇聚到 VP；正交/轴测等视角仍用原几何。
+    if (A.snapVP && !v.ortho) {
+      var vg = cubeGeomVP();
+      if (vg) return vg;
+    }
+    return cubeGeomOrtho();
+  }
+
+  /* 由消失点相机生成的体块几何（真实建筑比例） */
+  function cubeGeomVP() {
+    var cam = camFromVPs();
+    if (!cam) return null;
+    var c = A.cube;
+    var bx = c.bx, bz = c.bz, ny = c.layers;
+
+    var bayW = Math.max(1.5, num('archBayW', A.bayW));      // 开间宽 m
+    var fh = Math.max(2.0, num('archFloorH', 3.6));          // 层高 m
+    var unit = 1;                                            // 1 单位 = 1 开间
+    var hUnit = fh / bayW;                                   // 层高 / 开间（真实比例）
+
+    // 视距：以「开间数」为单位，由 size 反算，使画面宽度 ≈ size
+    var Z0 = cam.f * bx / Math.max(60, c.size);
+    Z0 = Math.max(bx * 0.95 + bz * 0.35, Math.min(Z0, 600));
+
+    // 锚点 = 体块近角底点，绑定到 (c.cx, c.cy)
+    var A0 = anchorCam(cam, c.cx, c.cy, Z0);
+
+    function P(i, j, k) {
+      var p = A0;
+      p = addv(p, cam.e1, i * unit);
+      p = addv(p, cam.e2, j * hUnit);
+      p = addv(p, cam.e3, k * unit);
+      return projCam(cam, p);
+    }
+
+    // 外接框（仅取 8 个角）
+    var minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    [[0, 0, 0], [bx, 0, 0], [0, 0, bz], [bx, 0, bz],
+     [0, ny, 0], [bx, ny, 0], [0, ny, bz], [bx, ny, bz]].forEach(function (q) {
+      var p = P(q[0], q[1], q[2]);
+      if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+    });
+
+    // 深度归一化（用于近实远虚的空气透视）
+    var dNear = P(0, 0, 0).d, dFar = P(bx, 0, bz).d;
+    var dLo = Math.min(dNear, dFar), dHi = Math.max(dNear, dFar);
+    var dSpan = Math.max(0.001, dHi - dLo);
+
+    return {
+      vp: true, cam: cam, unit: unit, hUnit: hUnit, Z0: Z0, A0: A0,
+      to: P,
+      dn: function (d) { return Math.max(0, Math.min(1, (d - dLo) / dSpan)); },
+      bbox: { x: minX, y: minY, w: Math.max(20, maxX - minX), h: Math.max(20, maxY - minY) }
+    };
+  }
+
+  /* 正交 / 等轴测等非透视视角的原几何 */
+  function cubeGeomOrtho() {
     var c = A.cube;
     var bx = c.bx, bz = c.bz, ny = c.layers;
     var mx = Math.max(bx, bz, ny);
@@ -7808,7 +8014,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (spanY * s > maxH) s = maxH / spanY;
     var ox = c.cx - (minX + maxX) / 2 * s, oy = c.cy - (minY + maxY) / 2 * s;
     return {
+      vp: false,
       to: function (x, y, z) { var p = pts(x, y, z); return { x: ox + p.x * s, y: oy + p.y * s, d: p.d }; },
+      dn: function (d) { return Math.max(0, Math.min(1, (d + 2.2) / 4.4)); },
       bbox: { x: ox + minX * s, y: oy + minY * s, w: spanX * s, h: spanY * s }
     };
   }
@@ -7821,7 +8029,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
     function seg(p1, p2, level, isEdge) {
       var depth = (p1.d + p2.d) / 2;
-      var fade = Math.max(0.12, Math.min(1, 0.92 - depth * 0.10));
+      var nd = g.dn ? g.dn(depth) : 0.5;
+      var fade = Math.max(0.14, Math.min(1, 0.95 - nd * 0.5));
       cx.lineWidth = LW(level);
       cx.strokeStyle = isEdge ? 'rgba(17,19,24,' + Math.max(0.55, fade) + ')'
                               : 'rgba(17,19,24,' + (fade * 0.5).toFixed(3) + ')';
@@ -8131,7 +8340,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (!A.on) return;
 
     drawHorizon();
-    if (A.step >= 2) drawVPs();
+    drawVPs();                       // 消失点手柄常显，可随时拖拽编辑
     if (chk('ovCone')) drawCone();
     if (A.grid) drawGrid();
     if (chk('ovMP')) drawMP();
@@ -8144,6 +8353,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
     // 步骤水印
     label('STEP ' + A.step + ' / 5', 26, 44, 30, 'rgba(10,134,184,0.75)');
+    updateVPUI();
   }
   window.archRender = render;
 
@@ -8197,13 +8407,69 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (k === 'one') A.vpMode = 'one';
     else if (k === 'three' || k === 'bird' || k === 'worm') A.vpMode = 'three';
     else A.vpMode = 'two';
+    // 三点透视需第三个消失点（天点/地点）；不足则补足
+    if (A.vpMode === 'three' && A.vps.length < 3) {
+      A.vps.push({ x: 0.5, y: Math.max(0.02, A.horizon - 0.45) });
+    }
     archOnAngle();
     Array.prototype.forEach.call(document.querySelectorAll('#archViewChips .arch-chip'), function (c) {
       c.classList.toggle('active', c.dataset.k === k);
     });
+    syncVPSliders();
     render();
   }
   window.archSetView = setView;
+
+  /* ---------- 消失点编辑（可拖拽 + 数值滑块双重控制） ---------- */
+  window.archSetVP = function (i, axis, val) {
+    if (!A.vps[i]) A.vps[i] = { x: 0.5, y: A.horizon };
+    A.vps[i][axis] = Number(val);
+    if (A.vpLock && i < 2 && axis === 'y') A.vps[i].y = A.horizon;   // 锁定视平线
+    render();
+  };
+  window.archSetVPLock = function (on) {
+    A.vpLock = !!on;
+    if (A.vpLock) { A.vps[0].y = A.horizon; A.vps[1].y = A.horizon; }
+    syncVPSliders(); render();
+  };
+  window.archSetSnap = function (on) {
+    A.snapVP = !!on;
+    toast(on ? '已开启：体块/网格严格贴合消失点' : '已关闭贴合（体块按自由视角）');
+    render();
+  };
+  window.archResetVP = function () {
+    if (A.vpMode === 'one') A.vps = [{ x: 0.5, y: A.horizon }];
+    else if (A.vpMode === 'three') A.vps = [{ x: -0.30, y: 0.58 }, { x: 1.30, y: 0.58 }, { x: 0.5, y: -0.10 }];
+    else A.vps = [{ x: -0.30, y: A.horizon }, { x: 1.30, y: A.horizon }];
+    syncVPSliders(); render();
+    toast('消失点已复位');
+  };
+  // 把 A.vps 同步回滑块 DOM（拖拽/复位后调用）
+  function syncVPSliders() {
+    var n = (A.vpMode === 'one') ? 1 : (A.vpMode === 'three' ? 3 : 2);
+    for (var i = 0; i < 3; i++) {
+      var v = A.vps[i];
+      ['x', 'y'].forEach(function (axis) {
+        var s = el('vp' + (i + 1) + axis.toUpperCase());
+        if (s && v) s.value = v[axis];
+      });
+      var row = el('vpRow' + (i + 1));
+      if (row) row.style.display = (i < n) ? '' : 'none';
+    }
+    var lock = el('vpLock'); if (lock) lock.checked = A.vpLock;
+    var snap = el('vpSnap'); if (snap) snap.checked = A.snapVP;
+    updateVPUI();
+  }
+  function updateVPUI() {
+    var v = VIEWS.filter(function (o) { return o.k === A.view; })[0] || VIEWS[2];
+    var panel = el('vpEditPanel');
+    if (panel) panel.classList.toggle('disabled', v.ortho);   // 正交视角下 VP 不生效
+    // 锁定时禁用 VP1/VP2 的 Y 滑块
+    ['vp1Y', 'vp2Y'].forEach(function (id) {
+      var s = el(id); if (s) s.disabled = A.vpLock;
+    });
+  }
+
 
   window.archSetLayers = function (n) {
     if (!A.cube) archPlaceCube();
@@ -8373,8 +8639,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
       A.horizon = Math.max(0.05, Math.min(0.95, p.y / H()));
       // 视平线上的 VP 跟随
       A.vps.forEach(function (v, i) { if (i < 2) v.y = A.horizon; });
+      syncVPSliders();
     } else if (d.t === 'vp') {
       A.vps[d.i] = { x: p.x / W(), y: (d.i < 2 ? A.horizon : p.y / H()) };
+      syncVPSliders();
     } else if (d.t === 'cube-move') {
       A.cube.cx = d.c0.x + (p.x - d.p0.x);
       A.cube.cy = d.c0.y + (p.y - d.p0.y);
