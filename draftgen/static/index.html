@@ -854,6 +854,7 @@ body{ background: var(--bg); color: var(--text); }
 @media (prefers-reduced-motion: reduce){
   #fx-bg::before, .welcome-ring, .welcome-title, .header h1, .enter-btn::before{ animation: none !important; }
 }
+
 </style>
 <style id="dg-chain-css">
 /* ===== 绘画链 追踪条 ===== */
@@ -1273,22 +1274,6 @@ window.PAINTINGS={
                 <div class="holo-pulse hp3"></div>
                 <div class="holo-orbit o1"><span class="holo-sat s1"></span><span class="holo-sat s2"></span></div>
                 <div class="holo-orbit o2"><span class="holo-sat s3"></span><span class="holo-sat s4"></span></div>
-                <!-- 线性粒子环绕：三层切向拖尾 -->
-                <div class="holo-lps r1" aria-hidden="true">
-                  <i class="holo-lp" style="--a:0deg;--r:56px"></i><i class="holo-lp" style="--a:45deg;--r:56px"></i>
-                  <i class="holo-lp" style="--a:90deg;--r:56px"></i><i class="holo-lp" style="--a:135deg;--r:56px"></i>
-                  <i class="holo-lp" style="--a:180deg;--r:56px"></i><i class="holo-lp" style="--a:225deg;--r:56px"></i>
-                  <i class="holo-lp" style="--a:270deg;--r:56px"></i><i class="holo-lp" style="--a:315deg;--r:56px"></i>
-                </div>
-                <div class="holo-lps r2" aria-hidden="true">
-                  <i class="holo-lp" style="--a:20deg;--r:74px"></i><i class="holo-lp" style="--a:80deg;--r:74px"></i>
-                  <i class="holo-lp" style="--a:140deg;--r:74px"></i><i class="holo-lp" style="--a:200deg;--r:74px"></i>
-                  <i class="holo-lp" style="--a:260deg;--r:74px"></i><i class="holo-lp" style="--a:320deg;--r:74px"></i>
-                </div>
-                <div class="holo-lps r3" aria-hidden="true">
-                  <i class="holo-lp" style="--a:10deg;--r:92px"></i><i class="holo-lp" style="--a:100deg;--r:92px"></i>
-                  <i class="holo-lp" style="--a:190deg;--r:92px"></i><i class="holo-lp" style="--a:280deg;--r:92px"></i>
-                </div>
                 <div class="holo-reticle"></div>
                 <div class="holo-arc"></div>
               </div>
@@ -1296,13 +1281,7 @@ window.PAINTINGS={
               <div class="holo-scan"></div>
               <div class="holo-flicker"></div>
               <div class="holo-cta" aria-hidden="true">
-                <span class="holo-cta-text" data-text="点击随机生成草图">点击随机生成草图</span>
-              </div>
-              <div class="holo-hud">
-                <span class="hh-l">COMPOSITION&nbsp;ENGINE</span>
-                <span class="hh-r">SCAN&nbsp;●&nbsp;ACTIVE</span>
-                <span class="hh-bl">SYS&nbsp;::&nbsp;DRAFTGEN</span>
-                <span class="hh-br">PROJ&nbsp;::&nbsp;RANDOM</span>
+                <span class="holo-cta-text">点击随机生成草图</span>
               </div>
             </div>
             <div class="holo-body">
@@ -1450,6 +1429,18 @@ window.PAINTINGS={
             <label><input type="checkbox" id="vpLock" checked onchange="archSetVPLock(this.checked)">锁定视平线(标准两点)</label>
           </div>
           <div class="arch-hint">拖动画布上的红色 VP 手柄即可改位置；或用下方滑块精确输入。移动 VP，所有放射辅助线与体块同步跟随。</div>
+          <div class="arch-guide-pick">
+            <span class="agp-label">辅助线</span>
+            <select id="vpGuideSel" onchange="archSetActiveGuide(parseInt(this.value,10))">
+              <option value="0">主辅助线（最高优先级）</option>
+              <option value="1" disabled>第二条辅助线</option>
+            </select>
+            <button type="button" class="action-btn secondary agp-add" onclick="archAddSecondGuide()">＋ 添加第二条</button>
+          </div>
+          <div class="arch-guide-pick" id="secondGuideRow" style="display:none">
+            <label class="agp-show"><input type="checkbox" id="ovSecondGuide" checked onchange="archShowSecond(this.checked)">显示第二条辅助线</label>
+            <button type="button" class="action-btn secondary agp-del" onclick="archRemoveSecondGuide()">移除第二条</button>
+          </div>
           <div class="vp-row" id="vpRow1">
             <span class="vp-name">VP1</span>
             <label class="vp-sl">X<input type="range" id="vp1X" min="-0.5" max="1.5" step="0.01" value="-0.30" oninput="archSetVP(0,'x',this.value)"></label>
@@ -1480,11 +1471,12 @@ window.PAINTINGS={
             <label>进深 Z<input type="number" id="archBaysZ" value="4" min="1" max="12" onchange="archRender()"></label>
           </div>
           <button class="action-btn" onclick="archPlaceCube()">⬛ 在画布放置立体网格</button>
+          <button class="action-btn secondary" style="margin-top:6px" onclick="archAddLayerAndPlace()">➕ 添加图层并放下一幅</button>
           <div class="arch-btn-row">
             <button class="action-btn secondary" onclick="archToggleCube()">显 / 隐</button>
             <button class="action-btn secondary" onclick="archRemoveCube()">移除体块</button>
           </div>
-          <div class="arch-hint">拖动移动 · 拖四角缩放 · 滚轮缩放 · Shift+拖动旋转方位角。</div>
+          <div class="arch-hint">拖动移动 · 拖四角缩放 · 滚轮缩放 · Shift+拖动旋转方位角。新图层上的立方体默认按主辅助线坐标对齐，左右统一。</div>
         </div>
 
         <div class="panel-section">
@@ -1539,7 +1531,7 @@ window.PAINTINGS={
           <button class="action-btn secondary" style="margin-top:6px" onclick="archBakeToNewLayer()">🗂 存为新参考图层</button>
           <button class="action-btn secondary" style="margin-top:6px" onclick="archExportPNG()">⬇ 导出辅助线 PNG</button>
           <button class="action-btn secondary" style="margin-top:6px" onclick="archClearAll()">🧹 清空辅助层</button>
-          <div class="arch-hint">烘焙后辅助线成为可绘制的图层内容，可继续在其上落笔描线。</div>
+          <div class="arch-hint">第一幅固定到主图层（烘焙到当前图层）；「添加图层并放下一幅」可在新图层继续，新立方体默认按主辅助线坐标对齐。烘焙后辅助线成为可绘制的图层内容，可继续在其上落笔描线。</div>
         </div>
       </div>
 
@@ -6317,7 +6309,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
   var hStage = document.getElementById('holoStage');
   if (hStage) {
     hStage.addEventListener('click', function (e) {
-      if (e.target.closest('.holo-hud')) return;
       var core = this.querySelector('.holo-core');
       genDense();
       if (core) {
@@ -6482,15 +6473,13 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* 光球 → 可点击按钮 */
 .main .holo-stage.holo-btn{ cursor:pointer; outline:none; }
 .main .holo-stage.holo-btn:focus-visible{ box-shadow:inset 0 0 0 2px #00e5ff, 0 0 22px rgba(0,229,255,.55); }
-/* 故障式 CTA：间断性浮现「随机生成草图」 */
+/* CTA：仅保留字体（中文），柔和浮现，无错位花字 */
 .main .holo-cta{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:6; pointer-events:none; text-align:center; }
-.main .holo-cta-text{ position:relative; display:inline-block; font-family:var(--bp-mono); font-weight:900; font-size:19px; letter-spacing:5px; color:#eafdff;
-  text-shadow:0 0 16px rgba(0,229,255,.95), 0 0 30px rgba(0,229,255,.55), 2px 0 rgba(255,46,110,.35), -2px 0 rgba(0,229,255,.35);
+.main .holo-cta-text{ position:relative; display:inline-block; font-family:var(--bp-mono); font-weight:900; font-size:20px; letter-spacing:6px; color:#eafdff;
+  text-shadow:0 0 14px rgba(0,229,255,.8), 0 0 26px rgba(0,229,255,.45);
   white-space:nowrap; padding:4px 6px; animation:holoTextShow 6s steps(1,end) infinite; }
 .main .holo-cta-text::before,
-.main .holo-cta-text::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%; text-align:center; pointer-events:none; opacity:0; }
-.main .holo-cta-text::before{ color:#ff2e6e; text-shadow:0 0 10px rgba(255,46,110,.8); animation:holoGlitchA 6s steps(1,end) infinite; }
-.main .holo-cta-text::after{ color:#00e5ff; text-shadow:0 0 10px rgba(0,229,255,.8); animation:holoGlitchB 6s steps(1,end) infinite; }
+.main .holo-cta-text::after{ content:none; }
 /* 整体间断性浮现：约 8% ~ 72% 可见 */
 @keyframes holoTextShow{
   0%,7%{ opacity:0; transform:translateX(0); }
@@ -6502,43 +6491,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
   72%{ opacity:0; transform:translateX(-4px); }
   100%{ opacity:0; }
 }
-/* 红色错位切片 */
-@keyframes holoGlitchA{
-  0%,7%,100%{ opacity:0; }
-  8%{ opacity:.9; clip-path:inset(12% 0 60% 0); transform:translate(-5px,1px); }
-  11%{ opacity:0; }
-  13%{ opacity:.9; clip-path:inset(55% 0 18% 0); transform:translate(5px,-1px); }
-  16%{ opacity:0; }
-  40%{ opacity:0; }
-  42%{ opacity:.85; clip-path:inset(30% 0 45% 0); transform:translate(-3px,0); }
-  45%{ opacity:0; }
-  60%{ opacity:0; }
-  62%{ opacity:.9; clip-path:inset(8% 0 70% 0); transform:translate(3px,2px); }
-  65%{ opacity:0; }
-  68%{ opacity:0; }
-  70%{ opacity:.85; clip-path:inset(48% 0 22% 0); transform:translate(-2px,-1px); }
-  72%,100%{ opacity:0; }
-}
-/* 青色错位切片（错开节奏） */
-@keyframes holoGlitchB{
-  0%,7%,100%{ opacity:0; }
-  9%{ opacity:.9; clip-path:inset(20% 0 55% 0); transform:translate(5px,-1px); }
-  12%{ opacity:0; }
-  14%{ opacity:.9; clip-path:inset(62% 0 12% 0); transform:translate(-5px,1px); }
-  17%{ opacity:0; }
-  38%{ opacity:0; }
-  40%{ opacity:.85; clip-path:inset(44% 0 30% 0); transform:translate(3px,1px); }
-  43%{ opacity:0; }
-  58%{ opacity:0; }
-  60%{ opacity:.9; clip-path:inset(14% 0 66% 0); transform:translate(-3px,-2px); }
-  63%{ opacity:0; }
-  69%{ opacity:0; }
-  71%{ opacity:.85; clip-path:inset(36% 0 38% 0); transform:translate(2px,0); }
-  73%,100%{ opacity:0; }
-}
-@keyframes holoFlicker{ 0%,100%{opacity:.5} 3%{opacity:.15} 6%{opacity:.7} 9%{opacity:.3} 12%{opacity:.6} 50%{opacity:.45} 72%{opacity:.2} 74%{opacity:.65} }
-.main .holo-hud{ position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:2px 8px; padding:6px 9px; font-family:var(--bp-mono); font-size:8.5px; letter-spacing:1.1px; color:#9fe8ff; text-shadow:0 0 8px rgba(0,229,255,.55); pointer-events:none; }
-.main .holo-hud .hh-r{ color:#7df9ff; }
 .main .holo-body{ position:relative; z-index:4; padding:14px 14px 16px; }
 .main .fx-kicker{ display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:2.4px; color:#8ee7f7; opacity:.9; margin-bottom:7px; font-weight:700; }
 .main .fx-kicker .dot{ width:5px; height:5px; border-radius:50%; background:#00e5ff; box-shadow:0 0 10px #00e5ff; animation:fxblink 1.4s ease-in-out infinite; }
@@ -7056,20 +7008,42 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .header::after{ content:''; position:absolute; left:0; right:0; bottom:-1px; height:1px;
   background: linear-gradient(90deg, transparent, #00e5ff, #ff2e97, transparent); opacity:.8; }
 
-/* 画布区：深空 + 全息透出 */
-.canvas-area{ background: radial-gradient(120% 120% at 50% 38%, #0a1430 0%, #060a18 55%, #03050d 100%) !important; }
+/* 画布区：紫色黑底 + 极淡蓝图网格 */
+.canvas-area{ background:
+    radial-gradient(1200px 820px at 14% 14%, rgba(94,60,180,.20), transparent 62%),
+    radial-gradient(1000px 760px at 88% 84%, rgba(40,90,200,.16), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(96,140,230,.06) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(96,140,230,.06) 0 1px, transparent 1px 44px),
+    #07061a !important; }
+.canvas-area::before{ opacity:.7 !important; filter: blur(52px) !important;
+  background:
+    radial-gradient(38% 38% at 26% 32%, rgba(94,60,180,.40), transparent 70%),
+    radial-gradient(34% 34% at 74% 64%, rgba(56,189,248,.26), transparent 70%),
+    radial-gradient(26% 26% at 82% 18%, rgba(99,102,241,.28), transparent 70%) !important; }
 .studio-fx{ z-index:1 !important; }
 .canvas-wrapper{ z-index:2 !important; border:1px solid rgba(0,229,255,.35);
   box-shadow: 0 0 0 1px rgba(0,229,255,.12), 0 0 44px rgba(0,229,255,.22), 0 24px 70px rgba(0,0,0,.65); border-radius:6px; }
 .canvas-wrapper canvas{ border-radius:6px; }
 
-/* 右侧面板深空玻璃 */
-.right-panel{ background: rgba(7,12,26,.62) !important; backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border-left:1px solid rgba(0,229,255,.25) !important; box-shadow: -10px 0 40px rgba(0,0,0,.45); }
-.panel-tabs{ background: rgba(10,18,38,.6) !important; border-bottom:1px solid rgba(0,229,255,.18) !important; }
-.panel-tabs .tab.active{ color:#00e5ff !important; border-bottom-color:#00e5ff !important; text-shadow:0 0 10px rgba(0,229,255,.6); }
-.panel-section h3{ color:#9fefff !important; text-shadow:0 0 10px rgba(0,229,255,.45); letter-spacing:1px; }
-.panel-section h3::before{ content:'▸ '; color:#ff2e97; }
+/* 右侧面板：蓝图特效（深蓝紫底 + 青色网格 + 等宽技术字体） */
+.right-panel{ --grad: linear-gradient(135deg,#7df9ff,#38bdf8 55%,#6366f1) !important;
+  background:
+    linear-gradient(180deg, rgba(10,14,42,.94), rgba(16,11,38,.94)),
+    repeating-linear-gradient(0deg, rgba(90,170,255,.07) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(90deg, rgba(90,170,255,.07) 0 1px, transparent 1px 26px),
+    #0a0e2a !important;
+  border-left:1px solid rgba(90,170,255,.30) !important;
+  box-shadow:-22px 0 60px rgba(0,0,0,.5), inset 1px 0 0 rgba(90,170,255,.12) !important;
+  backdrop-filter: blur(20px) saturate(140%) !important; -webkit-backdrop-filter: blur(20px) saturate(140%) !important; }
+.panel-tabs{ background: rgba(8,12,34,.55) !important; border-bottom:1px solid rgba(90,170,255,.20) !important; }
+.panel-tabs .tab{ color:#9fb6d8 !important; border:1px solid rgba(90,170,255,.22) !important; background: rgba(90,170,255,.05) !important; }
+.panel-tabs .tab:hover{ color:#dff0ff !important; border-color: rgba(90,170,255,.55) !important; box-shadow:0 0 14px rgba(56,189,248,.25) !important; }
+.panel-tabs .tab.active{ color:#04121f !important; background: linear-gradient(135deg,#7df9ff,#38bdf8) !important; border-color:transparent !important; box-shadow:0 0 16px rgba(56,189,248,.6) !important; text-shadow:none !important; }
+.panel-section h3{ color:#bfe3ff !important; text-shadow:none !important; letter-spacing:1px !important; font-family: var(--bp-mono, monospace) !important; }
+.panel-section h3::before{ content:'' !important; width:3px !important; height:14px !important; border-radius:2px !important; background: linear-gradient(180deg,#7df9ff,#38bdf8) !important; box-shadow:0 0 10px rgba(56,189,248,.7) !important; }
+.panel-section p{ color:#9fb6d8 !important; }
+.action-btn.secondary{ background: rgba(90,170,255,.10) !important; color:#bfe3ff !important; border:1px solid rgba(90,170,255,.35) !important; }
+.action-btn.secondary:hover{ background: rgba(90,170,255,.18) !important; }
 
 /* 按钮霓虹 */
 .action-btn, .guide-btn, .paint-btn, .orient-btn{ background: rgba(10,20,40,.6) !important; color:#cfeaff !important; border:1px solid rgba(0,229,255,.3) !important; }
@@ -7228,30 +7202,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
 @media (prefers-reduced-motion: reduce){
   .scifi-stars, .scifi-floor .sf-grid, .hud-radar .hr-sweep, .hud-eq i, .hud-ticker .ht-track,
-  .holo-pulse, .holo-orbit, .holo-lp, .fx-title,
-  .scifi-boot .sb-sweep, .scifi-boot .sb-ring, .scifi-boot .sb-bars i, .hud-corner, .bp-corner,
-  .holo-lps{ animation:none !important; }
+  .holo-pulse, .holo-orbit, .fx-title,
+  .scifi-boot .sb-sweep, .scifi-boot .sb-ring, .scifi-boot .sb-bars i, .hud-corner, .bp-corner{ animation:none !important; }
 }
-
-/* ============================================================
-   光球线性粒子环绕（切向拖尾）
-   ============================================================ */
-.main .holo-lps{ position:absolute; left:50%; top:50%; width:0; height:0; pointer-events:none; z-index:3; }
-.main .holo-lps.r1{ animation: lpSpin 7s linear infinite; }
-.main .holo-lps.r2{ animation: lpSpin 11s linear infinite reverse; }
-.main .holo-lps.r3{ animation: lpSpin 16s linear infinite; }
-@keyframes lpSpin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
-.main .holo-lp{ position:absolute; left:0; top:0; height:2px; width:26px; border-radius:2px;
-  transform-origin:0 50%; transform: rotate(var(--a)) translateX(var(--r)) rotate(90deg);
-  background: linear-gradient(90deg, rgba(0,229,255,0) 0%, rgba(0,229,255,.55) 45%, #7df9ff 100%);
-  box-shadow:0 0 8px rgba(0,229,255,.75); animation: lpFlick 2.6s ease-in-out infinite; }
-.main .holo-lps.r2 .holo-lp{ width:34px; background: linear-gradient(90deg, rgba(139,92,246,0), rgba(139,92,246,.5) 45%, #c4b5fd 100%);
-  box-shadow:0 0 9px rgba(139,92,246,.75); animation-duration:3.4s; }
-.main .holo-lps.r3 .holo-lp{ width:44px; height:1.5px; background: linear-gradient(90deg, rgba(255,46,151,0), rgba(255,46,151,.45) 45%, #ff8ecb 100%);
-  box-shadow:0 0 10px rgba(255,46,151,.6); animation-duration:4.2s; }
-.main .holo-lps .holo-lp:nth-child(2n){ animation-delay:-.7s }
-.main .holo-lps .holo-lp:nth-child(3n){ animation-delay:-1.5s }
-@keyframes lpFlick{ 0%,100%{ opacity:.35; } 50%{ opacity:1; } }
 
 /* ============================================================
    折叠面板（基础构图参考线）
@@ -7332,6 +7285,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .arch-chk-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px 8px; }
 .arch-chk-grid label{ display:flex; align-items:center; gap:5px; font-size:11px; color:#5a6a75; cursor:pointer; }
 .arch-chk-grid input{ cursor:pointer; }
+.arch-guide-pick{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.arch-guide-pick .agp-label{ font-size:11px; color:var(--text-light,#789); font-weight:700; }
+.arch-guide-pick select{ flex:1; min-width:120px; font-size:11.5px; padding:5px 6px; border-radius:6px; border:1px solid rgba(56,189,248,.35); background:rgba(10,20,40,.6); color:#cfe9ff; }
+.arch-guide-pick .agp-add{ flex:0 0 auto; width:auto; padding:5px 10px; font-size:11px; margin:0; }
+.arch-guide-pick .agp-show{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-light,#789); cursor:pointer; }
+.arch-guide-pick .agp-del{ flex:0 0 auto; width:auto; padding:5px 10px; font-size:11px; margin:0; }
 
 /* 消失点编辑面板 */
 .vp-row{ display:flex; align-items:center; gap:8px; margin:6px 0; padding:5px 7px; border:1px solid rgba(198,40,40,.28); border-radius:7px; background:rgba(198,40,40,.05); }
@@ -7590,7 +7549,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     2: '② 定消失点：先选透视类型，再在画布上点击放置 VP。两点透视的两个 VP 距离越远画面越平稳；VP 不要落在画面正中。',
     3: '③ 放置网格：生成地面透视网格（进深用量点法等分）。网格是后续所有体块的定位基准。',
     4: '④ 放置立面：选类型与朝向后放入立面图，或放置 XYZ 立体网格体块推敲体量。可拖动、缩放、旋转。',
-    5: '⑤ 保存：把辅助线烘焙进图层（可继续在其上落笔），或存为独立参考层 / 导出 PNG。'
+    5: '⑤ 保存：把辅助线烘焙进图层。第一幅固定到主图层；点「添加图层」放第二幅，新立方体默认按主辅助线坐标对齐（左右统一）。需不同视角时点「添加第二条辅助线」。'
   };
 
   var A = {
@@ -7614,9 +7573,18 @@ window.addEventListener('DOMContentLoaded', ()=>{
     vpSym: false,      // VP1/VP2 关于主点对称联动
     bayW: 6.0,         // 开间宽（m），用于真实比例
     dist: 1.8,         // 一点透视视距系数（× 画布宽）
-    hover: null        // 悬停中的可拖控件
+    hover: null,       // 悬停中的可拖控件
+    /* ---- 多辅助线：主辅助线（永远最高优先级）+ 可选第二条 ---- */
+    secondary: null,   // 第二条辅助线：{ vpMode, vps, horizon, vpLock }
+    activeGuide: 0,    // 当前编辑 / 新立方体所用辅助线（0=主, 1=副）
+    showSecond: false  // 是否显示第二条辅助线
   };
   window.ARCH = A;
+
+  // 主辅助线（= A.vps / A.horizon / A.vpMode，永远最高优先级）
+  function primaryG() { return { vpMode: A.vpMode, vps: A.vps, horizon: A.horizon }; }
+  // 按索引取辅助线对象（第二条仅在存在时返回）
+  function guideG(i) { return (i === 1 && A.secondary) ? A.secondary : primaryG(); }
 
   /* ---------- 基础工具 ---------- */
   function W() { return (typeof canvasW !== 'undefined' ? canvasW : 3508); }
@@ -7698,13 +7666,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
     return [v[0] / L, v[1] / L, v[2] / L];
   }
 
-  function camFromVPs() {
-    var hy = A.horizon * H();
-    var mode = A.vpMode;
+  function camFromVPs(G) {
+    G = G || primaryG();
+    var hy = G.horizon * H();
+    var mode = G.vpMode;
 
     if (mode === 'one') {
       // 一点透视：唯一的 VP 即主点，进深方向沿视线；焦距由视距参数给定
-      var v0 = A.vps[0];
+      var v0 = G.vps[0];
       var px1 = v0.x * W(), py1 = v0.y * H();
       var f1 = Math.max(300, A.dist * W());
       return {
@@ -7717,7 +7686,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
     if (mode === 'three') {
       // 三点透视：三个灭点构成三角形，主点 = 垂心，f² = −(V1−P)·(V2−P)
-      var q = [0, 1, 2].map(function (i) { return { x: A.vps[i].x * W(), y: A.vps[i].y * H() }; });
+      var q = [0, 1, 2].map(function (i) { return { x: G.vps[i].x * W(), y: G.vps[i].y * H() }; });
       var hc = orthocenter(q[0], q[1], q[2]);
       if (hc) {
         var d1 = { x: q[0].x - hc.x, y: q[0].y - hc.y };
@@ -7737,7 +7706,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }
 
     // 两点透视（含 three 降级）：VP1/VP2 在视平线上
-    var x1 = A.vps[0].x * W(), x2 = A.vps[1].x * W();
+    var x1 = G.vps[0].x * W(), x2 = G.vps[1].x * W();
     var lo = Math.min(x1, x2), hi = Math.max(x1, x2);
     if (hi - lo < 120) return null;                 // 两点过近 → 无解
     var pxc = W() * 0.5;
@@ -7777,18 +7746,20 @@ window.addEventListener('DOMContentLoaded', ()=>{
   /* =====================================================================
      绘制：视平线 / 消失点 / 站点 / 视锥
      ===================================================================== */
-  function drawHorizon() {
-    var y = A.horizon * H();
-    setPen('mid', 'rgba(10,110,160,0.9)', [46, 22]);
+  function drawHorizon(G, opt) {
+    G = G || primaryG(); opt = opt || {};
+    var y = G.horizon * H();
+    var col = opt.secondary ? 'rgba(56,189,248,0.92)' : 'rgba(10,110,160,0.9)';
+    setPen('mid', col, opt.secondary ? [12, 10] : [46, 22]);
     line(0, y, W(), y);
-    setPen('thin', 'rgba(10,110,160,0.55)', []);
-    label('HL  视平线  EL ' + num('archEyeH', 1.6).toFixed(2) + ' m', 26, y - 30, 32, 'rgba(10,110,160,0.95)');
+    setPen('thin', col, []);
+    label((opt.secondary ? 'HL₂ ' : 'HL ') + '视平线' + (opt.secondary ? '' : '  EL ' + num('archEyeH', 1.6).toFixed(2) + ' m'), 26, y - 30, 32, col);
     // 地面线 GL
     var gl = Math.min(H() - 8, y + (H() - y) * 0.72);
-    setPen('mid', 'rgba(10,110,160,0.45)', [16, 14]);
+    setPen('mid', opt.secondary ? 'rgba(56,189,248,0.42)' : 'rgba(10,110,160,0.45)', opt.secondary ? [10, 9] : [16, 14]);
     line(0, gl, W(), gl);
-    label('GL  地面线', 26, gl - 26, 28, 'rgba(10,110,160,0.7)');
-    A._gl = gl;
+    label((opt.secondary ? 'GL₂ ' : 'GL ') + '地面线', 26, gl - 26, 28, col);
+    if (!opt.secondary) A._gl = gl;   // 仅主辅助线提供 GL 给网格/量点/真高线
   }
 
   function activeVPs() {
@@ -7797,31 +7768,34 @@ window.addEventListener('DOMContentLoaded', ()=>{
     return A.vps.slice(0, 2);
   }
 
-  function drawVPs() {
-    var list = activeVPs();
+  function drawVPs(G, opt) {
+    G = G || primaryG(); opt = opt || {};
+    var list = (G.vpMode === 'one') ? [G.vps[0]] : (G.vpMode === 'three' ? G.vps.slice(0, 3) : G.vps.slice(0, 2));
+    var RED2 = opt.secondary ? '#1d8fb8' : RED;
     list.forEach(function (vp, i) {
       var x = vp.x * W(), y = vp.y * H();
       var off = (x < 0 || x > W() || y < 0 || y > H());
       // 画面外的消失点：在边缘画引导标记，提示其方向
       if (off) {
         var ex = Math.max(0, Math.min(W(), x)), ey = Math.max(0, Math.min(H(), y));
-        setPen('thin', 'rgba(198,40,40,0.55)', [14, 10]);
+        setPen('thin', opt.secondary ? 'rgba(56,189,248,0.55)' : 'rgba(198,40,40,0.55)', [14, 10]);
         line(ex, ey, ex + (x - ex) * 0.12, ey + (y - ey) * 0.12);
-        dot(ex, ey, 6, 'rgba(198,40,40,0.7)');
-        label('VP' + (i + 1) + ' ⟶', ex - 4, ey - 22, 26, 'rgba(198,40,40,0.8)', 'right');
+        dot(ex, ey, 6, opt.secondary ? 'rgba(56,189,248,0.7)' : 'rgba(198,40,40,0.7)');
+        label((opt.secondary ? 'VP₂' : 'VP') + (i + 1) + ' ⟶', ex - 4, ey - 22, 26, opt.secondary ? 'rgba(56,189,248,0.8)' : 'rgba(198,40,40,0.8)', 'right');
+        if (A.on) A._vpHandles.push({ x: ex, y: ey, guide: opt.gi || 0, i: i });
         return;
       }
       // 可拖拽手柄：外环 = 命中区，亮红点 = 消失点
-      setPen('thin', 'rgba(198,40,40,0.35)', []);
+      setPen('thin', opt.secondary ? 'rgba(56,189,248,0.38)' : 'rgba(198,40,40,0.35)', []);
       cx.beginPath(); cx.arc(x, y, 46, 0, 6.2832); cx.stroke();
-      setPen('thin', RED, []);
+      setPen('thin', RED2, []);
       cx.beginPath(); cx.arc(x, y, 26, 0, 6.2832); cx.stroke();
       line(x - 40, y, x + 40, y);
       line(x, y - 40, x, y + 40);
-      dot(x, y, 9, RED);
-      label('VP' + (i + 1), x + 36, y - 36, 30, RED);
+      dot(x, y, 9, RED2);
+      label((opt.secondary ? 'VP₂' : 'VP') + (i + 1), x + 36, y - 36, 30, RED2);
       // 放射线（正交线 orthogonals）—— 永远从 VP 发出，随 VP 移动
-      setPen('thin', 'rgba(17,19,24,0.18)', [26, 22]);
+      setPen('thin', opt.secondary ? 'rgba(56,189,248,0.16)' : 'rgba(17,19,24,0.18)', [26, 22]);
       for (var k = 0; k <= 10; k++) {
         var t = k / 10;
         line(x, y, t * W(), H());
@@ -7829,6 +7803,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
       for (var k2 = 0; k2 <= 6; k2++) {
         line(x, y, (k2 / 6) * W(), 0);
       }
+      if (A.on) A._vpHandles.push({ x: x, y: y, guide: opt.gi || 0, i: i });
     });
   }
 
@@ -7943,7 +7918,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
   /* 由消失点相机生成的体块几何（真实建筑比例） */
   function cubeGeomVP() {
-    var cam = camFromVPs();
+    var gi = (A.cube && A.cube.guide === 1) ? 1 : 0;   // 该立方体跟随的辅助线
+    var cam = camFromVPs(guideG(gi));
     if (!cam) return null;
     var c = A.cube;
     var bx = c.bx, bz = c.bz, ny = c.layers;
@@ -8339,8 +8315,13 @@ window.addEventListener('DOMContentLoaded', ()=>{
     cx.clearRect(0, 0, W(), H());
     if (!A.on) return;
 
-    drawHorizon();
-    drawVPs();                       // 消失点手柄常显，可随时拖拽编辑
+    A._vpHandles = [];
+    drawHorizon(guideG(0));
+    drawVPs(guideG(0), { gi: 0 });                     // 主辅助线：永远最高优先级
+    if (A.secondary && A.showSecond) {                 // 第二条辅助线（可选）
+      drawHorizon(guideG(1), { secondary: true, gi: 1 });
+      drawVPs(guideG(1), { secondary: true, gi: 1 });
+    }
     if (chk('ovCone')) drawCone();
     if (A.grid) drawGrid();
     if (chk('ovMP')) drawMP();
@@ -8422,14 +8403,16 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
   /* ---------- 消失点编辑（可拖拽 + 数值滑块双重控制） ---------- */
   window.archSetVP = function (i, axis, val) {
-    if (!A.vps[i]) A.vps[i] = { x: 0.5, y: A.horizon };
-    A.vps[i][axis] = Number(val);
-    if (A.vpLock && i < 2 && axis === 'y') A.vps[i].y = A.horizon;   // 锁定视平线
+    var g = guideG(A.activeGuide);
+    if (!g.vps[i]) g.vps[i] = { x: 0.5, y: g.horizon };
+    g.vps[i][axis] = Number(val);
+    if (g.vpLock && i < 2 && axis === 'y') g.vps[i].y = g.horizon;   // 锁定视平线
     render();
   };
   window.archSetVPLock = function (on) {
-    A.vpLock = !!on;
-    if (A.vpLock) { A.vps[0].y = A.horizon; A.vps[1].y = A.horizon; }
+    var g = guideG(A.activeGuide);
+    g.vpLock = !!on;
+    if (g.vpLock) { g.vps[0].y = g.horizon; g.vps[1].y = g.horizon; }
     syncVPSliders(); render();
   };
   window.archSetSnap = function (on) {
@@ -8441,14 +8424,49 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (A.vpMode === 'one') A.vps = [{ x: 0.5, y: A.horizon }];
     else if (A.vpMode === 'three') A.vps = [{ x: -0.30, y: 0.58 }, { x: 1.30, y: 0.58 }, { x: 0.5, y: -0.10 }];
     else A.vps = [{ x: -0.30, y: A.horizon }, { x: 1.30, y: A.horizon }];
+    if (A.secondary) {
+      var m = A.secondary.vpMode;
+      if (m === 'one') A.secondary.vps = [{ x: 0.5, y: A.secondary.horizon }];
+      else if (m === 'three') A.secondary.vps = [{ x: 0.05, y: A.secondary.horizon }, { x: 1.15, y: A.secondary.horizon }, { x: 0.5, y: Math.max(0.02, A.secondary.horizon - 0.40) }];
+      else A.secondary.vps = [{ x: 0.05, y: A.secondary.horizon }, { x: 1.15, y: A.secondary.horizon }];
+    }
     syncVPSliders(); render();
     toast('消失点已复位');
   };
-  // 把 A.vps 同步回滑块 DOM（拖拽/复位后调用）
+  // 选择当前编辑 / 新立方体所用辅助线（主 / 第二条）
+  window.archSetActiveGuide = function (i) {
+    A.activeGuide = (i === 1 && A.secondary) ? 1 : 0;
+    syncVPSliders(); render();
+  };
+  // 添加第二条辅助线（可选）：新立方体可改用它对齐，互不影响主辅助线
+  window.archAddSecondGuide = function () {
+    if (A.secondary) { A.activeGuide = 1; syncVPSliders(); render(); toast('已切换到第二条辅助线进行编辑'); return; }
+    var h = A.horizon;
+    A.secondary = {
+      vpMode: A.vpMode,
+      vps: (A.vpMode === 'one') ? [{ x: 0.5, y: h }]
+        : (A.vpMode === 'three') ? [{ x: 0.05, y: h }, { x: 1.15, y: h }, { x: 0.5, y: Math.max(0.02, h - 0.40) }]
+          : [{ x: 0.08, y: h }, { x: 1.12, y: h }],
+      horizon: h,
+      vpLock: A.vpLock
+    };
+    A.showSecond = true;
+    A.activeGuide = 1;
+    syncVPSliders(); render();
+    toast('已添加第二条辅助线：新立方体可选用它对齐');
+  };
+  window.archShowSecond = function (on) { A.showSecond = !!on; render(); };
+  window.archRemoveSecondGuide = function () {
+    A.secondary = null; A.showSecond = false; A.activeGuide = 0;
+    if (A.cube && A.cube.guide === 1) A.cube.guide = 0;
+    syncVPSliders(); render(); toast('已移除第二条辅助线');
+  };
+  // 把当前激活辅助线的 VP 同步回滑块 DOM（拖拽/复位后调用）
   function syncVPSliders() {
-    var n = (A.vpMode === 'one') ? 1 : (A.vpMode === 'three' ? 3 : 2);
+    var g = guideG(A.activeGuide);
+    var n = (g.vpMode === 'one') ? 1 : (g.vpMode === 'three' ? 3 : 2);
     for (var i = 0; i < 3; i++) {
-      var v = A.vps[i];
+      var v = g.vps[i];
       ['x', 'y'].forEach(function (axis) {
         var s = el('vp' + (i + 1) + axis.toUpperCase());
         if (s && v) s.value = v[axis];
@@ -8456,17 +8474,25 @@ window.addEventListener('DOMContentLoaded', ()=>{
       var row = el('vpRow' + (i + 1));
       if (row) row.style.display = (i < n) ? '' : 'none';
     }
-    var lock = el('vpLock'); if (lock) lock.checked = A.vpLock;
+    var lock = el('vpLock'); if (lock) lock.checked = g.vpLock;
     var snap = el('vpSnap'); if (snap) snap.checked = A.snapVP;
+    var sel = el('vpGuideSel'); if (sel) {
+      sel.value = A.activeGuide;
+      var opt2 = sel.querySelector('option[value="1"]');
+      if (opt2) opt2.disabled = !A.secondary;
+    }
+    var sgRow = el('secondGuideRow'); if (sgRow) sgRow.style.display = A.secondary ? '' : 'none';
+    var sgChk = el('ovSecondGuide'); if (sgChk) sgChk.checked = A.showSecond;
     updateVPUI();
   }
   function updateVPUI() {
     var v = VIEWS.filter(function (o) { return o.k === A.view; })[0] || VIEWS[2];
     var panel = el('vpEditPanel');
     if (panel) panel.classList.toggle('disabled', v.ortho);   // 正交视角下 VP 不生效
+    var g = guideG(A.activeGuide);
     // 锁定时禁用 VP1/VP2 的 Y 滑块
     ['vp1Y', 'vp2Y'].forEach(function (id) {
-      var s = el(id); if (s) s.disabled = A.vpLock;
+      var s = el(id); if (s) s.disabled = g.vpLock;
     });
   }
 
@@ -8484,6 +8510,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   window.archPlaceCube = function () {
     if (!A.on) { var e = el('archEnable'); if (e) { e.checked = true; archToggleEnable(true); } }
     A.cube = A.cube || {};
+    A.cube.guide = A.activeGuide;   // 跟随当前激活辅助线；默认 0=主辅助线（所有立方体统一对齐）
     A.cube.cx = A.cube.cx || W() * 0.42;
     A.cube.cy = A.cube.cy || H() * 0.52;
     A.cube.size = A.cube.size || Math.min(W(), H()) * 0.42;
@@ -8501,6 +8528,16 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // 体块外接框（供调试 / 自动化检查体量高度）
   window.archCubeBBox = function () { return A.cube ? cubeGeom().bbox : null; };
   window.archRemoveCube = function () { A.cube = null; render(); toast('体块已移除'); };
+
+  // 添加新图层并直接放置下一幅立方体（沿用主辅助线坐标 → 与第一幅对齐）
+  window.archAddLayerAndPlace = function () {
+    if (typeof addLayer === 'function') addLayer();
+    A.activeGuide = 0;            // 新图层默认对齐主辅助线
+    syncVPSliders();
+    archPlaceCube();
+    if (typeof renderLayerList === 'function') renderLayerList();
+    toast('已新建图层：新立方体默认对齐主辅助线');
+  };
 
   window.archPlaceElev = function () {
     if (!A.on) { var e = el('archEnable'); if (e) { e.checked = true; archToggleEnable(true); } }
@@ -8600,11 +8637,21 @@ window.addEventListener('DOMContentLoaded', ()=>{
       var he = nearHandles(A._elevBox, p);
       if (he >= 0) { A.drag = { t: 'elev-scale', w0: A.elev.w, h0: A.elev.h, p0: p }; return; }
     }
-    // VP 拖动
+    // VP 拖动 —— 主辅助线手柄
     var vs = activeVPs();
     for (var i = 0; i < vs.length; i++) {
       if (Math.abs(p.x - vs[i].x * W()) < 60 && Math.abs(p.y - vs[i].y * H()) < 60) {
-        A.drag = { t: 'vp', i: i }; return;
+        A.drag = { t: 'vp', guide: 0, i: i }; return;
+      }
+    }
+    // VP 拖动 —— 第二条辅助线手柄（仅显示时）
+    if (A.secondary && A.showSecond) {
+      var svs = (A.secondary.vpMode === 'one') ? [A.secondary.vps[0]]
+        : (A.secondary.vpMode === 'three' ? A.secondary.vps.slice(0, 3) : A.secondary.vps.slice(0, 2));
+      for (var j = 0; j < svs.length; j++) {
+        if (Math.abs(p.x - svs[j].x * W()) < 60 && Math.abs(p.y - svs[j].y * H()) < 60) {
+          A.drag = { t: 'vp', guide: 1, i: j }; return;
+        }
       }
     }
     // 视平线拖动
@@ -8641,7 +8688,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
       A.vps.forEach(function (v, i) { if (i < 2) v.y = A.horizon; });
       syncVPSliders();
     } else if (d.t === 'vp') {
-      A.vps[d.i] = { x: p.x / W(), y: (d.i < 2 ? A.horizon : p.y / H()) };
+      var g = guideG(d.guide);
+      g.vps[d.i] = { x: p.x / W(), y: (d.i < 2 ? g.horizon : p.y / H()) };
       syncVPSliders();
     } else if (d.t === 'cube-move') {
       A.cube.cx = d.c0.x + (p.x - d.p0.x);
