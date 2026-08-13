@@ -1379,9 +1379,10 @@ window.PAINTINGS={
             <button type="button" class="as-step" data-step="5" onclick="archGoStep(5)"><i>5</i><span>保存</span></button>
           </div>
           <div class="arch-tip" id="archTip">先勾选「启用辅助层」，再从第 1 步开始。</div>
+          <div class="arch-step-target" id="archStepTarget">点击目标将随步骤自动显示在这里。</div>
           <div class="arch-btn-row">
-            <button class="action-btn secondary" onclick="archPrevStep()">‹ 上一步</button>
-            <button class="action-btn" onclick="archNextStep()">下一步 ›</button>
+            <button class="action-btn secondary" id="archPrevBtn" onclick="archPrevStep()">‹ 上一步</button>
+            <button class="action-btn arch-next" id="archNextBtn" onclick="archNextStep()">下一步 ›</button>
           </div>
         </div>
 
@@ -7044,6 +7045,11 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .panel-section p{ color:#9fd8cf !important; }
 .action-btn.secondary{ background: rgba(45,212,191,.12) !important; color:#a7f3e4 !important; border:1px solid rgba(45,212,191,.40) !important; }
 .action-btn.secondary:hover{ background: rgba(45,212,191,.20) !important; }
+.arch-step-target{ font-size:10.5px !important; line-height:1.55 !important; color:#bff7ec !important;
+  background:rgba(45,212,191,.12) !important; border:1px solid rgba(45,212,191,.40) !important;
+  border-radius:6px !important; padding:7px 10px !important; margin-top:8px !important; }
+.arch-step-target b{ color:#7df9ff !important; }
+.arch-next.disabled, .action-btn:disabled{ opacity:.4 !important; cursor:not-allowed !important; filter:grayscale(.4) !important; }
 
 /* 按钮霓虹 */
 .action-btn, .guide-btn, .paint-btn, .orient-btn{ background: rgba(10,20,40,.6) !important; color:#cfeaff !important; border:1px solid rgba(0,229,255,.3) !important; }
@@ -7545,11 +7551,19 @@ window.addEventListener('DOMContentLoaded', ()=>{
   ];
 
   var STEP_TIP = {
-    1: '① 定地平线：在画布上点击或上下拖动，确定视平线 HL（= 观者眼高）。低视平线显纪念性，高视平线成鸟瞰。默认眼高 1.60 m。',
-    2: '② 定消失点：先选透视类型，再在画布上点击放置 VP。两点透视的两个 VP 距离越远画面越平稳；VP 不要落在画面正中。',
-    3: '③ 放置网格：生成地面透视网格（进深用量点法等分）。网格是后续所有体块的定位基准。',
-    4: '④ 放置立面：选类型与朝向后放入立面图，或放置 XYZ 立体网格体块推敲体量。可拖动、缩放、旋转。',
-    5: '⑤ 保存：把辅助线烘焙进图层。第一幅固定到主图层；点「添加图层」放第二幅，新立方体默认按主辅助线坐标对齐（左右统一）。需不同视角时点「添加第二条辅助线」。'
+    1: '① 定地平线：在画布上点击，或上下拖动已有的视平线 HL（= 观者眼高 EL）。低视平线显纪念性、高视平线成鸟瞰。',
+    2: '② 定消失点：在视平线上点击放置 VP。两点透视的两个 VP 距离越远画面越平稳；水平 VP 会<b>自动吸附到视平线</b>（红点始终落在 HL 线上）。',
+    3: '③ 放置网格：生成地面透视网格（进深用量点法等分），是后续所有体块的定位基准。',
+    4: '④ 放置立面 / 体块：放立面图，或点「添加图层并放下一幅」放 XYZ 立体网格体块推敲体量，可拖动 / 缩放 / 旋转。',
+    5: '⑤ 保存：把辅助线烘焙进图层。点「添加图层并放下一幅」放第二幅，新立方体默认按主辅助线坐标对齐（左右统一）；需不同视角再点「＋ 添加第二条辅助线」。'
+  };
+  // 每一步「应该点击的内容」——流程图随步骤自动显示，引导用户操作
+  var STEP_TARGET = {
+    1: '👆 在画布上 <b>点击或上下拖动</b> → 设定视平线（地平线 / 眼平线）位置',
+    2: '👆 在画布 <b>视平线上点击</b> → 放置消失点 VP（自动对齐 HL）',
+    3: '👆 在画布 <b>任意位置点击</b> → 生成地面透视网格',
+    4: '👆 点「📐 放置立面图」或「➕ 添加图层并放下一幅」→ 放置立面 / 体块',
+    5: '👆 点「保存 / 烘焙」按钮 → 把辅助线导出到当前图层'
   };
 
   var A = {
@@ -8371,10 +8385,24 @@ window.addEventListener('DOMContentLoaded', ()=>{
     var wrap = el('archSteps'); if (!wrap) return;
     Array.prototype.forEach.call(wrap.querySelectorAll('.as-step'), function (b) {
       var s = parseInt(b.dataset.step, 10);
+      var sd = A.done[s] || (s === 4 && (A.elev || A.cubes.length));   // 第 4 步：放了立面/体块即视为完成
       b.classList.toggle('active', s === A.step);
-      b.classList.toggle('done', !!A.done[s] && s !== A.step);
+      b.classList.toggle('done', !!sd && s !== A.step);
     });
     var tip = el('archTip'); if (tip) tip.textContent = STEP_TIP[A.step] || '';
+    var tgt = el('archStepTarget'); if (tgt) tgt.innerHTML = STEP_TARGET[A.step] || '';
+    // 「下一步」：本步操作完成才可进入下一步（第一步完成后才能点下一步）
+    var nextBtn = el('archNextBtn');
+    if (nextBtn) {
+      var isLast = (A.step === 5);
+      var stepDone = A.done[A.step] || (A.step === 4 && (A.elev || A.cubes.length));
+      var canNext = isLast || !!stepDone;
+      nextBtn.disabled = !canNext;
+      nextBtn.classList.toggle('disabled', !canNext);
+      nextBtn.textContent = isLast ? '保存 / 烘焙 ✓' : (canNext ? '下一步 ›' : '先完成本步操作');
+    }
+    var prevBtn = el('archPrevBtn');
+    if (prevBtn) prevBtn.disabled = (A.step === 1);
   }
 
   window.archGoStep = function (s) {
@@ -8425,7 +8453,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     var g = guideG(A.activeGuide);
     if (!g.vps[i]) g.vps[i] = { x: 0.5, y: g.horizon };
     g.vps[i][axis] = Number(val);
-    if (g.vpLock && i < 2 && axis === 'y') g.vps[i].y = g.horizon;   // 锁定视平线
+    if (i < 2) g.vps[i].y = g.horizon;   // 水平消失点永远自动对齐视平线（移除 Y 偏移）
     render();
   };
   window.archSetVPLock = function (on) {
@@ -8441,7 +8469,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   };
   window.archResetVP = function () {
     if (A.vpMode === 'one') A.vps = [{ x: 0.5, y: A.horizon }];
-    else if (A.vpMode === 'three') A.vps = [{ x: -0.30, y: 0.58 }, { x: 1.30, y: 0.58 }, { x: 0.5, y: -0.10 }];
+    else if (A.vpMode === 'three') A.vps = [{ x: -0.30, y: A.horizon }, { x: 1.30, y: A.horizon }, { x: 0.5, y: Math.max(0.02, A.horizon - 0.45) }];
     else A.vps = [{ x: -0.30, y: A.horizon }, { x: 1.30, y: A.horizon }];
     if (A.secondary) {
       var m = A.secondary.vpMode;
@@ -8509,9 +8537,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
     var panel = el('vpEditPanel');
     if (panel) panel.classList.toggle('disabled', v.ortho);   // 正交视角下 VP 不生效
     var g = guideG(A.activeGuide);
-    // 锁定时禁用 VP1/VP2 的 Y 滑块
+    // 水平消失点（VP1/VP2）永远自动对齐视平线，Y 滑块恒为禁用
     ['vp1Y', 'vp2Y'].forEach(function (id) {
-      var s = el(id); if (s) s.disabled = g.vpLock;
+      var s = el(id); if (s) s.disabled = true;
     });
   }
 
@@ -8546,7 +8574,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     Array.prototype.forEach.call(document.querySelectorAll('#archLayerSeg button'), function (b) {
       b.classList.toggle('active', parseInt(b.dataset.l, 10) === c.layers);
     });
-    render();
+    render(); refreshSteps();
     toast('立体网格已放置：拖动移动 · 拖角缩放 · 滚轮缩放 · Shift 旋转');
   };
   window.archToggleCube = function () { if (A.cube) { A.cube.visible = !A.cube.visible; render(); } };
@@ -8579,7 +8607,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     A.elev.w = A.elev.w || W() * 0.34;
     A.elev.h = A.elev.h || H() * 0.34;
     A.elev.visible = true;
-    render();
+    render(); refreshSteps();
     toast('立面图已放置：拖动移动 · 拖角缩放');
   };
   window.archToggleElev = function () { if (A.elev) { A.elev.visible = !A.elev.visible; render(); } };
@@ -8728,7 +8756,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
       A.horizon = Math.max(0.05, Math.min(0.95, p.y / H()));
       // 视平线上的 VP 跟随
       A.vps.forEach(function (v, i) { if (i < 2) v.y = A.horizon; });
-      syncVPSliders();
+      A.done[1] = true;          // 拖动视平线即完成「定地平线」步骤
+      syncVPSliders(); refreshSteps();
     } else if (d.t === 'vp') {
       var g = guideG(d.guide);
       g.vps[d.i] = { x: p.x / W(), y: (d.i < 2 ? g.horizon : p.y / H()) };
