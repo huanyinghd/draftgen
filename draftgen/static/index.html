@@ -7009,53 +7009,53 @@ window.addEventListener('DOMContentLoaded', ()=>{
 .header::after{ content:''; position:absolute; left:0; right:0; bottom:-1px; height:1px;
   background: linear-gradient(90deg, transparent, #00e5ff, #ff2e97, transparent); opacity:.8; }
 
-/* 画布区：蓝绿底 + 极淡蓝图网格 */
+/* 画布区：亮色蓝绿底 + 蓝图网格（淡青绿线） */
 .canvas-area{ background:
-    radial-gradient(1200px 820px at 14% 14%, rgba(45,212,191,.18), transparent 62%),
-    radial-gradient(1000px 760px at 88% 84%, rgba(56,189,248,.14), transparent 62%),
-    repeating-linear-gradient(0deg, rgba(94,234,212,.06) 0 1px, transparent 1px 44px),
-    repeating-linear-gradient(90deg, rgba(94,234,212,.06) 0 1px, transparent 1px 44px),
-    #052a2e !important; }
-.canvas-area::before{ opacity:.7 !important; filter: blur(52px) !important;
+    radial-gradient(1200px 820px at 14% 14%, rgba(45,212,191,.12), transparent 62%),
+    radial-gradient(1000px 760px at 88% 84%, rgba(56,189,248,.10), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(13,148,136,.12) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(13,148,136,.12) 0 1px, transparent 1px 44px),
+    #eef6f4 !important; }
+.canvas-area::before{ opacity:.5 !important; filter: blur(52px) !important;
   background:
-    radial-gradient(38% 38% at 26% 32%, rgba(45,212,191,.38), transparent 70%),
-    radial-gradient(34% 34% at 74% 64%, rgba(56,189,248,.22), transparent 70%),
-    radial-gradient(26% 26% at 82% 18%, rgba(20,160,140,.30), transparent 70%) !important; }
+    radial-gradient(38% 38% at 26% 32%, rgba(45,212,191,.30), transparent 70%),
+    radial-gradient(34% 34% at 74% 64%, rgba(56,189,248,.18), transparent 70%),
+    radial-gradient(26% 26% at 82% 18%, rgba(20,160,140,.22), transparent 70%) !important; }
 .studio-fx{ z-index:1 !important; }
-.canvas-wrapper{ z-index:2 !important; border:1px solid rgba(0,229,255,.35);
-  box-shadow: 0 0 0 1px rgba(0,229,255,.12), 0 0 44px rgba(0,229,255,.22), 0 24px 70px rgba(0,0,0,.65); border-radius:6px; }
+.canvas-wrapper{ z-index:2 !important; border:1px solid rgba(13,148,136,.30);
+  box-shadow: 0 0 0 1px rgba(13,148,136,.08), 0 0 30px rgba(13,148,136,.18), 0 24px 70px rgba(15,40,38,.18); border-radius:6px; }
 .canvas-wrapper canvas{ border-radius:6px; }
 
-/* 右侧面板：蓝图特效（蓝绿底 + 青绿网格 + 等宽技术字体） */
-.right-panel{ --grad: linear-gradient(135deg,#7df9ff,#2dd4bf 55%,#0f766e) !important;
+/* 右侧面板：亮色蓝图特效（浅蓝绿底 + 青绿网格 + 等宽技术字体 + 深色字） */
+.right-panel{ --grad: linear-gradient(135deg,#0d9488,#2dd4bf 55%,#14b8a6) !important;
   background:
-    linear-gradient(180deg, rgba(6,42,46,.94), rgba(4,30,34,.94)),
-    repeating-linear-gradient(0deg, rgba(45,212,191,.07) 0 1px, transparent 1px 26px),
-    repeating-linear-gradient(90deg, rgba(45,212,191,.07) 0 1px, transparent 1px 26px),
-    #062a2e !important;
-  border-left:1px solid rgba(45,212,191,.30) !important;
-  box-shadow:-22px 0 60px rgba(0,0,0,.5), inset 1px 0 0 rgba(45,212,191,.12) !important;
+    linear-gradient(180deg, rgba(244,250,248,.97), rgba(238,246,243,.97)),
+    repeating-linear-gradient(0deg, rgba(13,148,136,.10) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(90deg, rgba(13,148,136,.10) 0 1px, transparent 1px 26px),
+    #eef5f3 !important;
+  border-left:1px solid rgba(13,148,136,.35) !important;
+  box-shadow:-22px 0 60px rgba(15,40,38,.12), inset 1px 0 0 rgba(13,148,136,.12) !important;
   backdrop-filter: blur(20px) saturate(140%) !important; -webkit-backdrop-filter: blur(20px) saturate(140%) !important; }
-.panel-tabs{ background: rgba(5,30,32,.55) !important; border-bottom:1px solid rgba(45,212,191,.20) !important; }
-.panel-tabs .tab{ color:#9fd8cf !important; border:1px solid rgba(45,212,191,.22) !important; background: rgba(45,212,191,.05) !important; }
-.panel-tabs .tab:hover{ color:#d7fff5 !important; border-color: rgba(45,212,191,.55) !important; box-shadow:0 0 14px rgba(45,212,191,.25) !important; }
-.panel-tabs .tab.active{ color:#04121f !important; background: linear-gradient(135deg,#7df9ff,#2dd4bf) !important; border-color:transparent !important; box-shadow:0 0 16px rgba(45,212,191,.6) !important; text-shadow:none !important; }
-.panel-section h3{ color:#a7f3e4 !important; text-shadow:none !important; letter-spacing:1px !important; font-family: var(--bp-mono, monospace) !important; }
-.panel-section h3::before{ content:'' !important; width:3px !important; height:14px !important; border-radius:2px !important; background: linear-gradient(180deg,#7df9ff,#2dd4bf) !important; box-shadow:0 0 10px rgba(45,212,191,.7) !important; }
-.panel-section p{ color:#9fd8cf !important; }
-.action-btn.secondary{ background: rgba(45,212,191,.12) !important; color:#a7f3e4 !important; border:1px solid rgba(45,212,191,.40) !important; }
-.action-btn.secondary:hover{ background: rgba(45,212,191,.20) !important; }
-.arch-step-target{ font-size:10.5px !important; line-height:1.55 !important; color:#bff7ec !important;
-  background:rgba(45,212,191,.12) !important; border:1px solid rgba(45,212,191,.40) !important;
+.panel-tabs{ background: rgba(232,244,242,.72) !important; border-bottom:1px solid rgba(13,148,136,.22) !important; }
+.panel-tabs .tab{ color:#155e57 !important; border:1px solid rgba(13,148,136,.28) !important; background: rgba(13,148,136,.05) !important; }
+.panel-tabs .tab:hover{ color:#0b3d39 !important; border-color: rgba(13,148,136,.55) !important; box-shadow:0 0 14px rgba(45,212,191,.25) !important; }
+.panel-tabs .tab.active{ color:#ffffff !important; background: linear-gradient(135deg,#0d9488,#2dd4bf) !important; border-color:transparent !important; box-shadow:0 0 16px rgba(45,212,191,.5) !important; text-shadow:none !important; }
+.panel-section h3{ color:#0f514b !important; text-shadow:none !important; letter-spacing:1px !important; font-family: var(--bp-mono, monospace) !important; }
+.panel-section h3::before{ content:'' !important; width:3px !important; height:14px !important; border-radius:2px !important; background: linear-gradient(180deg,#0d9488,#2dd4bf) !important; box-shadow:0 0 10px rgba(45,212,191,.5) !important; }
+.panel-section p{ color:#2f5f59 !important; }
+.action-btn.secondary{ background: rgba(13,148,136,.08) !important; color:#0f514b !important; border:1px solid rgba(13,148,136,.40) !important; }
+.action-btn.secondary:hover{ background: rgba(13,148,136,.16) !important; }
+.arch-step-target{ font-size:10.5px !important; line-height:1.55 !important; color:#0c4a44 !important;
+  background:rgba(13,148,136,.10) !important; border:1px solid rgba(13,148,136,.40) !important;
   border-radius:6px !important; padding:7px 10px !important; margin-top:8px !important; }
-.arch-step-target b{ color:#7df9ff !important; }
+.arch-step-target b{ color:#0d9488 !important; }
 .arch-next.disabled, .action-btn:disabled{ opacity:.4 !important; cursor:not-allowed !important; filter:grayscale(.4) !important; }
 
-/* 按钮霓虹 */
-.action-btn, .guide-btn, .paint-btn, .orient-btn{ background: rgba(10,20,40,.6) !important; color:#cfeaff !important; border:1px solid rgba(0,229,255,.3) !important; }
-.action-btn:hover, .guide-btn:hover, .paint-btn:hover{ border-color:#00e5ff !important; box-shadow:0 0 16px rgba(0,229,255,.4); color:#fff !important; }
-.action-btn:hover{ background: linear-gradient(135deg, rgba(0,229,255,.22), rgba(124,92,255,.22)) !important; }
-.guide-btn.active, .paint-btn.done{ background: linear-gradient(135deg, rgba(0,229,255,.3), rgba(124,92,255,.3)) !important; border-color:#00e5ff !important; color:#eaffff !important; box-shadow:0 0 18px rgba(0,229,255,.5); }
+/* 按钮：亮色蓝图配套（浅青绿底 + 深色字；激活态用青绿渐变） */
+.action-btn, .guide-btn, .paint-btn, .orient-btn{ background: rgba(13,148,136,.10) !important; color:#0f514b !important; border:1px solid rgba(13,148,136,.35) !important; }
+.action-btn:hover, .guide-btn:hover, .paint-btn:hover{ border-color:#0d9488 !important; box-shadow:0 0 14px rgba(45,212,191,.35); color:#0b3d39 !important; }
+.action-btn:hover{ background: linear-gradient(135deg, rgba(45,212,191,.20), rgba(20,160,140,.18)) !important; }
+.guide-btn.active, .paint-btn.done{ background: linear-gradient(135deg,#0d9488,#2dd4bf) !important; border-color:#0d9488 !important; color:#ffffff !important; box-shadow:0 0 16px rgba(45,212,191,.45); }
 
 /* 底部生成工具条 / 浮动工具条 / 下载 */
 .gen-toolbar{ background: rgba(8,16,32,.92) !important; border:1px solid rgba(0,229,255,.4) !important; box-shadow:0 0 24px rgba(0,229,255,.35); color:#cfeaff !important; }
