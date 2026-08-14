@@ -1296,10 +1296,10 @@ window.PAINTINGS={
 
         <div class="panel-section">
           <h3>🎲 乱线草稿</h3>
-          <div class="slider-row"><label>每步线条</label><input type="range" id="lineDensity" min="300" max="1000" step="100" value="1000" oninput="var v=document.getElementById('densityVal');if(v)v.textContent=this.value;if(window.updateDraftGenLabel)updateDraftGenLabel()"><span class="val" id="densityVal">1000</span></div>
+          <div class="slider-row"><label>每步线条</label><input type="range" id="lineDensity" min="100" max="500" step="50" value="500" oninput="var v=document.getElementById('densityVal');if(v)v.textContent=this.value;if(window.updateDraftGenLabel)updateDraftGenLabel()"><span class="val" id="densityVal">500</span></div>
           <div class="slider-row"><label>混沌度</label><input type="range" id="chaosLevel" min="0" max="100" value="42" oninput="var v=document.getElementById('chaosVal');if(v)v.textContent=this.value+'%'"><span class="val" id="chaosVal">42%</span></div>
           <div class="slider-row"><label>可能性</label><input type="range" id="possibilityLevel" min="0" max="4" value="2" oninput="var v=document.getElementById('possibVal');if(v)v.textContent=this.value"><span class="val" id="possibVal">2</span></div>
-          <button class="action-btn" id="genDraftBtn" onclick="generateRandomDraft()">生成乱线草稿 · 1000</button>
+          <button class="action-btn" id="genDraftBtn" onclick="generateRandomDraft()">生成乱线草稿 · 500</button>
           <button class="action-btn secondary" id="resetBlankBtn" onclick="resetBlankWithRefresh()" style="margin-top:10px;width:100%">🧹 重置空白页面（带刷新特效）</button>
           <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
             <div style="font-size:12px;font-weight:600;margin-bottom:4px">🏛️ 世界名画草图合集</div>
@@ -1751,7 +1751,7 @@ let currentLayout = 'none';   // 随机生成的布局形式：none/thirds/golde
 let aiMode = 'composition';
 let customBrushImg = null;
 let floatObj = null;   // 可编辑/缩放的浮动草稿对象：{ canvas, x, y, scale }（坐标均为画布像素）
-let draftSession = null;   // 乱线草稿叠加会话：{ canvas, ctx, total }；用于 1000→2000→3000 叠加
+let draftSession = null;   // 乱线草稿叠加会话：{ canvas, ctx, total }；用于 500→1000→1500 叠加
 let monaSession = null;    // 蒙娜丽莎叠加会话：{ canvas, ctx, total }
 let paintingSessions = {}; // 世界名画合集叠加会话：{ key: { canvas, ctx, total } }
 let floatSource = null;    // 'draft' | 'mona' | 'paint:<key>' 当前浮动对象来源
@@ -3486,7 +3486,7 @@ async function generateRandomDraft() {
 
   const ldEl = document.getElementById('lineDensity');
   const clEl = document.getElementById('chaosLevel');
-  const stepLines = ldEl ? (parseInt(ldEl.value) || 1000) : 1000;   // 每步叠加线条数（默认 1000）
+  const stepLines = ldEl ? (parseInt(ldEl.value) || 500) : 500;   // 每步叠加线条数（默认 500）
   const chaos = clEl ? parseInt(clEl.value) / 100 : 0.4;
 
   const guideEl = document.getElementById('guideLines');
@@ -3566,7 +3566,7 @@ async function generateRandomDraft() {
 function updateDraftGenLabel() {
   const btn = document.getElementById('genDraftBtn');
   const ld = document.getElementById('lineDensity');
-  const step = ld ? (parseInt(ld.value) || 1000) : 1000;
+  const step = ld ? (parseInt(ld.value) || 500) : 500;
   if (!btn) return;
   if (!draftSession) btn.textContent = '生成乱线草稿 · ' + step;
   else btn.textContent = '叠加随机草稿 · 下一档 ' + (draftSession.total + step);
@@ -5645,7 +5645,7 @@ function initSliders() {
   const cl = document.getElementById('chaosLevel');
   if (ld) ld.addEventListener('input', function() {
     const dv = document.getElementById('densityVal');
-    if (dv) dv.textContent = ['低','中','高'][this.value-1];
+    if (dv) dv.textContent = this.value;
   });
   if (cl) cl.addEventListener('input', function() {
     const cv = document.getElementById('chaosVal');
