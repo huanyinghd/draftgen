@@ -5760,13 +5760,23 @@ window.addEventListener('resize', () => {
   if(!pc || !fc) return; // 画布缺失则跳过粒子系统
   var pctx=pc.getContext('2d'), fctx=fc.getContext('2d');
   var DPR=Math.min(window.devicePixelRatio||1,2);
-  var W=0,H=0, hue=192; // 锁定蓝图青色，不随帧变色
+  var W=0,H=0, hue=275; // 紫色菲尼尔（匹配紫色欢迎页）
   var particles=[], orbs=[], sparks=[], bursts=[], stars=[];
   var mouse={x:-9999,y:-9999,active:false};
   var rafId=null;
   var welcomeBg=document.getElementById('welcomeBg');
   var rand=function(a,b){return a+Math.random()*(b-a);};
   var linkDist=130*DPR;
+  // 菲尼尔软粒子：中心柔光 -> 中段半透 -> 近边缘亮环(Fresnel) -> 极柔边界（加性混合下发暖）
+  function fresnel(ctx,x,y,r,hue,a){
+    var g=ctx.createRadialGradient(x,y,r*0.05,x,y,r);
+    g.addColorStop(0,   'hsla('+hue+',85%,74%,'+(a*0.92)+')');
+    g.addColorStop(0.5, 'hsla('+hue+',85%,70%,'+(a*0.28)+')');
+    g.addColorStop(0.78,'hsla('+hue+',92%,88%,'+(a*0.92)+')');
+    g.addColorStop(0.93,'hsla('+hue+',92%,92%,'+(a*0.78)+')');
+    g.addColorStop(1,   'hsla('+hue+',85%,74%,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fill();
+  }
 
   function resize(){
     W=pc.width=fc.width=Math.floor(innerWidth*DPR);
@@ -5787,7 +5797,7 @@ window.addEventListener('resize', () => {
     orbs=[];
     for(var j=0;j<4;j++){
       orbs.push({ x:rand(0,W), y:rand(0,H), vx:rand(-0.12,0.12)*DPR, vy:rand(-0.12,0.12)*DPR,
-        r:rand(160,300)*DPR, hue:rand(185,208) });
+        r:rand(160,300)*DPR, hue:rand(258,288) });
     }
     sparks=[];
     var S=Math.max(30, Math.min(70, Math.round(area/40000)));
@@ -5800,7 +5810,7 @@ window.addEventListener('resize', () => {
     var ST=Math.max(120, Math.min(260, Math.round(area/9000)));
     for(var t=0;t<ST;t++){
       stars.push({ x:Math.random()*W, y:Math.random()*H, r:rand(0.3,1.4)*DPR,
-        ph:rand(0,6.28), sp:rand(0.4,2.2), hue:rand(184,205) });
+        ph:rand(0,6.28), sp:rand(0.4,2.2), hue:rand(258,288) });
     }
   }
   function spawnBurst(x,y){
@@ -5837,6 +5847,9 @@ window.addEventListener('resize', () => {
       g.addColorStop(0.5,'hsla('+h+',90%,60%,0.07)');
       g.addColorStop(1,'hsla('+h+',90%,60%,0)');
       fctx.fillStyle=g; fctx.beginPath(); fctx.arc(b.x,b.y,b.r,0,Math.PI*2); fctx.fill();
+      // 菲尼尔亮边：轮廓处一圈柔光环
+      fctx.lineWidth=1.6*DPR; fctx.strokeStyle='hsla('+h+',92%,84%,0.10)';
+      fctx.beginPath(); fctx.arc(b.x,b.y,b.r*0.985,0,6.2832); fctx.stroke();
     }
     fctx.globalCompositeOperation='source-over';
 
@@ -5865,10 +5878,8 @@ window.addEventListener('resize', () => {
       p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99;
       if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
       var h=(hue+p.hueOff)%360;
-      pctx.save(); pctx.globalAlpha=p.a;
-      pctx.fillStyle='hsl('+h+',100%,72%)';
-      pctx.shadowBlur=10*DPR; pctx.shadowColor='hsl('+h+',100%,70%)';
-      pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2); pctx.fill(); pctx.restore();
+      // 软粒子：柔边径向渐变（不再用硬 shadowBlur），由 fresnel() 实现菲尼尔边缘
+      fresnel(pctx, p.x, p.y, p.r*2.4, h, p.a);
     }
 
     // 连线（星座）
@@ -7335,7 +7346,10 @@ body .studio-fx .s-layer{ transform:none !important; transition:none !important;
 body .studio-fx .s-fog{ background: radial-gradient(130% 120% at 50% 46%, transparent 40%, rgba(6,7,12,.82) 100%) !important; }
 body .studio-fx .s-halo{ background: radial-gradient(60% 60% at 50% 50%, rgba(138,180,255,.16), transparent 65%) !important; }
 body .studio-fx .s-ggrid{ background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px) !important; background-size:56px 56px !important; }
-body .studio-fx .s-globe .sphere{ background: radial-gradient(circle at 38% 34%, rgba(138,180,255,.16), rgba(124,92,255,.05) 46%, transparent 68%) !important; box-shadow: 0 0 90px rgba(138,180,255,.18), inset 0 0 70px rgba(138,180,255,.12) !important; }
+body .studio-fx .s-globe .sphere{ background:
+    radial-gradient(circle at 38% 32%, rgba(199,210,255,.22), rgba(124,92,255,.05) 44%, transparent 66%),
+    radial-gradient(circle, transparent 60%, rgba(138,180,255,.26) 89%, rgba(196,181,253,.55) 100%) !important;
+  box-shadow: 0 0 90px rgba(138,180,255,.20), inset 0 0 82px rgba(138,180,255,.14), inset 0 0 2px rgba(196,181,253,.6) !important; }
 body .studio-fx .s-globe .m{ border:1px solid rgba(138,180,255,.20) !important; }
 body .studio-fx .s-globe .p{ border:1px solid rgba(183,148,246,.16) !important; }
 body .studio-fx .s-globe .s-core{ background: radial-gradient(circle, #dfe8ff, rgba(138,180,255,.6) 45%, transparent 72%) !important; box-shadow:0 0 40px rgba(138,180,255,.55) !important; }
@@ -9177,53 +9191,86 @@ function toggleGuideFold() {
 </script>
 
 <script>
-/* 极光粒子背景 —— 有机漂浮，鼠标温柔推开 */
+/* 极光菲尼尔软粒子背景 —— 柔边无硬边 + 轮廓边缘提亮（Fresnel）+ 加性发光 */
 (function(){
   const canvas = document.getElementById('auroraParticles');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
+  const DPR = Math.min(window.devicePixelRatio||1, 2);
+  let W, H, particles = [], orbs = [];
   const count = 150;
   function resize(){
-    const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : {width:window.innerWidth,height:window.innerHeight};
-    W = canvas.width = rect.width;
-    H = canvas.height = rect.height;
+    const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : {width:innerWidth,height:innerHeight};
+    W = canvas.width = Math.floor(rect.width*DPR);
+    H = canvas.height = Math.floor(rect.height*DPR);
+    canvas.style.width = rect.width+'px';
+    canvas.style.height = rect.height+'px';
   }
   function init(){
     particles = [];
     for(let i=0;i<count;i++){
       particles.push({
         x: Math.random()*W, y: Math.random()*H,
-        r: Math.random()*2.4 + 0.5,
+        r: (Math.random()*2.6 + 1.0)*DPR,
         vx: (Math.random()-0.5)*0.22,
         vy: (Math.random()-0.5)*0.22 - 0.1,
-        a: Math.random()*0.45 + 0.18,
+        a: Math.random()*0.5 + 0.25,
         hue: Math.random()<0.34?220:(Math.random()<0.5?260:170),
         pulse: Math.random()*Math.PI*2
       });
+    }
+    orbs = [];
+    for(let j=0;j<5;j++){
+      orbs.push({ x:Math.random()*W, y:Math.random()*H,
+        vx:(Math.random()-0.5)*0.12*DPR, vy:(Math.random()-0.5)*0.12*DPR,
+        r:(Math.random()*220+170)*DPR, hue:Math.random()<0.5?225:272 });
     }
   }
   let mx=-9999, my=-9999;
   window.addEventListener('mousemove', e => {
     const rect = canvas.getBoundingClientRect();
-    mx = e.clientX - rect.left; my = e.clientY - rect.top;
+    mx = (e.clientX - rect.left)*DPR; my = (e.clientY - rect.top)*DPR;
   }, {passive:true});
+  // 菲尼尔软粒子：中心柔光 -> 中段半透 -> 近边缘亮环(Fresnel) -> 极柔边界
+  function fresnel(x,y,r,hue,a){
+    const g = ctx.createRadialGradient(x,y,r*0.05,x,y,r);
+    g.addColorStop(0,   'hsla('+hue+',85%,72%,'+(a*0.95)+')');
+    g.addColorStop(0.5, 'hsla('+hue+',85%,68%,'+(a*0.28)+')');
+    g.addColorStop(0.78,'hsla('+hue+',92%,88%,'+(a*0.95)+')');
+    g.addColorStop(0.93,'hsla('+hue+',92%,92%,'+(a*0.80)+')');
+    g.addColorStop(1,   'hsla('+hue+',85%,72%,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fill();
+  }
   function frame(){
     ctx.clearRect(0,0,W,H);
-    particles.forEach(p => {
+    ctx.globalCompositeOperation = 'lighter';
+    // 背景柔光球：菲尼尔亮边
+    orbs.forEach(b=>{
+      b.x+=b.vx; b.y+=b.vy;
+      if(b.x<-b.r)b.x=W+b.r; if(b.x>W+b.r)b.x=-b.r;
+      if(b.y<-b.r)b.y=H+b.r; if(b.y>H+b.r)b.y=-b.r;
+      const g=ctx.createRadialGradient(b.x,b.y,b.r*0.1,b.x,b.y,b.r);
+      g.addColorStop(0,'hsla('+b.hue+',85%,62%,0.10)');
+      g.addColorStop(0.6,'hsla('+b.hue+',85%,60%,0.045)');
+      g.addColorStop(1,'hsla('+b.hue+',85%,60%,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.2832); ctx.fill();
+      ctx.lineWidth=1.6*DPR; ctx.strokeStyle='hsla('+b.hue+',92%,84%,0.07)';
+      ctx.beginPath(); ctx.arc(b.x,b.y,b.r*0.985,0,6.2832); ctx.stroke();
+    });
+    // 粒子：软粒子 + 菲尼尔边缘
+    particles.forEach(p=>{
       p.pulse += 0.018;
       p.x += p.vx + Math.sin(p.pulse)*0.12;
       p.y += p.vy + Math.cos(p.pulse*0.7)*0.06;
-      const dx = p.x - mx, dy = p.y - my, d2 = dx*dx + dy*dy;
-      if(d2 < 18000){ const f = (18000-d2)/18000 * 0.06; p.x += dx*f; p.y += dy*f; }
-      if(p.x < -12) p.x = W+12; if(p.x > W+12) p.x = -12;
-      if(p.y < -12) p.y = H+12; if(p.y > H+12) p.y = -12;
-      const alpha = p.a * (0.65 + 0.35*Math.sin(p.pulse));
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = 'hsla('+p.hue+',85%,72%,'+alpha+')';
-      ctx.fill();
+      const dx=p.x-mx, dy=p.y-my, d2=dx*dx+dy*dy, R=18000*DPR*DPR;
+      if(d2<R){ const f=(R-d2)/R*0.06; p.x+=dx*f; p.y+=dy*f; }
+      if(p.x<-12)p.x=W+12; if(p.x>W+12)p.x=-12;
+      if(p.y<-12)p.y=H+12; if(p.y>H+12)p.y=-12;
+      const alpha = p.a*(0.65+0.35*Math.sin(p.pulse));
+      fresnel(p.x,p.y,p.r,p.hue,alpha);
     });
+    ctx.globalCompositeOperation='source-over';
     requestAnimationFrame(frame);
   }
   resize(); init(); frame();
