@@ -1198,8 +1198,6 @@ window.PAINTINGS={
       <span class="bp-corner tl"></span>
       <span class="bp-corner tr"></span>
       <span class="bp-corner br"></span>
-      <div class="bp-dim-x" id="bpDimX">W&nbsp;▸&nbsp;<span id="bpW">3508</span>&nbsp;PX</div>
-      <div class="bp-dim-y" id="bpDimY">H&nbsp;▾&nbsp;<span id="bpH">2480</span>&nbsp;PX</div>
     </div>
 
     <!-- 科幻 HUD 框架 -->
@@ -1285,10 +1283,6 @@ window.PAINTINGS={
                 <span class="holo-cta-text">点击随机生成草图</span>
               </div>
             </div>
-            <div class="holo-body">
-              <div class="fx-kicker"><i class="dot"></i>DRAFTGEN ／ COMPOSITION ENGINE<i class="dot"></i></div>
-              <div class="fx-title" data-text="随机构图生成器">随机构图生成器</div>
-            </div>
           </div>
         </div>
 
@@ -1301,8 +1295,15 @@ window.PAINTINGS={
           <div class="slider-row"><label>可能性</label><input type="range" id="possibilityLevel" min="0" max="4" value="2" oninput="var v=document.getElementById('possibVal');if(v)v.textContent=this.value"><span class="val" id="possibVal">2</span></div>
           <button class="action-btn" id="genDraftBtn" onclick="generateRandomDraft()">生成乱线草稿 · 500</button>
           <button class="action-btn secondary" id="resetBlankBtn" onclick="resetBlankWithRefresh()" style="margin-top:10px;width:100%">🧹 重置空白页面（带刷新特效）</button>
-          <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
-            <div style="font-size:12px;font-weight:600;margin-bottom:4px">🏛️ 世界名画草图合集</div>
+        </div>
+        <div class="panel-section fold-sec" id="paintFold" style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
+          <button type="button" class="fold-head" id="paintFoldHead" onclick="togglePaintFold()" aria-expanded="false" aria-controls="paintFoldBody">
+            <span class="fh-ico">🏛️</span>
+            <span class="fh-txt">世界名画草图合集</span>
+            <span class="fh-tag" id="paintFoldTag">点击展开</span>
+            <span class="fh-arrow">▾</span>
+          </button>
+          <div class="fold-body" id="paintFoldBody">
             <div id="paintingGrid" class="paint-grid"></div>
           </div>
         </div>
@@ -9184,6 +9185,16 @@ function toggleGuideFold() {
   var open = sec.classList.toggle('open');
   var head = document.getElementById('guideFoldHead');
   var tag = document.getElementById('guideFoldTag');
+  if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (tag) tag.textContent = open ? '点击收起' : '点击展开';
+}
+
+function togglePaintFold() {
+  var sec = document.getElementById('paintFold');
+  if (!sec) return;
+  var open = sec.classList.toggle('open');
+  var head = document.getElementById('paintFoldHead');
+  var tag = document.getElementById('paintFoldTag');
   if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (tag) tag.textContent = open ? '点击收起' : '点击展开';
 }
