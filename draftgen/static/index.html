@@ -1290,7 +1290,7 @@ window.PAINTINGS={
 
         <div class="panel-section">
           <h3>🎲 乱线草稿</h3>
-          <div class="slider-row"><label>每步线条</label><input type="range" id="lineDensity" min="100" max="100" step="50" value="100" oninput="var v=document.getElementById('densityVal');if(v)v.textContent=this.value;if(window.updateDraftGenLabel)updateDraftGenLabel()"><span class="val" id="densityVal">100</span></div>
+          <div class="slider-row"><label>每步线条</label><input type="range" id="lineDensity" min="100" max="9000" step="50" value="100" oninput="var v=document.getElementById('densityVal');if(v)v.textContent=this.value;if(window.updateDraftGenLabel)updateDraftGenLabel()"><span class="val" id="densityVal">100</span></div>
           <div class="slider-row"><label>混沌度</label><input type="range" id="chaosLevel" min="0" max="100" value="42" oninput="var v=document.getElementById('chaosVal');if(v)v.textContent=this.value+'%'"><span class="val" id="chaosVal">42%</span></div>
           <div class="slider-row"><label>可能性</label><input type="range" id="possibilityLevel" min="0" max="4" value="2" oninput="var v=document.getElementById('possibVal');if(v)v.textContent=this.value"><span class="val" id="possibVal">2</span></div>
           <button class="action-btn" id="genDraftBtn" onclick="generateRandomDraft()">生成乱线草稿 · 100</button>
