@@ -6256,28 +6256,38 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }catch(e){ fail('DraftGen 未加载：请确认 draftgen.js 已正确引入'); } }
 
   function genDense(){
-    if(typeof DraftGen==='undefined'||!DraftGen.generateRandomScene){ fail('DraftGen 未加载：请确认 draftgen.js 已引入'); return; }
     var btn=document.getElementById('genDense');
     if(btn) btn.disabled=true;
-    var style=currentStyleKey;
     fail('⏳ 正在生成随机草图…');
     requestAnimationFrame(function(){ try{
-      // 生成场景（每次随机种子）
-      var res=DraftGen.generateRandomScene({ seed:null, styleKey:style, focalIdx:null, density:2 });
-      var src=res.canvas, w=res.meta.w, h=res.meta.h;
-      // 适配到主画布尺寸（cover 填充），作为浮动对象呈现到左侧主画布
+      // 精确线条数：读取「每步线条」滑块（与下方「乱线草稿」面板同一控件），圆球与面板共用一套精确条数控制
+      var ldEl=document.getElementById('lineDensity');
+      var count = ldEl ? (parseInt(ldEl.value) || 100) : 100;
+      var clEl=document.getElementById('chaosLevel');
+      var chaos = clEl ? (parseInt(clEl.value)/100) : 0.4;
+      var possEl=document.getElementById('possibilityLevel');
+      var poss = possEl ? (parseInt(possEl.value) || 0) : 0;
+      var lay = (typeof currentLayout !== 'undefined') ? currentLayout : 'none';
+      var sty = (typeof draftType !== 'undefined') ? draftType : 'free';
+
+      // 离屏画布：用 paintScribble 按精确条数生成乱线草稿，并作为浮动对象呈现到主画布
       var oc=document.createElement('canvas'); oc.width=canvasW; oc.height=canvasH;
       var octx=oc.getContext('2d');
-      var sc=Math.max(canvasW/w, canvasH/h);
-      var dw=w*sc, dh=h*sc;
-      octx.drawImage(src,(canvasW-dw)/2,(canvasH-dh)/2,dw,dh);
-            if (typeof drawExploreMarks === 'function') {
-        var _pr = mulberry32(((Date.now()) >>> 0) ^ 0x9e3779b9);
-        drawExploreMarks(octx, { x: canvasW/2, y: canvasH*0.42 }, _pr, Math.min(canvasW, canvasH));
+      var seed = ((Date.now() & 0x7fffffff) ^ 0x9e3779b9) >>> 0;
+      var rng = mulberry32(seed);
+      octx.save();
+      octx.lineCap='round'; octx.lineJoin='round';
+      paintScribble(oc, { rng:rng, chaos:chaos, layout:lay, style:sty, count:count, possibility:poss, scribbleOnly:false });
+      octx.restore();
+      if (typeof drawExploreMarks === 'function') {
+        drawExploreMarks(octx, { x: canvasW/2, y: canvasH*0.42 }, rng, Math.min(canvasW, canvasH));
+      }
+      if (typeof currentLayout !== 'undefined' && currentLayout !== 'thirds') {
+        if (typeof drawLayoutLines === 'function') drawLayoutLines(octx, currentLayout);
       }
       if(typeof presentFloat==='function') presentFloat(oc, canvasW/2, canvasH/2);
       if(btn) btn.disabled=false;
-      fail('✅ 已生成 · 拖动可移动，滚轮缩放，确认后放入画布');
+      fail('✅ 已生成 · ' + count + ' 条线条 · 拖动可移动，滚轮缩放，确认后放入画布');
     }catch(e){ fail('❌ 生成失败：'+e.message); if(btn) btn.disabled=false; } });
   }
 
